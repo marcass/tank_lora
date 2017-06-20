@@ -28,6 +28,7 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:tank_lora-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -67,7 +68,7 @@ $EndComp
 Wire Wire Line
 	5850 2250 6800 2250
 Wire Wire Line
-	1700 1850 1700 2400
+	1700 1450 1700 2400
 Wire Wire Line
 	1700 2400 1950 2400
 Wire Wire Line
@@ -89,18 +90,14 @@ F 3 "" H 6800 2800 50  0000 C CNN
 $EndComp
 Text GLabel 1700 3700 0    60   Input ~ 0
 Reset
-Text GLabel 8000 2350 2    60   Input ~ 0
+Text GLabel 8850 2350 2    60   Input ~ 0
 Reset
-Wire Wire Line
-	8000 2350 7400 2350
 Wire Wire Line
 	1950 3700 1700 3700
 Wire Wire Line
 	7400 2250 7650 2250
 Wire Wire Line
 	7650 2250 7650 1700
-Text GLabel 7650 1500 1    60   Input ~ 0
-PreboostV
 $Comp
 L R R1
 U 1 1 59477B2B
@@ -142,10 +139,128 @@ L Jumper_NO_Small JP?
 U 1 1 594784A0
 P 7650 1600
 F 0 "JP?" H 7650 1680 50  0000 C CNN
-F 1 "Jumper_NO_Small" H 7660 1540 50  0000 C CNN
+F 1 "Jumper_NO_Small" H 7660 1540 50  0001 C CNN
 F 2 "" H 7650 1600 50  0000 C CNN
 F 3 "" H 7650 1600 50  0000 C CNN
 	1    7650 1600
 	0    1    1    0   
 $EndComp
+$Comp
+L R R2
+U 1 1 5948516D
+P 8150 1800
+F 0 "R2" V 8230 1800 50  0000 C CNN
+F 1 "100k" V 8150 1800 50  0000 C CNN
+F 2 "" V 8080 1800 50  0000 C CNN
+F 3 "" H 8150 1800 50  0000 C CNN
+	1    8150 1800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7400 2350 8850 2350
+Wire Wire Line
+	8150 1950 8150 2350
+Connection ~ 8150 2350
+Wire Wire Line
+	8150 1250 8150 1650
+Text Label 8300 2850 0    60   ~ 0
+1hour
+Text Label 4800 2550 0    60   ~ 0
+trigger_INT3:0
+Text Notes 5450 3150 0    60   ~ 0
+Send pulse to confirm wake before next wake
+$Comp
+L +3.3V #PWR?
+U 1 1 59489424
+P 7650 1250
+F 0 "#PWR?" H 7650 1100 50  0001 C CNN
+F 1 "+3.3V" H 7650 1390 50  0000 C CNN
+F 2 "" H 7650 1250 50  0000 C CNN
+F 3 "" H 7650 1250 50  0000 C CNN
+	1    7650 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR?
+U 1 1 59489445
+P 8150 1250
+F 0 "#PWR?" H 8150 1100 50  0001 C CNN
+F 1 "+3.3V" H 8150 1390 50  0000 C CNN
+F 2 "" H 8150 1250 50  0000 C CNN
+F 3 "" H 8150 1250 50  0000 C CNN
+	1    8150 1250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7650 1500 7650 1250
+Text GLabel 1700 1450 1    60   Input ~ 0
+Load
+Text GLabel 5150 1150 2    60   Input ~ 0
+Load
+$Comp
+L GND #PWR?
+U 1 1 59489A99
+P 5250 1550
+F 0 "#PWR?" H 5250 1300 50  0001 C CNN
+F 1 "GND" H 5250 1400 50  0000 C CNN
+F 2 "" H 5250 1550 50  0000 C CNN
+F 3 "" H 5250 1550 50  0000 C CNN
+	1    5250 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L SolarCharger U?
+U 1 1 59489C66
+P 4450 1350
+F 0 "U?" H 4300 1050 50  0000 C CNN
+F 1 "SolarCharger" H 4450 1650 50  0000 C CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23-6" H 4450 950 50  0001 C CNN
+F 3 "" H 4450 1400 50  0000 C CNN
+	1    4450 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P?
+U 1 1 59489CBB
+P 3250 1200
+F 0 "P?" H 3250 1350 50  0000 C CNN
+F 1 "CONN_01X02" V 3350 1200 50  0000 C CNN
+F 2 "" H 3250 1200 50  0000 C CNN
+F 3 "" H 3250 1200 50  0000 C CNN
+	1    3250 1200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4750 1150 5150 1150
+Wire Wire Line
+	5250 1550 5250 1250
+Wire Wire Line
+	5250 1250 4750 1250
+Wire Wire Line
+	3450 1150 4150 1150
+Wire Wire Line
+	4150 1550 4150 1250
+Wire Wire Line
+	4150 1250 3450 1250
+$Comp
+L CONN_01X02 P?
+U 1 1 59489D86
+P 4500 1900
+F 0 "P?" H 4500 2050 50  0000 C CNN
+F 1 "CONN_01X02" V 4600 1900 50  0000 C CNN
+F 2 "" H 4500 1900 50  0000 C CNN
+F 3 "" H 4500 1900 50  0000 C CNN
+	1    4500 1900
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4750 1500 4750 1850
+Wire Wire Line
+	4750 1850 4700 1850
+Wire Wire Line
+	4750 1400 4950 1400
+Wire Wire Line
+	4950 1400 4950 1950
+Wire Wire Line
+	4950 1950 4700 1950
 $EndSCHEMATC
