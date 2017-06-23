@@ -16,7 +16,7 @@ Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic dis
    * This means we don't need to power a watchdog or brownout detection on MCU saving some power (see page 397 in http://www.atmel.com/Images/Atmel-7766-8-bit-AVR-ATmega16U4-32U4_Datasheet.pdf )
       * 0.5microA in power down mode with WDT disabled vs 6microA with WDT enabled
 * Disabling DC-DC converter (uses ~100microA)
-   *  Would need to use somthing like a latching transistor circuit for TPL5010 to trigger, then MCU feeds it the done pulse prior to shutting down
+   *  Would need to use somthing like a latching transistor circuit for TPL5010 to trigger, like http://m.eet.com/media/1151168/24527-112300di.pdf, then MCU feeds the TPL5010 the done pulse prior to shutting down
       * This would mean we can't power TPL5010 from LoRa module 3.3v rail causing it to use 43nA at 5v
 
 ### Parts
