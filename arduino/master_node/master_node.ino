@@ -3,6 +3,8 @@
 
 #define debug
 //#define production
+#define noncallback
+//#define callback
 
 int payload;
 
@@ -37,42 +39,57 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+
+  #ifdef callback
+    // register the receive callback
+    LoRa.onReceive(onReceive);
+  
+    // put the radio into receive mode
+    LoRa.receive();
+  #endif
 }
 
 void loop() {
-  // try to parse packet
-  int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    // received a packet
-    #ifdef debug
-      Serial.print("Received packet '");
+  #ifdef noncallback
+    // try to parse packet
+    int packetSize = LoRa.parsePacket();
+    if (packetSize) {
+      // received a packet
+      #ifdef debug
+        Serial.print("Received packet '");
+    
+        // read packet
+        while (LoRa.available()) {
+          Serial.print((char)LoRa.read());
+        }
+    
+        // print RSSI of packet
+        Serial.print("' with RSSI ");
+        Serial.println(LoRa.packetRssi());
+      #endif debug
   
-      // read packet
-      while (LoRa.available()) {
-        Serial.print((char)LoRa.read());
-      }
-  
-      // print RSSI of packet
-      Serial.print("' with RSSI ");
-      Serial.println(LoRa.packetRssi());
-    #endif debug
-
-    #ifdef production
-      // read packet parsed at node in my controller format and print to serial for API
-      while (LoRa.available()) {
-        Serial.print((char)LoRa.read());
-      }
-    #endif
+      #ifdef production
+        // read packet parsed at node in my controller format and print to serial for API
+        while (LoRa.available()) {
+          Serial.print((char)LoRa.read());
+        }
+      #endif
   }
+  #endif
 }
 
-//configiure packets received for MyController
-void parse_packet() {
-  // read packet
-    while (LoRa.available()) {
-      //Serial.print((char)LoRa.read());
-      payload = (char)LoRa.read();
-    }
+//call back fucntion may be able to sleep mcu and wake with tx pin activity in callback
+void onReceive(int packetSize) {
+  // received a packet
+  Serial.print("Received packet '");
 
+  // read packet
+  for (int i = 0; i < packetSize; i++) {
+    Serial.print((char)LoRa.read());
+  }
+
+  // print RSSI of packet
+  Serial.print("' with RSSI ");
+  Serial.println(LoRa.packetRssi());
 }
 

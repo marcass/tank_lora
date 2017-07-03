@@ -33,12 +33,16 @@ int sensor_node = 1;
 int distance;
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
+//LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
+//Lower number if closer receiver (saves power)
+//LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
+
 void setup() {
   #ifdef sensor
     //power management at pins - check what newping needs for trig and echo
     DDRD &= B00000011;       // set Arduino pins 2 to 7 as inputs, leaves 0 & 1 (RX & TX) as is
     DDRB = B00000000;        // set pins 8 to 13 as inputs
-    PORTD |= B11111000;      // enable pullups on pins 3 to 7, leave pins 0,1 and 2 (high level interrupt) alone - modified by mw
+    PORTD |= B11111100;      // enable pullups on pins 2 to 7, leave pins 0 and 1 alone
     PORTB |= B11111111;      // enable pullups on pins 8 to 13
     pinMode(13,OUTPUT);      // set pin 13 as an output so we can use LED to monitor
   #endif
@@ -81,16 +85,18 @@ void loop() {
     LoRa.print(distance);
     LoRa.endPacket();
     //go to sleep when done
-    sleepNow();
-    //delay(10000); //10s between measurements for testing
+    //sleepNow();
+    delay(10000); //10s between measurements for testing
   #endif
 }
 
 
 void sleepNow(){
   // Set pin 2 as interrupt and attach handler:
-  attachInterrupt(0, pinInterrupt, HIGH); //TPL5010 sends high pulse to pin 2
+  attachInterrupt(0, pinInterrupt, LOW); //TPL5010 sends high pulse to transistor wich sinks pin 2 to ground tiggering interrupt
   delay(100);
+  //sleep lora radio
+  LoRa.sleep();
   // Choose our preferred sleep mode:
   set_sleep_mode(SLEEP_MODE_PWR_DOWN};
 
@@ -102,6 +108,8 @@ void sleepNow(){
 
   // Upon waking up, sketch continues from this point.
   sleep_disable();
+  //wake radio
+  LoRa.idle();
 }
 
 //Handler for wake inturrupt detaches interrupt
