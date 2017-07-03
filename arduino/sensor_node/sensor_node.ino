@@ -51,6 +51,7 @@ void setup() {
   while (!Serial);
 
   Serial.println("LoRa Sender");
+  LoRa.setPins(1, 4, 2); //reset is pd4, adc8
 
   if (!LoRa.begin(433E6)) { // initialise at 433MHz
     Serial.println("Starting LoRa failed!");
@@ -91,28 +92,28 @@ void loop() {
 }
 
 
-void sleepNow(){
-  // Set pin 2 as interrupt and attach handler:
-  attachInterrupt(0, pinInterrupt, LOW); //TPL5010 sends high pulse to transistor wich sinks pin 2 to ground tiggering interrupt
-  delay(100);
-  //sleep lora radio
-  LoRa.sleep();
-  // Choose our preferred sleep mode:
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN};
-
-  // Set sleep enable (SE) bit:
-  sleep_enable();
-
-  // Put the device to sleep:
-  sleep_mode();
-
-  // Upon waking up, sketch continues from this point.
-  sleep_disable();
-  //wake radio
-  LoRa.idle();
-}
-
-//Handler for wake inturrupt detaches interrupt
-void pinInterrupt(void){
-  detachInterrupt(0);
-}
+//void sleepNow(){
+//  // Set pin 2 as interrupt and attach handler:
+//  attachInterrupt(0, pinInterrupt, LOW); //TPL5010 sends high pulse to transistor wich sinks pin 2 to ground tiggering interrupt
+//  delay(100);
+//  //sleep lora radio
+//  LoRa.sleep();
+//  // Choose our preferred sleep mode:
+//  set_sleep_mode(SLEEP_MODE_PWR_DOWN};
+//
+//  // Set sleep enable (SE) bit:
+//  sleep_enable();
+//
+//  // Put the device to sleep:
+//  sleep_mode();
+//
+//  // Upon waking up, sketch continues from this point.
+//  sleep_disable();
+//  //wake radio
+//  LoRa.idle();
+//}
+//
+////Handler for wake inturrupt detaches interrupt
+//void pinInterrupt(void){
+//  detachInterrupt(0);
+//}

@@ -41,3 +41,12 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * LoRa http://www.arduinolibraries.info/libraries/lo-ra
 
 ## Testing
+
+# Notes
+LoRa32u4 module has connection:
+Radio module    |   ATMega32u4
+NSS             |   1
+RST             |   4
+DIO1            |   Unknown
+
+These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md)
