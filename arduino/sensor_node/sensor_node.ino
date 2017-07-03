@@ -2,6 +2,7 @@
  *  chjeck brownout and watrchdog is disables
  *  check that we can wake with ahigh level trigger (think it needs to be low according to datasheet
  *  check pin register stuff in setup
+ *  update kicad for sleep mode disable pin
  */  
 
 #include <SPI.h>
@@ -36,6 +37,9 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
+
+//sleep pin
+const int SLEEP_PIN = 12;
 
 void setup() {
   #ifdef sensor
@@ -86,8 +90,12 @@ void loop() {
     LoRa.print(distance);
     LoRa.endPacket();
     //go to sleep when done
-    //sleepNow();
+    //first check to see if we want to sleep (for testing/debugging purposes)
+    //if(digital.read(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
+    //  sleepNow();
+    //}else{
     delay(10000); //10s between measurements for testing
+    //}
   #endif
 }
 
