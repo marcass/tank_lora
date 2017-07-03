@@ -51,7 +51,7 @@ void setup() {
   while (!Serial);
 
   Serial.println("LoRa Sender");
-  LoRa.setPins(1, 4, 2); //reset is pd4, adc8
+  LoRa.setPins(1, 4, 7); //reset is pd4, adc8, dio0 is P(ort)E 6 or int6
 
   if (!LoRa.begin(433E6)) { // initialise at 433MHz
     Serial.println("Starting LoRa failed!");

@@ -34,7 +34,7 @@ void setup() {
   while (!Serial);
 
   Serial.println("LoRa Receiver");
-  LoRa.setPins(1, 4, 2);
+  LoRa.setPins(1, 4, 7);
 
   if (!LoRa.begin(433E6)) { // initialise at 433MHz
     Serial.println("Starting LoRa failed!");
