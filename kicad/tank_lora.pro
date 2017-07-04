@@ -1,4 +1,4 @@
-update=Tue 04 Jul 2017 12:34:53 NZST
+update=Tue 04 Jul 2017 21:23:57 NZST
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,3 +59,5 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=LoRa32u4
+LibName31=JSN-SR40T
+LibName32=Boost_mod

@@ -15,9 +15,12 @@ Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic dis
    * Needs a 'done' pulse sent from MCU at least 20ms prior to next wake pulse or it will send a reset to MCU
    * This means we don't need to power a watchdog or brownout detection on MCU saving some power (see page 397 in http://www.atmel.com/Images/Atmel-7766-8-bit-AVR-ATmega16U4-32U4_Datasheet.pdf )
       * 0.5microA in power down mode with WDT disabled vs 6microA with WDT enabled
-* Disabling DC-DC converter (uses ~100microA)
+* Disabling DC-DC converter (uses ~35microA)
    *  Would need to use somthing like a latching transistor circuit for TPL5010 to trigger, like http://m.eet.com/media/1151168/24527-112300di.pdf, then MCU feeds the TPL5010 the done pulse prior to shutting down
       * This would mean we can't power TPL5010 from LoRa module 3.3v rail causing it to use 43nA at 5v
+
+#### 5V rail
+Solar charger like https://learn.adafruit.com/usb-dc-and-solar-lipoly-charger/using-the-charger will give up to full voltage output of panel to load so we need to limit that. In this case using a (wasteful) zener diode to limit to 5.6V and with a further diode with a voltage drop of 0.7V gives a 4.9V max supplied to 1-5V boost converter to give reliable, if inefficent 5V rail.
 
 ### Parts
 * Lora radios with ATMega32u4 https://www.aliexpress.com/item/5PCS-lot-LoRa32u4-RA-02-433M-Lora-Wireless-WIFI-Module-Long-Range-communication-1KM-LiPo-Atmega328/32812205344.html?spm=2114.13010608.0.0.r6qCKR

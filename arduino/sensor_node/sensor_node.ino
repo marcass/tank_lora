@@ -1,8 +1,6 @@
 /* TODO
  *  chjeck brownout and watrchdog is disables
  *  check that we can wake with ahigh level trigger (think it needs to be low according to datasheet
- *  check pin register stuff in setup
- *  update kicad for sleep mode disable pin
  *  set internal voltage level in getbandgap https://www.gammon.com.au/forum/?id=11497
  */  
 
@@ -34,8 +32,8 @@ const int DONE = 11;
 unsigned long done_timer = 0;
 
 //ultrasonic setup
-#define TRIGGER_PIN  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN  11  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     12  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 400 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 int distance;
 
@@ -45,7 +43,9 @@ int distance;
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
 
 //sleep pin
-const int SLEEP_PIN = 12;
+const int SLEEP_PIN = 1;
+//power pin for u/s module (can't power directly as 10mA limit and need 30mA, so using transistor)
+const int POWER = 6;
 int voltage;
 
 void setup() {
@@ -54,6 +54,9 @@ void setup() {
     sleep_disable();
     pinMode(DONE, OUTPUT);
     digitalWrite(DONE, LOW);
+    pinMode(POWER, OUTPUT);
+    digitalWrite(POWER, LOW);
+    pinMode(SLEEP_PIN, INPUT_PULLUP);
     NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
   #endif
   
@@ -132,7 +135,13 @@ void loop() {
     LoRa.endPacket();       
     
     //send distance to water
+    //power up ultrasonic sensor
+    digitalWrite(POWER, HIGH);
+    delay(30); //wait for board to warm up
     distance = sonar.ping_cm();
+    //TURN u/s module off
+    digitalWrite(POWER, LOW);
+    //send packet
     LoRa.beginPacket();
     //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
     LoRa.print("NodeID");
