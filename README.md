@@ -20,7 +20,10 @@ Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic dis
       * This would mean we can't power TPL5010 from LoRa module 3.3v rail causing it to use 43nA at 5v
 
 #### 5V rail
-Solar charger like https://learn.adafruit.com/usb-dc-and-solar-lipoly-charger/using-the-charger will give up to full voltage output of panel to load so we need to limit that. In this case using a (wasteful) zener diode to limit to 5.6V and with a further diode with a voltage drop of 0.7V gives a 4.9V max supplied to 1-5V boost converter to give reliable, if inefficent 5V rail.
+Solar charger like https://learn.adafruit.com/usb-dc-and-solar-lipoly-charger/using-the-charger will give up to full voltage output of panel to load so we may need to limit that (turns out we don't have to). So to get a  5V rail for ultrasonic module use boost converter from 3.3v rail on LoRa32u4 board and power it by saturating a NPN transistor with a digital pin
+
+Uses https://www.diodes.com/assets/Datasheets/AP2112.pdf as DC-DC converter and will accept 2.5-6.5V so can manage load from solar panel
+
 
 ### Parts
 * Lora radios with ATMega32u4 https://www.aliexpress.com/item/5PCS-lot-LoRa32u4-RA-02-433M-Lora-Wireless-WIFI-Module-Long-Range-communication-1KM-LiPo-Atmega328/32812205344.html?spm=2114.13010608.0.0.r6qCKR
