@@ -28,6 +28,7 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:LoRa32u4
 LIBS:tank_lora-cache
 EELAYER 25 0
 EELAYER END
@@ -273,7 +274,7 @@ $EndComp
 Wire Wire Line
 	4400 2600 4800 2600
 Wire Wire Line
-	4800 2600 4800 2050
+	4800 2050 4800 4050
 Wire Wire Line
 	4800 2050 5550 2050
 $Comp
@@ -287,4 +288,24 @@ F 3 "" H 5550 2450 50  0000 C CNN
 	1    5550 2450
 	1    0    0    -1  
 $EndComp
+$Comp
+L LoRa32u4 U?
+U 1 1 595AE2C2
+P 5750 5450
+F 0 "U?" H 5750 5350 50  0000 C CNN
+F 1 "LoRa32u4" H 5750 5550 50  0000 C CNN
+F 2 "MODULE" H 5750 5450 50  0001 C CNN
+F 3 "DOCUMENTATION" H 5750 5450 50  0001 C CNN
+	1    5750 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4800 4050 6900 4050
+Wire Wire Line
+	6900 4050 6900 5700
+Wire Wire Line
+	6900 5700 6600 5700
+Connection ~ 4800 2600
+Text Notes 5250 4000 0    60   ~ 0
+pcint6 will wake if pulled low
 $EndSCHEMATC
