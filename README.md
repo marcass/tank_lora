@@ -45,9 +45,9 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 # Notes
 LoRa32u4 module has connection:
 |Radio module    |   ATMega32u4|
-|:================|:=============|
+|:---------------|:-----------|
 |NSS             |   1|
 |RST             |   4|
-|DIO0            |   7 (PE6) - this is an assumption it is pin 7 as per https://www.arduino.cc/en/Hacking/PinMapping32u4|
+|DIO0            |   7 (PE6) - this is an assumption it is pin 7 as per https://www.arduino.cc/en/Hacking/PinMapping32u4  |
 
 These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md)
