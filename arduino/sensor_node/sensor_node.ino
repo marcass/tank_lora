@@ -3,6 +3,7 @@
  *  check that we can wake with ahigh level trigger (think it needs to be low according to datasheet
  *  check pin register stuff in setup
  *  update kicad for sleep mode disable pin
+ *  set internal voltage level in getbandgap https://www.gammon.com.au/forum/?id=11497
  */  
 
 #include <SPI.h>
@@ -27,12 +28,17 @@ int counter = 0;
  */
 int sensor_node = 1;
 
+//external watchdog
+//wake pin on D2 (interrupt 0)
+const int DONE = 11;
+unsigned long done_timer = 0;
+
 //ultrasonic setup
 #define TRIGGER_PIN  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 400 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 int distance;
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
@@ -40,15 +46,15 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and
 
 //sleep pin
 const int SLEEP_PIN = 12;
+int voltage;
 
 void setup() {
   #ifdef sensor
-    //power management at pins - check what newping needs for trig and echo
-    DDRD &= B00000011;       // set Arduino pins 2 to 7 as inputs, leaves 0 & 1 (RX & TX) as is
-    DDRB = B00000000;        // set pins 8 to 13 as inputs
-    PORTD |= B11111100;      // enable pullups on pins 2 to 7, leave pins 0 and 1 alone
-    PORTB |= B11111111;      // enable pullups on pins 8 to 13
-    pinMode(13,OUTPUT);      // set pin 13 as an output so we can use LED to monitor
+    //disable sleep bit:
+    sleep_disable();
+    pinMode(DONE, OUTPUT);
+    digitalWrite(DONE, LOW);
+    NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
   #endif
   
   Serial.begin(9600);
@@ -62,6 +68,31 @@ void setup() {
     while (1);
   }
 }
+
+//battery testing function
+const long InternalReferenceVoltage = 1062;  // Adjust this value to your board's specific internal BG voltage
+ 
+// Code courtesy of "Coding Badly" and "Retrolefty" from the Arduino forum
+// results are Vcc * 100
+// So for example, 5V would be 500.
+int getBandgap () 
+  {
+  // REFS0 : Selects AVcc external reference
+  // MUX3 MUX2 MUX1 : Selects 1.1V (VBG)  
+   ADMUX = bit (REFS0) | bit (MUX3) | bit (MUX2) | bit (MUX1);
+   ADCSRA |= bit( ADSC );  // start conversion
+   while (ADCSRA & bit (ADSC))
+     { }  // wait for conversion to complete
+   int results = (((InternalReferenceVoltage * 1024) / ADC) + 5) / 10; 
+   return results;
+  }
+
+void wake (){
+  // cancel sleep as a precaution
+  sleep_disable();
+  // precautionary while we do other stuff
+  detachInterrupt (0);
+}  // end of wake
 
 void loop() {
   #ifdef debug
@@ -82,6 +113,25 @@ void loop() {
   #endif
 
   #ifdef sensor
+    //Send successful wake pulse to external watchdog
+    if (done_timer == 0){
+      digitalWrite(DONE, HIGH);
+      done_timer = millis();
+    }
+    if ((millis() - done_timer) > DONE_TIME){
+      digitalWrite(DONE, LOW);
+    }
+
+    //send battery stats
+    voltage = getBandgap ();
+    LoRa.beginPacket();
+    //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
+    LoRa.print("NodeID");
+    LoRa.print(";1;1;1;38;");
+    LoRa.print(voltage);
+    LoRa.endPacket();       
+    
+    //send distance to water
     distance = sonar.ping_cm();
     LoRa.beginPacket();
     //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
@@ -96,32 +146,43 @@ void loop() {
     //}else{
     delay(10000); //10s between measurements for testing
     //}
+    
   #endif
 }
 
 
-//void sleepNow(){
-//  // Set pin 2 as interrupt and attach handler:
-//  attachInterrupt(0, pinInterrupt, LOW); //TPL5010 sends high pulse to transistor wich sinks pin 2 to ground tiggering interrupt
-//  delay(100);
-//  //sleep lora radio
-//  LoRa.sleep();
-//  // Choose our preferred sleep mode:
-//  set_sleep_mode(SLEEP_MODE_PWR_DOWN};
-//
-//  // Set sleep enable (SE) bit:
-//  sleep_enable();
-//
-//  // Put the device to sleep:
-//  sleep_mode();
-//
-//  // Upon waking up, sketch continues from this point.
-//  sleep_disable();
-//  //wake radio
-//  LoRa.idle();
-//}
-//
-////Handler for wake inturrupt detaches interrupt
-//void pinInterrupt(void){
-//  detachInterrupt(0);
-//}
+void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
+
+  //sleep lora radio
+  LoRa.sleep();
+  
+  // Choose our preferred sleep mode:
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  
+  // disable ADC
+  ADCSRA = 0;
+  
+  //power_all_disable();//disables power to all modules careful here as not sure how to wake up
+  // Set sleep enable (SE) bit:
+  sleep_enable();
+  
+  // Do not interrupt before we go to sleep, or the
+  // ISR will detach interrupts and we won't wake.
+  noInterrupts ();           // timed sequence follows
+  
+  // will be called when pin D2 goes high  
+  attachInterrupt (0, wake, RISING);
+  EIFR = bit (INTF0);  // clear flag for interrupt 0
+
+  //to turn of BOD in hardware (fuses) use "avrdude <programmer> <chip> -U efuse:w:0xFE:m" see http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega32u4&LOW=62&HIGH=D9&EXTENDED=FF&LOCKBIT=FF
+  // turn off brown-out enable in software
+  MCUCR = bit (BODS) | bit (BODSE);  // turn on brown-out enable select
+  MCUCR = bit (BODS);        // this must be done within 4 clock cycles of above
+  
+  interrupts ();             // guarantees next instruction executed
+  // We are guaranteed that the sleep_cpu call will be done
+  // as the processor executes the next instruction after
+  // interrupts are turned on.
+  interrupts ();  // one cycle
+  sleep_cpu ();   // one cycle
+}
