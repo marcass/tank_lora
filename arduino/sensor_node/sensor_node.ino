@@ -17,6 +17,8 @@
 //debug
 #define debug
 //#define sensor
+//#define sleeps
+#define nosleep
 
 int counter = 0;
 /*Assign node numbers
@@ -61,7 +63,7 @@ void setup() {
   #endif
   
   Serial.begin(9600);
-  while (!Serial);
+  //while (!Serial); //uncomment to require serial connection to work
 
   Serial.println("LoRa Sender");
   LoRa.setPins(1, 4, 7); //reset is pd4, adc8, dio0 is P(ort)E 6 or int6
@@ -96,6 +98,38 @@ void wake (){
   // precautionary while we do other stuff
   detachInterrupt (0);
 }  // end of wake
+
+void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
+
+  //sleep lora radio
+  LoRa.sleep();
+  
+  // Choose our preferred sleep mode:
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  
+  // disable ADC
+  ADCSRA = 0;
+  
+  //power_all_disable();//disables power to all modules careful here as not sure how to wake up
+  // Set sleep enable (SE) bit:
+  sleep_enable();
+  
+  // Do not interrupt before we go to sleep, or the
+  // ISR will detach interrupts and we won't wake.
+  noInterrupts ();           // timed sequence follows
+  
+  // will be called when pin D2 goes high  
+  attachInterrupt (0, wake, RISING);
+  EIFR = bit (INTF0);  // clear flag for interrupt 0
+
+  //to turn of BOD in hardware (fuses) use "avrdude <programmer> <chip> -U efuse:w:0xFE:m" see http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega32u4&LOW=62&HIGH=D9&EXTENDED=FF&LOCKBIT=FF
+  
+  // We are guaranteed that the sleep_cpu call will be done
+  // as the processor executes the next instruction after
+  // interrupts are turned on.
+  interrupts ();  // one cycle
+  sleep_cpu ();   // one cycle
+}
 
 void loop() {
   #ifdef debug
@@ -155,43 +189,19 @@ void loop() {
     //}else{
     delay(10000); //10s between measurements for testing
     //}
+    #ifdef sleeps
+      //go to sleep when done
+      //first check to see if we want to sleep (for testing/debugging purposes)
+      if(digital.read(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
+        sleepNow();
+      }
+    #endif
     
+    #ifdef nosleep
+      delay(10000);
+    #endif 
   #endif
 }
 
 
-void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
 
-  //sleep lora radio
-  LoRa.sleep();
-  
-  // Choose our preferred sleep mode:
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  
-  // disable ADC
-  ADCSRA = 0;
-  
-  //power_all_disable();//disables power to all modules careful here as not sure how to wake up
-  // Set sleep enable (SE) bit:
-  sleep_enable();
-  
-  // Do not interrupt before we go to sleep, or the
-  // ISR will detach interrupts and we won't wake.
-  noInterrupts ();           // timed sequence follows
-  
-  // will be called when pin D2 goes high  
-  attachInterrupt (0, wake, RISING);
-  EIFR = bit (INTF0);  // clear flag for interrupt 0
-
-  //to turn of BOD in hardware (fuses) use "avrdude <programmer> <chip> -U efuse:w:0xFE:m" see http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega32u4&LOW=62&HIGH=D9&EXTENDED=FF&LOCKBIT=FF
-  // turn off brown-out enable in software
-  MCUCR = bit (BODS) | bit (BODSE);  // turn on brown-out enable select
-  MCUCR = bit (BODS);        // this must be done within 4 clock cycles of above
-  
-  interrupts ();             // guarantees next instruction executed
-  // We are guaranteed that the sleep_cpu call will be done
-  // as the processor executes the next instruction after
-  // interrupts are turned on.
-  interrupts ();  // one cycle
-  sleep_cpu ();   // one cycle
-}

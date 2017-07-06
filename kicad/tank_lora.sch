@@ -460,4 +460,6 @@ Wire Wire Line
 	7650 2250 7650 2000
 Wire Wire Line
 	7650 1500 7650 1250
+Text Notes 5100 3650 0    60   ~ 0
+Use a 2N7000 mosfet here?
 $EndSCHEMATC

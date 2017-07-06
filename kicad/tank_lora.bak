@@ -95,17 +95,6 @@ F 3 "" H 8150 3000 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Jumper_NO_Small JP?
-U 1 1 594784A0
-P 7650 1600
-F 0 "JP?" H 7650 1680 50  0000 C CNN
-F 1 "Jumper_NO_Small" H 7660 1540 50  0001 C CNN
-F 2 "" H 7650 1600 50  0000 C CNN
-F 3 "" H 7650 1600 50  0000 C CNN
-	1    7650 1600
-	0    1    1    0   
-$EndComp
-$Comp
 L R R2
 U 1 1 5948516D
 P 8150 1800
@@ -300,8 +289,6 @@ Wire Wire Line
 Wire Wire Line
 	7400 2250 7650 2250
 Wire Wire Line
-	7650 2250 7650 1700
-Wire Wire Line
 	7400 2550 8150 2550
 Wire Wire Line
 	8150 2550 8150 2700
@@ -312,8 +299,6 @@ Wire Wire Line
 Connection ~ 8150 2350
 Wire Wire Line
 	8150 1250 8150 1650
-Wire Wire Line
-	7650 1500 7650 1250
 Wire Wire Line
 	5250 1550 5250 1250
 Wire Wire Line
@@ -460,4 +445,19 @@ F 3 "" H 1550 4700 50  0000 C CNN
 $EndComp
 Wire Wire Line
 	1550 4600 1550 4700
+$Comp
+L Jumper_NC_Dual JP?
+U 1 1 595B6858
+P 7650 1750
+F 0 "JP?" H 7700 1650 50  0000 L CNN
+F 1 "Jumper_NC_Dual" H 7650 1850 50  0000 C BNN
+F 2 "" H 7650 1750 50  0000 C CNN
+F 3 "" H 7650 1750 50  0000 C CNN
+	1    7650 1750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7650 2250 7650 2000
+Wire Wire Line
+	7650 1500 7650 1250
 $EndSCHEMATC
