@@ -32,6 +32,7 @@ int sensor_node = 1;
 //wake pin on D2 (interrupt 0)
 const int DONE = 11;
 unsigned long done_timer = 0;
+bool intitialisePins;
 
 //ultrasonic setup
 #define TRIGGER_PIN  11  // Arduino pin tied to trigger pin on the ultrasonic sensor.
@@ -97,6 +98,8 @@ void wake (){
   sleep_disable();
   // precautionary while we do other stuff
   detachInterrupt (0);
+  //set wake flag to process pins
+  intitialisePins = true;
 }  // end of wake
 
 void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
@@ -113,6 +116,9 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
   //power_all_disable();//disables power to all modules careful here as not sure how to wake up
   // Set sleep enable (SE) bit:
   sleep_enable();
+
+  //set pins for low power
+  
   
   // Do not interrupt before we go to sleep, or the
   // ISR will detach interrupts and we won't wake.
@@ -148,6 +154,10 @@ void loop() {
   
     delay(5000);
   #endif
+
+  if(intitialisePins) {
+    
+  }
 
   #ifdef sensor
     //Send successful wake pulse to external watchdog
