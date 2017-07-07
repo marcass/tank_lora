@@ -24,6 +24,10 @@ Solar charger like https://learn.adafruit.com/usb-dc-and-solar-lipoly-charger/us
 
 Uses https://www.diodes.com/assets/Datasheets/AP2112.pdf as DC-DC converter and will accept 2.5-6.5V so can manage load from solar panel
 
+#### Battery protection
+Low voltage protection provided by https://electronics.stackexchange.com/questions/148586/to-protect-a-lipo-cell-from-undervoltage-how-low-current-is-low-enough (top of page circuit)
+
+Overvoltage protection provided by solar charger like adafruuit solar charger
 
 ### Parts
 * Lora radios with ATMega32u4 https://www.aliexpress.com/item/5PCS-lot-LoRa32u4-RA-02-433M-Lora-Wireless-WIFI-Module-Long-Range-communication-1KM-LiPo-Atmega328/32812205344.html?spm=2114.13010608.0.0.r6qCKR
