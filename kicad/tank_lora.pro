@@ -1,4 +1,4 @@
-update=Tue 04 Jul 2017 21:23:57 NZST
+update=Sat 08 Jul 2017 09:29:28 NZST
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,5 @@ LibName29=valves
 LibName30=LoRa32u4
 LibName31=JSN-SR40T
 LibName32=Boost_mod
+LibName33=MCP112-300
+LibName34=FDC6331L
