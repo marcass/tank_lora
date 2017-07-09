@@ -33,6 +33,8 @@ int sensor_node = 1;
 const int DONE = 11;
 unsigned long done_timer = 0;
 bool intitialisePins;
+float voltage;
+int V_measurePin = 0;
 
 //ultrasonic setup
 #define TRIGGER_PIN  11  // Arduino pin tied to trigger pin on the ultrasonic sensor.
@@ -49,7 +51,6 @@ int distance;
 const int SLEEP_PIN = 1;
 //power pin for u/s module (can't power directly as 10mA limit and need 30mA, so using transistor)
 const int POWER = 6;
-int voltage;
 
 void setup() {
   #ifdef sensor
@@ -73,25 +74,26 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  //.setup analog ref for battery testing
+  analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
+  //initialise measurement pin
+  pinMode(V_measurePin, OUTPUT);
+  digitalWrite(V_measurePin, HIGH);
 }
 
 //battery testing function
-const long InternalReferenceVoltage = 1062;  // Adjust this value to your board's specific internal BG voltage
- 
-// Code courtesy of "Coding Badly" and "Retrolefty" from the Arduino forum
-// results are Vcc * 100
-// So for example, 5V would be 500.
-int getBandgap () 
-  {
-  // REFS0 : Selects AVcc external reference
-  // MUX3 MUX2 MUX1 : Selects 1.1V (VBG)  
-   ADMUX = bit (REFS0) | bit (MUX3) | bit (MUX2) | bit (MUX1);
-   ADCSRA |= bit( ADSC );  // start conversion
-   while (ADCSRA & bit (ADSC))
-     { }  // wait for conversion to complete
-   int results = (((InternalReferenceVoltage * 1024) / ADC) + 5) / 10; 
-   return results;
-  }
+//A3 connected to voltage divider form battery, this is turned on by D0
+// see http://fettricks.blogspot.co.nz/2014/01/reducing-voltage-divider-load-to-extend.html
+//specified voltage divider (3.74kOhnm high side and 10k to drain) gives a 4.2V down converted to 1.14V)
+
+void batteryMeasure() {
+  digitalWrite(V_measurePin, LOW);//close mosfet to measure
+  delayMicroseconds(100); //wait for cap to discharge before reading
+  float val = analogRead(3); //measure analog val for conversion
+  digitalWrite(V_measurePin, HIGH);//open mosfet to conserve power
+  //convert. Returns actual voltage, ie 3.768 = 3.768V
+  voltage = (val / 1024) / 1024 * 4.2;
+}
 
 void wake (){
   // cancel sleep as a precaution
