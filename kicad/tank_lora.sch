@@ -81,7 +81,7 @@ U 1 1 59477B2B
 P 8150 2850
 F 0 "R1" V 8230 2850 50  0000 C CNN
 F 1 "124.91" V 8150 2850 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8080 2850 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8080 2850 50  0001 C CNN
 F 3 "" H 8150 2850 50  0000 C CNN
 	1    8150 2850
 	1    0    0    -1  
@@ -103,7 +103,7 @@ U 1 1 5948516D
 P 8150 1800
 F 0 "R2" V 8230 1800 50  0000 C CNN
 F 1 "100k" V 8150 1800 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8080 1800 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8080 1800 50  0001 C CNN
 F 3 "" H 8150 1800 50  0000 C CNN
 	1    8150 1800
 	1    0    0    -1  
@@ -164,7 +164,7 @@ U 1 1 59489CBB
 P 3250 1200
 F 0 "P3" H 3250 1350 50  0000 C CNN
 F 1 "CONN_01X02" V 3350 1200 50  0000 C CNN
-F 2 "Connectors_Phoenix:PhoenixContact_MC-GF_02x5.08mm_Angled_ThreadedFlange" H 3250 1200 50  0001 C CNN
+F 2 "Connectors_Phoenix:PhoenixContact_MCV-G_02x5.08mm_Vertical" H 3250 1200 50  0001 C CNN
 F 3 "" H 3250 1200 50  0000 C CNN
 	1    3250 1200
 	-1   0    0    1   
@@ -175,7 +175,7 @@ U 1 1 59489D86
 P 4500 1900
 F 0 "P2" H 4500 2050 50  0000 C CNN
 F 1 "CONN_01X02" V 4600 1900 50  0000 C CNN
-F 2 "Connectors_Phoenix:PhoenixContact_MC-GF_02x5.08mm_Angled_ThreadedFlange" H 4500 1900 50  0001 C CNN
+F 2 "Connectors_Phoenix:PhoenixContact_MCV-G_02x5.08mm_Vertical" H 4500 1900 50  0001 C CNN
 F 3 "" H 4500 1900 50  0000 C CNN
 	1    4500 1900
 	-1   0    0    1   
@@ -379,7 +379,7 @@ U 1 1 595DBB24
 P 4700 4750
 F 0 "R4" V 4780 4750 50  0000 C CNN
 F 1 "100k" V 4700 4750 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 4630 4750 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 4630 4750 50  0001 C CNN
 F 3 "" H 4700 4750 50  0000 C CNN
 	1    4700 4750
 	1    0    0    -1  
@@ -429,7 +429,7 @@ U 1 1 59605E4D
 P 5400 5900
 F 0 "R3" V 5480 5900 50  0000 C CNN
 F 1 "100k" V 5400 5900 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 5330 5900 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 5330 5900 50  0001 C CNN
 F 3 "" H 5400 5900 50  0000 C CNN
 	1    5400 5900
 	1    0    0    -1  
@@ -613,15 +613,15 @@ F 3 "" H 9600 3850 50  0000 C CNN
 $EndComp
 Text GLabel 2000 3600 0    60   Input ~ 0
 A1
-Text GLabel 10100 3750 0    60   Input ~ 0
+Text GLabel 10100 3450 0    60   Input ~ 0
 A1
-Text GLabel 10100 3650 0    60   Input ~ 0
+Text GLabel 10100 3350 0    60   Input ~ 0
 A2
 Text GLabel 2000 3700 0    60   Input ~ 0
 A2
-Text GLabel 10100 3450 0    60   Input ~ 0
+Text GLabel 10100 3750 0    60   Input ~ 0
 D3
-Text GLabel 10100 3350 0    60   Input ~ 0
+Text GLabel 10100 3650 0    60   Input ~ 0
 D5
 Text GLabel 3700 4400 2    60   Input ~ 0
 D5
@@ -645,7 +645,7 @@ U 1 1 59617861
 P 9100 5350
 F 0 "R6" V 9180 5350 50  0000 C CNN
 F 1 "10k" V 9100 5350 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9030 5350 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9030 5350 50  0001 C CNN
 F 3 "" H 9100 5350 50  0000 C CNN
 	1    9100 5350
 	0    1    1    0   
@@ -656,7 +656,7 @@ U 1 1 596178D4
 P 8950 5750
 F 0 "R7" V 9030 5750 50  0000 C CNN
 F 1 "3.74k" V 8950 5750 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8880 5750 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8880 5750 50  0001 C CNN
 F 3 "" H 8950 5750 50  0000 C CNN
 	1    8950 5750
 	1    0    0    -1  
@@ -682,7 +682,7 @@ U 1 1 59617F72
 P 9450 4600
 F 0 "R5" H 9530 4600 50  0000 C CNN
 F 1 "10k" V 9450 4600 50  0000 C CNN
-F 2 "Resistors_Universal:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9380 4600 50  0001 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9380 4600 50  0001 C CNN
 F 3 "" H 9450 4600 50  0000 C CNN
 	1    9450 4600
 	0    1    1    0   
