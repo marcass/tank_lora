@@ -1,9 +1,39 @@
-import serial
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 broker = 'localhost'
+
+class tanks:
+    name = ""
+    topic = ""
+    diam = ""
+    max_dist = ""
+    invalid_min = ""
+    max_dist = ""
+    invalid_max = max_dist + 20
+    def volume(self):
+        #litres (measurements in cm)
+        vol_calc = (diam / 2 * 3.14 * max_dist)/1000
+        actual_vol = (vol_calc - (diam / 2 * 3.14 * msg.payload/1000))
+        return actual_vol
+
+noel = tanks()
+noel.name = "noel"
+noel.topic = "tank/noels"
+noel.diam = "2000"
+noel.max_dist = 
+
+sal = "tank/sals"
+top = "tank/top"
+
+#tank limits
+noel_low = "90"
+sal_low = "65"
+top_low = "190"
+
+#sensible value range for tanks
+
 
 # The callback for when the client receives a CONNACK response from the server.
 # http://www.steves-internet-guide.com/subscribing-topics-mqtt-client/
@@ -11,15 +41,15 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe([("tank/noels",0),("tank/sals", 0),("tank/top", 0)])
+    client.subscribe([(noel,1),(sal, 1),(top, 1)])
 
 # The callback for when a PUBLISH message is received from the server.
-#def on_message(client, userdata, msg):
-#    print(msg.topic+' '+str(msg.payload))
-#    allowed_passthrough_msg = ['Turn Off Boiler', 'Turn On Boiler', 'Increase SetPoint', 'Decrease SetPoint']
-#    if str(msg.payload) in allowed_passthrough_msg:
-#	port.write('\r\n'+str(msg.payload)+'\r')
-#        print 'Sent ' + msg.payload + ' to serial port.'
+def on_message(client, userdata, msg):
+    print(msg.topic+' '+str(msg.payload))
+    #allowed_passthrough_msg = ['Turn Off Boiler', 'Turn On Boiler', 'Increase SetPoint', 'Decrease SetPoint']
+    if str(msg.payload) in allowed_passthrough_msg:
+	port.write('\r\n'+str(msg.payload)+'\r')
+        print 'Sent ' + msg.payload + ' to serial port.'
 
 #parse mesesages from subscriptions and do somthing with them
 
