@@ -1,6 +1,7 @@
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import threading
 
 broker = 'localhost'
 
@@ -11,18 +12,46 @@ class tanks:
     max_dist = ""
     invalid_min = ""
     max_dist = ""
-    invalid_max = max_dist + 20
+    invalid_max = (max_dist + 20)
+    min_vol = ""
     def volume(self):
         #litres (measurements in cm)
         vol_calc = (diam / 2 * 3.14 * max_dist)/1000
         actual_vol = (vol_calc - (diam / 2 * 3.14 * msg.payload/1000))
+        t = threading.Timer(600.0, sendAlert, [self])
+        if actual_vol < min_vol:
+            t.start() #don't send too many emails! consider making sure it only gets done once somehow?
+        else:
+            t.cancel()
         return actual_vol
+    
+n = tanks()
+n.name = "noels"
+n.topic = "tank/noels"
+n.diam = "200"
+n.max_dist = "100"
+n.invalid_min = "30"
+n.min_vol = "150"
 
-noel = tanks()
-noel.name = "noel"
-noel.topic = "tank/noels"
-noel.diam = "2000"
-noel.max_dist = 
+t = tanks()
+t.name = "top"
+t.topic = "tank/top"
+t.diam = "250"
+t.max_dist = "214"
+t.invalid_min = "40"
+t.min_vol = "200"
+
+s = tanks()
+s.name = "sals"
+s.topic = "tank/sals"
+s.diam = "170"
+s.max_dist = "73"
+s.invalid_min = "30"
+s.min_vol = "150"
+
+
+top 44, 214
+sal 30, 73
 
 sal = "tank/sals"
 top = "tank/top"
