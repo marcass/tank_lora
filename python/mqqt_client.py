@@ -67,6 +67,13 @@ def on_disconnect(client, userdata, rc):
 
 # The callback for when a PUBLISH message is received from the local broker.
 def on_message(client, userdata, msg):
+    ######### Just use fucking JSON string to update via api:
+    #https://au.mathworks.com/help/thingspeak/update-channel-feed.html mqtt is too hard (their api is too restrictive)
+
+
+
+
+
     #thingspeak network config - connect when mesage incoming on subscribed topics
     tsc = mqtt.Client()
     tsc.connect(ts.url, ts.port, 10)
