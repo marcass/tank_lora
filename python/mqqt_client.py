@@ -4,11 +4,57 @@ import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import threading
+import serial
+import smtplib
+import requests
+
+#mqtt
+broker = "localhost" 
+auth = {'username':"tank", 'password':"level"}
+#thingspeak
+channelID = ""
+APIKey = "" #channel api key
+thingURL = "https://api.thingspeak.com/update"
+
+
+#format mqtt message
+def pub_msg():
+    pub_thing()
+    if in_node == t.nodeID:
+        publish.single(t.topic, in_sens, auth=auth, hostname=broker, retain=True)        
+    if in_node == n.nodeID:
+        publish.single(n.topic, in_sens, auth=auth, hostname=broker, retain=True)       
+    if in_node == s.nodeID:
+        publish.single(s.topic, in_sens, auth=auth, hostname=broker, retain=True)
+    #publish to thingspeak
+    r = requests.post(thingURL, data = {'api_key':APIKey, 'field' +in_node:in_sens}
+    print('Published' +in_sens +' for nodeID ' +in_node)
+
+#function for reading from serial
+# Harvest data from port
+def readlineCR(port):
+        rv = ""
+        while True:
+            ch = port.read()
+            rv += ch
+            if ch=='\r':# or ch=='':
+                if 'PYTHON' in rv:
+                    print rv
+                    rec_split = rv.split(';')
+                    in_node = rec_split[-2]
+                    in_sens = rec_split[-1]
+                    pub_msg()
+            return rv
+
+
+port = serial.Serial("/dev/arduino", baudrate=9600, timeout=3.0)
+#port = serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=3.0)
 
 
 class tanks:
-    def __init__(self, name, topic, diam, max_dist, invalid_min, min_vol, field):
+    def __init__(self, name, nodeID, topic, diam, max_dist, invalid_min, min_vol, field):
         self.name = name
+        self.nodeID = nodeID
         self.topic = topic
         self.diam = diam
         self.max_dist = max_dist
@@ -30,73 +76,11 @@ class tanks:
         #    t.cancel()
         return actual_vol
     
-n = tanks("noels", "tank/noels", "200", "100", "30", "150"), "field2")
-t = tanks("top", "tank/top", "250", "214", "40", "200", "field1")
-s = tanks("sals", "tank/sals", "170", "73", "30", "150", "field3")
-x = tanks("test", "tank/test", "170", "73", "30", "150")
+n = tanks("noels", "2", "tank/noels", "200", "100", "30", "150", "field2")
+t = tanks("top", "1", "tank/top", "250", "214", "40", "200", "field1")
+s = tanks("sals", "3", "tank/sals", "170", "73", "30", "150", "field3")
+x = tanks("test", "4", "tank/test", "170", "73", "30", "150")
 
-
-class mqtt_broker:
-    def __init__(self, url, port, qos, username=0, password=0)
-    self.url = url
-    self.port = port
-    self.qos = qos 
-    self.uername = username
-    self.passwork = password
-
-ts = mqtt_broker("mqtt.thingspeak.com", "8883", "0")
-ts.channelID = "<put channel id in here>"
-ts.APIkey = "<put API key in here"
-loc = mqtt_broker("localhost", "1883", "0", "esp", "heating")
-
-
-# The callback for when the client receives a CONNACK response from the server.
-# http://www.steves-internet-guide.com/subscribing-topics-mqtt-client/
-def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    client.subscribe([(n.topic, loc.qos),(s.topic, loc.qos),(t.topic, loc.qos)])
-
-def on_publish(client,userdata,result):             #create function for callback
-    print("data published \n")
-    pass
-
-def on_disconnect(client, userdata, rc):
-   print("client disconnected ok")
-
-# The callback for when a PUBLISH message is received from the local broker.
-def on_message(client, userdata, msg):
-    ######### Just use fucking JSON string to update via api:
-    #https://au.mathworks.com/help/thingspeak/update-channel-feed.html mqtt is too hard (their api is too restrictive)
-
-
-
-
-
-    #thingspeak network config - connect when mesage incoming on subscribed topics
-    tsc = mqtt.Client()
-    tsc.connect(ts.url, ts.port, 10)
-    tsc.on_connect = ts_on_connect
-    tsc.on_message = ts_on_message
-    tsc.on_publish = on_publish
-    tsc.on_disconnect = on_disconnect
-    print(msg.topic+' '+str(msg.payload))
-    #filter incoming messages by topic and parse payload accordingly
-    if msg.topic == n.topic:
-        n.dist = int(msg.payload)
-        print('channels/' +str(ts.channelID) +'/publish/fields/' +str(n.field) +'/' +str(ts.APIkey), int(n.volume))
-        #syntax is <obj>.publish(topic, data)
-        #tipic string syntax stolen from here: https://au.mathworks.com/help/thingspeak/use-arduino-client-to-publish-to-a-channel.html
-        pub = tsc.publish('channels/' +str(ts.channelID) +'/publish/fields/' +str(n.field) +'/' +str(ts.APIkey), int(n.volume))
-    if msg.topic == s.topic:
-        s.dist = int(msg.payload)
-        pub = tsc.publish('channels/' +str(ts.channelID) +'/publish/fields/' +str(s.field) +'/' +str(ts.APIkey), int(s.volume))
-    if msg.topic == t.topic:
-        t.dist = int(msg.payload)
-        pub = tsc.publish('channels/' +str(ts.channelID) +'/publish/fields/' +str(t.field) +'/' +str(ts.APIkey), int(t.volume))
-    #disconnect to thing speak after sending message (qos is zero according to their terms)
-    ts.disconnect()
 
 #################### Email #####################################
 # http://stackabuse.com/how-to-send-emails-with-gmail-using-python/
@@ -133,5 +117,7 @@ if __name__ == "__main__":
     # Other loop*() functions are available that give a threaded interface and a
     # manual interface.
     # client.loop_forever()
+    client.loop_start()
     while True:
-      client.loop_start()
+        rcv = readlineCR(port)
+        #print rcv

@@ -17,6 +17,8 @@
 //debug
 #define debug
 //#define sensor
+//#define mycontroller
+//#define python
 //#define sleeps
 #define nosleep
 
@@ -189,10 +191,18 @@ void loop() {
     digitalWrite(POWER, LOW);
     //send packet
     LoRa.beginPacket();
-    //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
-    LoRa.print("NodeID");
-    LoRa.print(";1;1;1;13;");
-    LoRa.print(distance);
+    #ifdef mycontoller
+      //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
+      LoRa.print(NodeID);
+      LoRa.print(";1;1;1;13;");
+      LoRa.print(distance);
+    #endif
+    #ifdef python
+      LoRa.print("PYTHON:");//tag for serial listner
+      LoRa.print(NodeID);
+      LoRa.print(";");
+      LoRa.print(distance);
+    #endif
     LoRa.endPacket();
     //go to sleep when done
     //first check to see if we want to sleep (for testing/debugging purposes)
