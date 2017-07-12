@@ -40,11 +40,11 @@ def readlineCR(port):
             ch = port.read()
             rv += ch
             if ch=='\r':# or ch=='':
-                if 'PYTHON' in rv:
+                if 'PYTHON' in rv:              #arduino formats message as PYTHON;<nodeID>;<distance>\r\n
                     print rv
-                    rec_split = rv.split(';')
-                    in_node = rec_split[-2]
-                    dist = rec_split[-1]
+                    rec_split = rv.split(';')   #make array like [PYTHON, nodeID, distance]
+                    in_node = rec_split[-2]     #second last member of array
+                    dist = rec_split[-1]        #last member of array
                     pub_msg()
             return rv
 
