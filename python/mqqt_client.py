@@ -21,11 +21,13 @@ thingURL = "https://api.thingspeak.com/update"
 def pub_msg():
     pub_thing()
     if in_node == t.nodeID:
-        publish.single(t.topic, in_sens, auth=auth, hostname=broker, retain=True)        
+        publish.single(t.topic, t.volume(), auth=auth, hostname=broker, retain=True)        
     if in_node == n.nodeID:
-        publish.single(n.topic, in_sens, auth=auth, hostname=broker, retain=True)       
+        publish.single(n.topic, n.volume(), auth=auth, hostname=broker, retain=True)       
     if in_node == s.nodeID:
-        publish.single(s.topic, in_sens, auth=auth, hostname=broker, retain=True)
+        publish.single(s.topic, s.volume(), auth=auth, hostname=broker, retain=True)
+    if in_node == x.nodeID:
+        publish.single(x.topic, dist, auth=auth, hostname=broker, retain=True)
     #publish to thingspeak
     r = requests.post(thingURL, data = {'api_key':APIKey, 'field' +in_node:in_sens}
     print('Published' +in_sens +' for nodeID ' +in_node)
@@ -42,7 +44,7 @@ def readlineCR(port):
                     print rv
                     rec_split = rv.split(';')
                     in_node = rec_split[-2]
-                    in_sens = rec_split[-1]
+                    dist = rec_split[-1]
                     pub_msg()
             return rv
 
@@ -58,15 +60,14 @@ class tanks:
         self.topic = topic
         self.diam = diam
         self.max_dist = max_dist
-        self.invalid_min = invalid.min
+        self.invalid_min = invalid_min
         self.max_dist = max_dist
-        #invalid_max = (max_dist + 20)
         self.min_vol = min_vol
         self.field = field
-    def volume():
+    def volume(self):
         #litres (measurements in cm)
-        vol_calc = (diam / 2 * 3.14 * max_dist)/1000
-        actual_vol = (vol_calc - (diam / 2 * 3.14 * dist/1000))
+        vol_calc = (self.diam / 2) ** 2 * 3.14 * self.max_dist/1000
+        actual_vol = (vol_calc - ((self.diam / 2) ** 2 * 3.14 * dist/1000)) # dist variable set in serial port function
         #uncomment below to start spamming users inbox
         #t = threading.Timer(600.0, sendAlert, [self])
         #if actual_vol < min_vol:
@@ -76,10 +77,10 @@ class tanks:
         #    t.cancel()
         return actual_vol
     
-n = tanks("noels", "2", "tank/noels", "200", "100", "30", "150", "field2")
-t = tanks("top", "1", "tank/top", "250", "214", "40", "200", "field1")
-s = tanks("sals", "3", "tank/sals", "170", "73", "30", "150", "field3")
-x = tanks("test", "4", "tank/test", "170", "73", "30", "150")
+n = tanks("noels", "2", "tank/noels", 200, 100, 30, 150, "field2")
+t = tanks("top", "1", "tank/top", 250, 214, 40, 200, "field1")
+s = tanks("sals", "3", "tank/sals", 170, 73, 30, 150, "field3")
+x = tanks("test", "4", "tank/test", 170, 73, 30, 150, "fiel4")
 
 
 #################### Email #####################################
