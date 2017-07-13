@@ -13,7 +13,7 @@ broker = "houseslave"
 auth = {'username':"esp", 'password':"heating"}
 #thingspeak
 channelID = ""
-APIKey = "4PUXHFXO6SW42LMU" #channel api key
+APIKey = "" #channel api key
 thingURL = "https://api.thingspeak.com/update"
 
 #format mqtt message
