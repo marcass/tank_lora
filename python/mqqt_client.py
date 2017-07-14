@@ -7,6 +7,7 @@ import threading
 import serial
 import smtplib
 import requests
+import Queue
 
 #mqtt
 broker = "houseslave" 
@@ -15,6 +16,7 @@ auth = {'username':"esp", 'password':"heating"}
 channelID = ""
 APIKey = "" #channel api key
 thingURL = "https://api.thingspeak.com/update"
+q = Queue.Queue()
 
 #format mqtt message
 def pub_msg(tank,dist):
@@ -37,11 +39,12 @@ def readlineCR(port):
                 print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, distance]
                 print rec_split
-                in_node = rec_split[1]     #second last member of array
-                print in_node
-                dist = int(rec_split[2])        #last member of array
-                print dist
-                pub_msg(tank_dict[in_node],dist)
+                q.put(rec_split)           #put data in queue for processing at rate limited to every 15s er thingspeak api rules
+                #in_node = rec_split[1]     #second last member of array
+                #print in_node
+                #dist = int(rec_split[2])        #last member of array
+                #print dist
+                #pub_msg(tank_dict[in_node],dist)
                 rv = ''
     return rv
 
@@ -121,3 +124,11 @@ if __name__ == "__main__":
     while True:
         rcv = readlineCR(port)
         #print rcv
+    while not q.empty() #https://stackoverflow.com/questions/4415672/python-theading-timer-how-to-pass-argument-to-the-callback
+        t = Timer(20.0, pub_msg, q.put())  # Timer takes array
+        t.start()
+        in_node = rec_split[1]     #second last member of array
+        print in_node
+        dist = int(rec_split[2])        #last member of array
+        print dist
+        pub_msg(tank_dict[in_node],dist)
