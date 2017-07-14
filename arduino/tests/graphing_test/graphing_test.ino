@@ -1,4 +1,5 @@
 long randNumber;
+float volts;
 
 void setup(){
   Serial.begin(9600);
@@ -16,16 +17,24 @@ void send_data(){
     randNumber = random(30, 70); // fake distances in cm
     Serial.print("PYTHON;");
     Serial.print(x);
-    Serial.print(";");
+    Serial.print(";1;"); //marker for water level
     Serial.print(randNumber);
     Serial.print(";");
     Serial.println("");
+    volts = (random(290, 420)/100)
+    Serial.print("PYTHON;");
+    Serial.print(x);
+    Serial.print(";0;"); //marker for battery status
+    Serial.print(volts);
+    Serial.print(";");
+    Serial.println("");    
 
-    delay(20000);
+    delay(10);
   }
 }
 
 void loop() { 
   send_data();
+  delay(130000);//delay for just over 2min for sending 8 sets of data
   
 }

@@ -7,6 +7,7 @@ import threading
 import serial
 import smtplib
 import requests
+import Queue
 
 #mqtt
 broker = "houseslave" 
@@ -15,6 +16,7 @@ auth = {'username':"esp", 'password':"heating"}
 channelID = ""
 APIKey = "" #channel api key
 thingURL = "https://api.thingspeak.com/update"
+q = Queue.Queue()
 
 #format mqtt message
 def pub_msg(tank,dist):
@@ -37,9 +39,10 @@ def readlineCR(port):
                 print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, distance]
                 print rec_split
+                q.put(rec_split)           #put data in queue for processing at rate limited to every 15s er thingspeak api rules
                 in_node = rec_split[1]     #second last member of array
                 print in_node
-                dist = int(rec_split[2])        #last member of array
+                dist = int(rec_split[3])        #last member of array
                 print dist
                 pub_msg(tank_dict[in_node],dist)
                 rv = ''
@@ -106,18 +109,18 @@ def sendAlert(msg):
 
 if __name__ == "__main__":
     #local broker connection
-    client = mqtt.Client()
-    client.username_pw_set(username='esp', password='heating')
+    #client = mqtt.Client()
+    #client.username_pw_set(username='esp', password='heating')
     #client.on_connect = on_connect
     #client.on_message = on_message
-    client.connect(broker, 1883, 60)
+    #client.connect(broker, 1883, 60)
 
     # Blocking call that processes network traffic, dispatches callbacks and
     # handles reconnecting.
     # Other loop*() functions are available that give a threaded interface and a
     # manual interface.
     # client.loop_forever()
-    client.loop_start()
+    #client.loop_start()
     while True:
         rcv = readlineCR(port)
         #print rcv
