@@ -19,22 +19,19 @@ void send_data(){
     Serial.print(x);
     Serial.print(";1;"); //marker for water level
     Serial.print(randNumber);
-    Serial.print(";");
-    Serial.println("");
-    volts = (random(290, 420)/100)
+    Serial.println(";");
+    volts = (random(290, 420)/100);
     Serial.print("PYTHON;");
     Serial.print(x);
     Serial.print(";0;"); //marker for battery status
     Serial.print(volts);
-    Serial.print(";");
-    Serial.println("");    
-
+    Serial.println(";");
     delay(10);
   }
 }
 
 void loop() { 
   send_data();
-  delay(130000);//delay for just over 2min for sending 8 sets of data
+  delay(5000);//delay for just over 2min for sending 8 sets of data
   
 }
