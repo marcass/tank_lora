@@ -6,13 +6,14 @@ import paho.mqtt.publish as publish
 import serial
 import smtplib
 import requests
+import creds
 
 #mqtt
-broker = "houseslave" 
-auth = {'username':"esp", 'password':"heating"}
+broker = creds.broker
+auth = creds.mosq_auth
 #thingspeak
-water_APIKey = "" #channel api key
-batt_APIKey = ""
+water_APIKey = creds.water_APIKey #channel api key
+batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
 
 def generate_fake_data():
