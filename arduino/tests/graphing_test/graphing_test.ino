@@ -1,5 +1,7 @@
 long randNumber;
 float volts;
+unsigned long SEND_INT = 600000;
+unsigned long timer_start = 0;
 
 void setup(){
   Serial.begin(9600);
@@ -15,23 +17,21 @@ void send_data(){
   for(int x = 1; x < 5; x++) {
     // print a random number from 10 to 19
     randNumber = random(30, 70); // fake distances in cm
-    Serial.print("PYTHON;");
+    volts = ((float)random(290, 420)/100);
+    Serial.print("PY;");
     Serial.print(x);
-    Serial.print(";1;"); //marker for water level
+    Serial.print(";");
     Serial.print(randNumber);
-    Serial.println(";");
-    volts = (random(290, 420)/100);
-    Serial.print("PYTHON;");
-    Serial.print(x);
-    Serial.print(";0;"); //marker for battery status
+    Serial.print(";");
     Serial.print(volts);
     Serial.println(";");
-    delay(10);
   }
 }
 
 void loop() { 
-  send_data();
-  delay(5000);//delay for just over 2min for sending 8 sets of data
+  if (millis() - timer_start > SEND_INT) {
+      send_data();
+      timer_start = millis();
+  }
   
 }

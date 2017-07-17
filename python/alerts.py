@@ -70,6 +70,14 @@ def on_callback_query(msg):
         graph = bot.sendMessage(creds.marcus_ID, in_tank.name +' tank is low ' +in_tank.url, reply_markup=keyboard)
         bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
 
+
+#asc_msg = json.dumps(msg) #converts unicode to string
+    #mess = json.loads(asc_msg)["message"]["text" #fetches message, but now in unicode. ARGH]
+    #pprint(mess)
+    ##tank_in_chat_msg = mess.split(' ')[1:]
+    #in_tank_array = chat_msg.split(' ')[:1]  #gives unicoce tank, eg [u'sals']
+    #in_tank = tank_dict[in_tank_array[0]] # want instance here (first letter of tank) - not working
+
     
 
 TOKEN = creds.botAPIKey
