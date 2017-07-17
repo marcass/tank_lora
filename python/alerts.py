@@ -48,15 +48,25 @@ keyboard = InlineKeyboardMarkup(inline_keyboard=[[
 def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
 
+def convert_keys_to_string(dictionary):
+    """Recursively converts dictionary keys to strings."""
+    if not isinstance(dictionary, dict):
+        return dictionary
+    return dict((str(k), convert_keys_to_string(v)) 
+        for k, v in dictionary.items())
+
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     print('Callback Query:', query_id, from_id, query_data)
     print 'printing message now'
-    asc_msg = ast.literal_eval(json.dumps(msg))
+    pprint(msg)
+    #asc_msg = ast.literal_eval(json.dumps(msg))
+    asc_msg = convert_keys_to_string(msg)
+    print 'ascii msg'
     pprint(asc_msg)
     chat_msg = asc_msg['message']['text']
     print chat_msg
-    #tank_in_chat_msg = chat_msg.split(' ')[1:]
+    tank_in_chat_msg = chat_msg.split(' ')[1:]
     in_tank_array = chat_msg.split(' ')[:1]
     in_tank = tank_dict[in_tank_array[0]]
     print 'identified tank is ' +in_tank.name
@@ -67,7 +77,7 @@ def on_callback_query(msg):
         #timer.cancel()
         bot.answerCallbackQuery(query_id, text='Alert now reset')
     elif query_data == 'fetch graph':
-        graph = bot.sendMessage(creds.marcus_ID, in_tank.name +' tank is low ' +in_tank.url, reply_markup=keyboard)
+        graph = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low ' +in_tank.url, reply_markup=keyboard)
         bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
 
 
@@ -111,7 +121,7 @@ def on_message(client, userdata, msg):
         if tank.statusFlag == 'OK':
             tank.statusFlag = 'New alert'
             #timer.start()
-            send = bot.sendMessage(creds.marcus_ID, tank.name +' tank is low', reply_markup=keyboard)
+            send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=keyboard)
             #send = bot.sendMessage(creds.marcus_ID, tank.name +' tank is low') # send alert with button for canceling status
         elif tank.statusFlag == 'New alert':
             print 'ignoring low level'
