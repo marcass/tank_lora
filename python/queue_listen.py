@@ -9,7 +9,7 @@ import requests
 import creds
 
 #mqtt
-broker = creds.broker
+broker = creds.mqtt[broker]
 auth = creds.mosq_auth
 #thingspeak
 water_APIKey = creds.water_APIKey #channel api key
@@ -103,7 +103,7 @@ def pub_msg():
 #instatiate queue
 q = Q()
 
-port = serial.Serial("/dev/ttyACM0", baudrate=9600, timeout=3.0)
+port = serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=3.0)
 
 fetch_process = P(target=readlineCR, args=(port,))
 broadcast_process = P(target=pub_msg, args=())
