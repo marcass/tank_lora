@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 User=marcus
-ExecStart=/usr/bin/python /home/marcus/git/furnace_control/mqtt2rrd/mqtt2rrd.py start --no_daemon 
+ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/mqtt2rrd/mqtt2rrd.py start --no_daemon 
 #> /temp/mqtt2rrd.log 2>&1
 
 [Install]
