@@ -1,0 +1,10 @@
+[Unit]
+Description=Python serial port listener for incoming data
+ 
+[Service]
+Type=simple
+User=marcus
+ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/queue_listen.py
+
+[Install]
+WantedBy=multi-user.target

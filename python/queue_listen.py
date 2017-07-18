@@ -9,7 +9,7 @@ import requests
 import creds
 
 #mqtt
-broker = creds.mqtt[broker]
+broker = creds.mosq_auth['broker']
 auth = creds.mosq_auth
 #thingspeak
 water_APIKey = creds.water_APIKey #channel api key
