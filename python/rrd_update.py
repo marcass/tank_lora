@@ -22,9 +22,13 @@ x = Tanks("test",  "4")
 tank_dict = {}
 for tank in [t,n,s,x]:
     tank_dict[tank.name] = tank
+
+for in_tank in [t,n,s,x]:
+    tank_dict[in_tank.waterTop] = in_tank
     
-def rrd_update(target, data)
+def rrd_update(target, data):
     #check to see if database exists
+    print target
     if not os.path.isfile(target.rrd_file):
         rrdtool.create(
             target.rrd_file,
@@ -34,7 +38,7 @@ def rrd_update(target, data)
             "DS:temp:GAUGE:600:-273:5000")
     else:
         # feed updates to the database
-        print('adding ' +data ' to ' target.rrd_file)
+        print('adding ' +data +' to ' +target.rrd_file)
         rrdtool.update(target.rrd_file, 'N:' +data)
     
 # The callback for when the client receives a CONNACK response from the server.
@@ -46,7 +50,7 @@ def on_connect(client, userdata, flags, rc):
     
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(msg.topic+' '+float(msg.payload))
+    print msg.topic+' '+msg.payload
     tank = tank_dict[msg.topic]
     rrd = rrd_update(tank, msg.payload)
     
