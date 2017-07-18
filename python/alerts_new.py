@@ -34,6 +34,17 @@ tank_dict = {}
 for tank in [t,n,s,x]:
     tank_dict[tank.name] = tank
 
+#find the goddamn tank instance that is incoming    
+def sort(val):
+    for g in [t,n,s,x]:
+        d = g.__dict__
+        for k, v in d.items():
+            if v == m:
+                tank = g
+                return tank
+            break
+#may need to handle fails here somehow
+
 class Keyboard:
     def __init__(self, version):
         #disp = single alert, multi alert, graph request, help etc
@@ -66,12 +77,12 @@ a = Keyboard('alert')
 #for tank in [t,n,s,x]:
     #tank_dict[tank.name] = tank
     
-for in_tank in [t,n,s,x]:
-    tank_dict[tank.waterTop] = in_tank
+#for in_tank in [t,n,s,x]:
+    #tank_dict[tank.waterTop] = in_tank
     
 def status_mess():
-    for x in [t,n,s,x]:
-        print x.name +' is ' +a.statusFlag
+    for y in [t,n,s,x]:
+        print y.name +' is ' +y.statusFlag
         
 
 def on_chat_message(msg):
@@ -90,6 +101,8 @@ def on_callback_query(msg):
     print('Callback Query:', query_id, from_id, query_data)
     print 'printing message now'
     #need to get it to parse in_tank from button field here
+    #get relevnet field here
+    #tank = sort('relevant field')
     #callbacks for 'reset_alert' 'thingspeak link' 'fetch graph'
     if query_data == 'reset_alert':
         print tank.name +' ' +tank.statusFlag
@@ -125,8 +138,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     #print(msg.topic+' '+float(msg.payload))
     vol = float(msg.payload)
-    in_tank = tank_dict[msg.topic]
-    print tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
+    in_tank = sort(msg.topic)
+    print in_tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
     if vol < in_tank.min_vol:
         print tank.name +' under thresh'
         if in_tank.statusFlag == 'OK':
