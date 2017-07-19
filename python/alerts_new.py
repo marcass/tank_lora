@@ -50,9 +50,9 @@ class Keyboard:
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
         
-    def format_keys(self, tankID):
-        if version == status:
-            if tankID.statusFlag == OK:
+    def format_keys(self, tankID=0):
+        if self.version == 'status':
+            if tankID.statusFlag == 'OK':
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Get ' +tankID +' graph', callback_data='fetch graph'),
                         ]])
@@ -62,7 +62,7 @@ class Keyboard:
                         InlineKeyboardButton(text='Reset ' +tankID, callback_data='reset_alert'),
                         InlineKeyboardButton(text='Get ' +tankID +' graph', callback_data='fetch graph'),
                         ]])
-        if version == helpMe:
+        if self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Get link to graphs', callback_data='thingspeak link'),
                         ]])
@@ -92,7 +92,7 @@ def on_chat_message(msg):
         message = bot.sendMessage(creds.group_ID, 'Send /Status to see all tanks status', reply_markup=h.format_keys())
     elif '/status' or '/Status' in text:
         message = bot.sendMessage(creds.group_ID, 'Tanks status as requsted '
-                                   +status_mess() , reply_markup=h.format_keys())
+                                   +status_mess() , reply_markup=s.format_keys())
     else:
         message = bot.sendMessage(creds.group_ID, 'Bugger off, that does nothing. Send /help instead', reply_markup=h.format_keys())
 
