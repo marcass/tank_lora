@@ -11,6 +11,7 @@ from telepot.delegate import (
 import creds
 from pprint import pprint
 import json, ast
+import os.path
 
 class Tanks:
     def __init__(self, name, min_vol, url):
@@ -19,6 +20,8 @@ class Tanks:
         self.waterTop = 'tank/water/' +name
         self.statusFlag = 'OK'
         self.url = url
+        self.rrdpath = '/home/pi/git/tank_lora/python/mqtt2rrd/rrd/'
+        self.rrd_file = rrdpath +name +'.rrd'
     
 #t = Tanks("top",   200.0, 'https://thingspeak.com/channels/300940/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=Top+tank&type=line&xaxis=Time&yaxis=Tank+volume+%28l%29')
 #n = Tanks("noels", 150.0, 'https://thingspeak.com/channels/300940/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=Noel%27s+break+tank&type=line&xaxis=Time&yaxis=Volume+%28l%29')
@@ -150,9 +153,9 @@ def on_message(client, userdata, msg):
         if in_tank.statusFlag == 'OK':
             in_tank.statusFlag = 'bad'
             #put graph in here as well https://notroot.wordpress.com/2010/03/22/python-rrdtool-tutorial/
-            ret = rrdtool.graph( "net.png", "--start", "-1d", "--vertical-label=Bytes/s",
-                "DEF:inoctets=" +in_tank.rrdpath +":input:AVERAGE",
-                "DEF:outoctets=" +in_tank.rrdpath +":output:AVERAGE",
+            ret = rrdtool.graph( rrdpath +"net.png", "--start", "-1d", "--vertical-label=Bytes/s",
+                "DEF:inoctets=" +in_tank.rrd_file +":input:AVERAGE",
+                "DEF:outoctets=" +in_tank.rrd_file +":output:AVERAGE",
                 #"AREA:inoctets#00FF00:In traffic",
                 "LINE1:outoctets#0000FF:" +in_tank.name +"\r",
                 "CDEF:inbits=inoctets,8,*",
@@ -166,7 +169,7 @@ def on_message(client, userdata, msg):
                 #"GPRINT:outbits:MAX:Max Out traffic: %6.2lf %Sbps\r"
                 )
             # perform action required to send image with data
-            send_graph = bot.sendPhoto((creds.groupID, open(net.png), in_tank.name +' tank')
+            send_graph = bot.sendPhoto((creds.groupID, open(rrdpath +'net.png'), in_tank.name +' tank')
             send = bot.sendMessage(creds.groupID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank.name))
         elif in_tank.statusFlag == 'bad':
             print 'ignoring low level'
