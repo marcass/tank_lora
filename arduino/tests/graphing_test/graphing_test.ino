@@ -1,6 +1,6 @@
 long randNumber;
 float volts;
-unsigned long SEND_INT = 600000;
+unsigned long SEND_INT = 150000;
 unsigned long timer_start = 0;
 
 void setup(){
