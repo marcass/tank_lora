@@ -30,6 +30,8 @@ n = Tanks("noels", 150.0, 'https://thingspeak.com/channels/300940')
 s = Tanks("sals",  150.0, 'https://thingspeak.com/channels/300940')
 x = Tanks("test",  150.0, 'oops')
 
+tsL = 'https://thingspeak.com/channels/300940'
+
 class Keyboard:
     def __init__(self, version):
         #disp = single alert, multi alert, graph request, help etc
@@ -49,15 +51,16 @@ class Keyboard:
                         ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get link to graphs', callback_data='thingspeak link'),
+                        InlineKeyboardButton(text='Get link to graphs', callback_data='main thingspeak link'),
+                        InlineKeyboardButton(text='Help', callback_data='help'),
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get link to ' +tankID +' graph', callback_data='thingspeak link'),
+                        InlineKeyboardButton(text='Get link to ' +tankID +' graph', callback_data='graph'),
                         ]])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Oops get link to graphs', callback_data='thingspeak link'),
+                        InlineKeyboardButton(text='Oops get link to graphs', callback_data='main thingspeak link'),
                         ]])
         return keyboard
     
@@ -88,7 +91,8 @@ def on_chat_message(msg):
     if '/help' or '/Help' in text:
         message = bot.sendMessage(creds.groupID, 'Send /Status to see all tanks status', reply_markup=h.format_keys())
     elif '/status' or '/Status' in text:
-        message = bot.sendMessage(creds.groupID, 'Tanks status as requsted '
+        for i in [t,n,s,x]:
+            message = bot.sendMessage(creds.groupID, i.name +' status as requsted '
                                    +status_mess() , reply_markup=st.format_keys())
     else:
         message = bot.sendMessage(creds.groupID, 'Bugger off, that does nothing. Send /help instead', reply_markup=h.format_keys())
@@ -98,15 +102,12 @@ def on_callback_query(msg):
     print('Callback Query:', query_id, from_id, query_data)
     print 'printing message now'
     print msg
-    mess = msg['message']['text']
+    mess = msg['message']['text']     #pull text from message
     print mess
-    tank = mess.split(' ')[0]
+    tank = mess.split(' ')[0]         #split message on spaces and get first member (string of tank's name)
     print 'tank is ' +tank
     tank = sort(tank)
     print tank.name +' is about to get actioned'
-    #need to get it to parse in_tank from button field here
-    
-    #tank = sort('relevant field')
     #callbacks for 'reset_alert' 'thingspeak link' 'fetch graph'
     if query_data == 'reset_alert':
         print tank.name +' ' +tank.statusFlag
@@ -118,8 +119,10 @@ def on_callback_query(msg):
         graph = bot.sendMessage(creds.groupID, tank.url, reply_markup=a.format_keys(tank.name))
         bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
     elif query_data == 'thingspeak link':
-        graph = bot.sendMessage(creds.groupID, tank.url, reply_markup=a.format_keys(tank.name))
+        graph = bot.sendMessage(creds.groupID, tsL, reply_markup=h.format_keys(tank.name))
         bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
+    elif query_data == 'help':
+        bot.sendMessage(creds.groupID, 'Send "/help" for more info', reply_markup=h.format_keys(tank.name))
 
 TOKEN = creds.botAPIKey
 botID = creds.bot_ID
@@ -128,12 +131,6 @@ MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query})
 print('Listening ...')
 
 #mqtt callbacks
-def timeout():
-    print 'Resetting alert for ' +tank.name
-    tank.statusFlag = 'OK'
-    
-timer = Timer(4 * 60 * 60, timeout)
-
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -142,26 +139,6 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe([(t.waterTop, 0), (n.waterTop, 0), (s.waterTop, 0)])
 
 # The callback for when a PUBLISH message is received from the server.
-
-#def on_message(client, userdata, msg):
-    ##print(msg.topic+' '+float(msg.payload))
-    #vol = float(msg.payload)
-    #in_tank = sort(msg.topic)
-    #print in_tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
-    #if vol < in_tank.min_vol:
-        #print tank.name +' under thresh'
-        #if in_tank.statusFlag == 'OK':
-            #in_tank.statusFlag = 'bad'
-            ##timer.start()
-            #send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank.name))
-            ##send = bot.sendMessage(creds.marcus_ID, tank.name +' tank is low') # send alert with button for canceling status
-        #elif in_tank.statusFlag == 'bad':
-            #print 'ignoring low level'
-        #else:
-            #print 'status flag error'        
-    #else:
-        #print 'level fine, doing nothing'
-
 def on_message(client, userdata, msg):
     #print(msg.topic+' '+msg.payload)
     vol = float(msg.payload)
@@ -172,9 +149,25 @@ def on_message(client, userdata, msg):
         print in_tank.name +' under thresh'
         if in_tank.statusFlag == 'OK':
             in_tank.statusFlag = 'bad'
-            #timer.start()
+            #put graph in here as well https://notroot.wordpress.com/2010/03/22/python-rrdtool-tutorial/
+            ret = rrdtool.graph( "net.png", "--start", "-1d", "--vertical-label=Bytes/s",
+                "DEF:inoctets=" +in_tank.rrdpath +":input:AVERAGE",
+                "DEF:outoctets=" +in_tank.rrdpath +":output:AVERAGE",
+                #"AREA:inoctets#00FF00:In traffic",
+                "LINE1:outoctets#0000FF:" +in_tank.name +"\r",
+                "CDEF:inbits=inoctets,8,*",
+                "CDEF:outbits=outoctets,8,*",
+                "COMMENT:\n",
+                "GPRINT:inbits:AVERAGE:Avg water level: %6.2lf %Sbps",
+                "COMMENT:  ",
+                "GPRINT:inbits:MAX:Max water level: %6.2lf %Sbps\r",
+                #"GPRINT:outbits:AVERAGE:Avg Out traffic: %6.2lf %Sbps",
+                #"COMMENT: ",
+                #"GPRINT:outbits:MAX:Max Out traffic: %6.2lf %Sbps\r"
+                )
+            # perform action required to send image with data
+            send_graph = bot.sendPhoto((creds.groupID, open(net.png), in_tank.name +' tank')
             send = bot.sendMessage(creds.groupID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank.name))
-            #send = bot.sendMessage(creds.marcus_ID, tank.name +' tank is low') # send alert with button for canceling status
         elif in_tank.statusFlag == 'bad':
             print 'ignoring low level'
         else:
@@ -185,7 +178,6 @@ def on_message(client, userdata, msg):
 #subscribe to broker and test for messages below alert values
 client = mqtt.Client()
 client.username_pw_set(username=creds.mosq_auth['username'], password=creds.mosq_auth['password'])
-#mqtt.userdata_set(username='esp',password='heating')
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect(creds.mosq_auth['broker'], 1883, 60)
