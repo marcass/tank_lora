@@ -11,84 +11,144 @@ from telepot.delegate import (
 import creds
 from pprint import pprint
 import json, ast
+import os.path
+import rrdtool
+import tanks
 
-"""
-$ python3.5 tank_alert.py <token>
-prev 'Lover.py' from https://github.com/nickoala/telepot/blob/master/examples/callback/lover.py
+Tanks = tanks.Tanks     #ref class as Tanks in code
+inst = tanks            #eg refer to instance as inst.t
 
-"""
-
-#propose_records = telepot.helper.SafeDict()  # thread-safe dict
-
-class Tanks:
-    def __init__(self, name, min_vol, url):
-        self.name = name
-        self.min_vol = min_vol 
-        self.waterTop = "tank/water/" +self.name
-        self.statusFlag = 'OK'
-        self.url = url
+class Keyboard:
+    def __init__(self, version):
+        #disp = single alert, multi alert, graph request, help etc
+        self.version = version
+        
+    def format_keys(self, tank_instance=0):
+        if self.version == 'status':
+            if tank_instance.statusFlag == 'OK':
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='Get ' +tank_instance.name +' graph', callback_data='fetch graph'),
+                        InlineKeyboardButton(text='Get composite graph', callback_data='meta graph'),
+                        ]])
+                
+            else:
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
+                        InlineKeyboardButton(text='Get ' +tank_instance.name +' graph', callback_data='fetch graph'),
+                        ]])
+        elif self.version == 'helpMe':
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='Get composite graph', callback_data='meta graph'),
+                        InlineKeyboardButton(text='Help', callback_data='help'),
+                        ]])
+        elif self.version == 'alert':
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
+                        ]])
+        elif self.version == 'graphs':
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='1 day', callback_data='1'),
+                        InlineKeyboardButton(text='3 days', callback_data='3'),
+                        InlineKeyboardButton(text='7 days', callback_data='7'),
+                        ]])
+        else:
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='Help', callback_data='help'),
+                        InlineKeyboardButton(text='Oops. get link to graphs', callback_data='meta graph'),
+                        InlineKeyboardButton(text='Status', callback_data='status'),
+                        ]])
+        return keyboard
     
-t = Tanks("top",   200.0, 'https://thingspeak.com/channels/300940/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=Top+tank&type=line&xaxis=Time&yaxis=Tank+volume+%28l%29')
-n = Tanks("noels", 150.0, 'https://thingspeak.com/channels/300940/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=Noel%27s+break+tank&type=line&xaxis=Time&yaxis=Volume+%28l%29')
-s = Tanks("sals",  150.0, 'https://thingspeak.com/channels/300940/charts/3?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=Sal%27s+bush+break+tank&type=line&xaxis=Time&yaxis=Volume+%28l%29')
-x = Tanks("test",  150.0, 'oops')
-
-tank_dict = {}
-for tank in [t,n,s,x]:
-    tank_dict[tank.waterTop] = tank
+h = Keyboard('helpMe')
+st = Keyboard('status')
+a = Keyboard('alert')
+g = Keyboard('graphs')
     
-for in_tank in [t,n,s,x]:
-    tank_dict[in_tank.name] = in_tank
-
-keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                   InlineKeyboardButton(text='All OK now', callback_data='reset_alert'),
-                   InlineKeyboardButton(text='Get graph', callback_data='fetch graph'),
-               ]])
+def status_mess():
+    for tank in inst.tank_list:
+        message = bot.sendMessage(creds.group_ID, 
+           tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
+        
 
 def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
+    text = msg['text']
+    if ('/help' in text) or ('/Help' in text):
+        message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Send /Status to see the status of all tanks", reply_markup=h.format_keys())
+    elif ('/status' in text) or ('/Status' in text):
+        status_mess()
+    else:
+        message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Send /help to see a list of commands", reply_markup=h.format_keys())
 
-def convert_keys_to_string(dictionary):
-    """Recursively converts dictionary keys to strings."""
-    if not isinstance(dictionary, dict):
-        return dictionary
-    return dict((str(k), convert_keys_to_string(v)) 
-        for k, v in dictionary.items())
+def send_png(in_tank, period):
+    ret = rrdtool.graph(in_tank.rrdpath +"net.png",\
+                    "--start", "-" +period +"d",\
+                    "--vertical-label=Liter",\
+                    "-w 400",\
+                    "-h 200",\
+                    'DEF:f='+in_tank.rrd_file+':level:AVERAGE', \
+                    'LINE1:f#0000ff:'+in_tank.name+' Water')
+    send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph')
+        
+def gen_mulit_png(period):
+    #colours = ['place holder', #00C957 , #1874CD, #FF0000]
+    #use inst.t.rrdpath as it point to them all
+    ret = rrdtool.graph(inst.t.rrdpath +"net.png",\
+                    "--start", "-" +period +"d",\
+                    "--vertical-label=Liter",\
+                    "-w 400",\
+                    "-h 200",\
+                    'DEF:topW='+inst.t.rrd_file+':level:AVERAGE', \
+                    'DEF:noelsW='+inst.n.rrd_file+':level:AVERAGE', \
+                    'DEF:salsW='+inst.s.rrd_file+':level:AVERAGE', \
+                    'LINE1:topW#EA644A:' +inst.t.name +' Water', \
+                    'LINE2:noelsW#54EC48:' +inst.n.name +' Water', \
+                    'LINE3:salsW#7648EC:' +inst.s.name +' Water')
+           
+    send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
+    
 
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    print('Callback Query:', query_id, from_id, query_data)
-    print 'printing message now'
-    pprint(msg)
-    #asc_msg = ast.literal_eval(json.dumps(msg))
-    asc_msg = convert_keys_to_string(msg)
-    print 'ascii msg'
-    pprint(asc_msg)
-    chat_msg = asc_msg['message']['text']
-    print chat_msg
-    tank_in_chat_msg = chat_msg.split(' ')[1:]
-    in_tank_array = chat_msg.split(' ')[:1]
-    in_tank = tank_dict[in_tank_array[0]]
-    print 'identified tank is ' +in_tank.name
-    if query_data == 'reset_alert':
-        print in_tank.name +' ' +in_tank.statusFlag
-        in_tank.statusFlag = 'OK'
-        print in_tank.statusFlag
-        #timer.cancel()
-        bot.answerCallbackQuery(query_id, text='Alert now reset')
-    elif query_data == 'fetch graph':
-        graph = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low ' +in_tank.url, reply_markup=keyboard)
-        bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
+    #print('Callback Query:', query_id, from_id, query_data)
+    #print 'printing message now'
+    mess = msg['message']['text']     #pull text from message
+    #print mess
+    tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
+    if inst.tanks_by_name.has_key(tank_name):
+        tank = inst.tanks_by_name[tank_name]
+        #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
+        if query_data == 'reset_alert':
+            print tank.name +' ' +tank.statusFlag
+            tank.statusFlag = 'OK'
+            print tank.statusFlag
+            #timer.cancel()
+            bot.answerCallbackQuery(query_id, text='Alert now reset')
+            bot.sendMessage(creds.group_ID, tank.name +' reset to ' +tank.statusFlag, reply_markup=h.format_keys())
+        elif query_data == 'fetch graph':
+            bot.sendMessage(creds.group_ID, tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(tank))
+            #send_png(tank, period)
+            #bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
+        elif query_data == '1' or '3' or '7':
+            conv = str(query_data)
+            send_png(tank, conv)
+        
+        elif query_data == 'meta graph':
+            graph = bot.sendMessage(creds.group_ID, tank.url, reply_markup=h.format_keys(tank))
+            bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
+        elif query_data == 'help':
+            bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+    else:
+        if query_data == 'meta graph':
+            bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
+        elif query_data == '1' or '3' or '7':
+            conv = str(query_data)
+            gen_mulit_png(conv)
+            bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
+            
+        elif query_data == 'status':
+            status_mess()
 
-
-#asc_msg = json.dumps(msg) #converts unicode to string
-    #mess = json.loads(asc_msg)["message"]["text" #fetches message, but now in unicode. ARGH]
-    #pprint(mess)
-    ##tank_in_chat_msg = mess.split(' ')[1:]
-    #in_tank_array = chat_msg.split(' ')[:1]  #gives unicoce tank, eg [u'sals']
-    #in_tank = tank_dict[in_tank_array[0]] # want instance here (first letter of tank) - not working
-
-    
 
 TOKEN = creds.botAPIKey
 botID = creds.bot_ID
@@ -97,33 +157,27 @@ MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query})
 print('Listening ...')
 
 #mqtt callbacks
-def timeout():
-    print 'Resetting alert for ' +tank.name
-    tank.statusFlag = 'OK'
-    
-timer = Timer(4 * 60 * 60, timeout)
-
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe([(t.waterTop, 0), (n.waterTop, 0), (s.waterTop, 0)])
+    client.subscribe([(inst.t.waterTop, 0), (inst.n.waterTop, 0), (inst.s.waterTop, 0)])
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    #print(msg.topic+' '+float(msg.payload))
+    #print(msg.topic+' '+msg.payload)
     vol = float(msg.payload)
-    tank = tank_dict[msg.topic]
-    print tank.name +' tank message incoming ' + 'minimum vol = ' +str(tank.min_vol) +' actual volume = ' +str(vol)
-    if vol < tank.min_vol:
-        print tank.name +' under thresh'
-        if tank.statusFlag == 'OK':
-            tank.statusFlag = 'New alert'
-            #timer.start()
-            send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=keyboard)
-            #send = bot.sendMessage(creds.marcus_ID, tank.name +' tank is low') # send alert with button for canceling status
-        elif tank.statusFlag == 'New alert':
+    in_tank = inst.tanks_by_topic[msg.topic]
+    #print in_tank.name
+    print in_tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
+    if vol < in_tank.min_vol:
+        print in_tank.name +' under thresh'
+        if in_tank.statusFlag == 'OK':
+            in_tank.statusFlag = 'bad'
+            send_png(in_tank, '1')
+            send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
+        elif in_tank.statusFlag == 'bad':
             print 'ignoring low level'
         else:
             print 'status flag error'        
@@ -133,7 +187,6 @@ def on_message(client, userdata, msg):
 #subscribe to broker and test for messages below alert values
 client = mqtt.Client()
 client.username_pw_set(username=creds.mosq_auth['username'], password=creds.mosq_auth['password'])
-#mqtt.userdata_set(username='esp',password='heating')
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect(creds.mosq_auth['broker'], 1883, 60)

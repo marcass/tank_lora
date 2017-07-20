@@ -13,7 +13,7 @@ class Tanks:
         self.waterTop = 'tank/water/' +name
         self.batTop = "tank/battery/" +name
         self.statusFlag = 'OK'
-        self.rrdpath = '/home/pi/git/tank_lora/python/mqtt2rrd/rrd/'
+        self.rrdpath = '/home/pi/git/tank_lora/python/rrd/'
         self.rrd_file = self.rrdpath +name +'.rrd'
         self.url = 'https://thingspeak.com/channels/300940'
         
@@ -25,10 +25,9 @@ class Tanks:
 t = Tanks("top",   "1", 250, 214, 40, 200)
 n = Tanks("noels", "2", 200, 100, 30, 150)
 s = Tanks("sals",  "3", 170,  73, 30, 150)
-x = Tanks("test",  "4", 170,  73, 30, 150)
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
-tanks_by_topic = {tank.waterTop : tank for tank in [t,n,s,x]}
-tanks_by_name = {tank.name : tank for tank in [t,n,s,x]}
-tank_list = [t,n,s,x]
+tanks_by_topic = {tank.waterTop : tank for tank in [t,n,s]}
+tanks_by_name = {tank.name : tank for tank in [t,n,s]}
+tank_list = [t,n,s]
 

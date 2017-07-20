@@ -4,38 +4,21 @@ import os.path
 import creds
 import paho.mqtt.client as mqtt
 import time
+import tanks
 
-class Tanks:
-    def __init__(self, name, nodeID):
-        self.name = name
-        self.nodeID = nodeID
-        self.batTop = "tank/battery/" +self.name
-        self.waterTop = "tank/water/" +self.name
-        self.rrd_file = '/home/pi/git/tank_lora/python/mqtt2rrd/rrd/' +name +'.rrd'
-
-    
-t = Tanks("top",   "1")
-n = Tanks("noels", "2")
-s = Tanks("sals",  "3")
-x = Tanks("test",  "4")
-
-tank_dict = {}
-for tank in [t,n,s,x]:
-    tank_dict[tank.name] = tank
-
-for in_tank in [t,n,s,x]:
-    tank_dict[in_tank.waterTop] = in_tank
+top = tanks.tanks_by_topic
+t_name = tanks.tanks_by_name
     
 def rrd_update(target, data):
     #check to see if database exists
-    print target
     if not os.path.isfile(target.rrd_file):
+        #DS:level:GAUGE:600:0:20000 = <datastore>:<DSname>:<DStype>:<heatbeat in s>:<low val>:<top val>
         rrdtool.create(
             target.rrd_file,
             "--start", "now",
             "--step", "300",
             "RRA:AVERAGE:0.5:1:1200",
-            "DS:temp:GAUGE:600:-273:5000")
+            "DS:level:GAUGE:600:0:20000")
     else:
         # feed updates to the database
         print('adding ' +data +' to ' +target.rrd_file)
@@ -46,12 +29,12 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe([(t.waterTop, 0), (n.waterTop, 0), (s.waterTop, 0)])
+    client.subscribe([(tanks.t.waterTop, 0), (tanks.n.waterTop, 0), (tanks.s.waterTop, 0)])
     
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print msg.topic+' '+msg.payload
-    tank = tank_dict[msg.topic]
+    tank = top[msg.topic]
     rrd = rrd_update(tank, msg.payload)
     
     

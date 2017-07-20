@@ -7,6 +7,9 @@ import serial
 import smtplib
 import requests
 import creds
+import tanks
+
+s_port = '/dev/ttyUSB0'
 
 #mqtt
 broker = creds.mosq_auth['broker']
@@ -16,37 +19,8 @@ water_APIKey = creds.water_APIKey #channel api key
 batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
 
-class Tanks:
-    def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol):
-        self.name = name
-        self.nodeID = nodeID
-        self.diam = diam          # in cm
-        self.max_payload = max_payload  # in cm
-        self.invalid_min = invalid_min
-        self.min_vol = min_vol 
-        self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
-        self.batTop = "tank/battery/" +self.name
-        self.waterTop = "tank/water/" +self.name
-        
-    def volume(self, payload):
-        #litres (measurements in cm)
-        actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
-        #uncomment below to start spamming users inbox
-        #t = threading.Timer(600.0, sendAlert, [self])
-        #if actual_vol < min_vol:
-        #    msg = (str(self.name) + ' tank is running low. Current volume is ' +str(self.actual_vol) +'l'))
-        #    t.start() #don't send too many emails! consider making sure it only gets done once somehow?
-        #else:
-        #    t.cancel()
-        return actual_vol
-    
-t = Tanks("top",   "1", 250, 214, 40, 200)
-n = Tanks("noels", "2", 200, 100, 30, 150)
-s = Tanks("sals",  "3", 170,  73, 30, 150)
-x = Tanks("test",  "4", 170,  73, 30, 150)
-
 tank_dict = {}
-for tank in [t,n,s,x]:
+for tank in [tanks.t,tanks.n,tanks.s]:
     tank_dict[tank.nodeID] = tank
 
 
@@ -56,16 +30,11 @@ def readlineCR(port):
         ch = port.read()
         rv += ch
         if ch=='\n':# or ch=='':
-            if 'PY' in rv:              #arduino formats message as PYTHON;<nodeID>;<payloadance>\r\n
+            if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
                 print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                 print rec_split
-                q.put(rec_split[1:4])           #put data in queue for processing at rate limited to every 15s er thingspeak api rules
-                #in_node = rec_split[1]     #second last member of array
-                #print in_node
-                #payload = int(rec_split[2])        #last member of array
-                #print payload
-                #pub_msg(tank_dict[in_node],payload)
+                q.put(rec_split[1:4])           #put data in queue for processing at rate 
                 rv = ''
 
 #format mqtt message
@@ -91,13 +60,12 @@ def pub_msg():
             r = requests.post(thingURL, data = {'api_key':batt_APIKey, 'field' +tank.nodeID: batt})
             publish.single(tank.batTop, batt , auth=auth, hostname=broker, retain=True)        
             print('Published ' +str(batt) +' for nodeID ' + str(tank.nodeID) + ' to ' +tank.batTop)
-
             time.sleep(15)
 
 #instatiate queue
 q = Q()
 
-port = serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=3.0)
+port = serial.Serial(s_port, baudrate=9600, timeout=3.0)
 
 fetch_process = P(target=readlineCR, args=(port,))
 broadcast_process = P(target=pub_msg, args=())
