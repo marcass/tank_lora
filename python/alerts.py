@@ -86,30 +86,18 @@ def send_png(in_tank, period):
                     "--vertical-label=Liter",\
                     "-w 400",\
                     "-h 200",\
-                    'DEF:f='+in_tank.rrd_file+':level:AVERAGE', \
-                    'LINE1:f#0000ff:'+in_tank.name+' Water')
+                    'DEF:'+in_tank.name+'='+in_tank.rrd_file+':level:AVERAGE', \
+                    'LINE1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
     send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph')
         
 def gen_mulit_png(period):
-    #colours = ['place holder', #00C957 , #1874CD, #FF0000]
     #use inst.t.rrdpath as it point to them all
-    #ret = rrdtool.graph(inst.t.rrdpath +"net.png",\
-                    #"--start", "-" +period +"d",\
-                    #"--vertical-label=Liter",\
-                    #"-w 400",\
-                    #"-h 200",\
-                    #'DEF:topW='+inst.t.rrd_file+':level:AVERAGE', \
-                    #'DEF:noelsW='+inst.n.rrd_file+':level:AVERAGE', \
-                    #'DEF:salsW='+inst.s.rrd_file+':level:AVERAGE', \
-                    #'LINE1:topW#EA644A:' +inst.t.name +' Water', \
-                    #'LINE2:noelsW#54EC48:' +inst.n.name +' Water', \
-                    #'LINE3:salsW#7648EC:' +inst.s.name +' Water')
-    rrd_graph_comm = (inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter","-w 400","-h 200",)
+    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter","-w 400","-h 200"]
     for objT in inst.tank_list:
-        rrd_graph_comm = rrd_graph_comm  + ('DEF:'+objT.name+'='+objT.rrd_file+'level:AVERAGE', 'LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
-    print rrd_graph_comm
-    #ret = rrdtool.graph rrd_graph_comm
-    #send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
+        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrd_file+':level:AVERAGE')
+        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
+    ret = rrdtool.graph(rrd_graph_comm)
+    send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
     
 
 def on_callback_query(msg):
@@ -138,7 +126,7 @@ def on_callback_query(msg):
         elif query_data == 'help':
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
     else: #catch all else
-        elif query_data == '1' or '3' or '7':
+        if query_data == '1' or '3' or '7':
             conv = str(query_data)
             gen_mulit_png(conv)
             bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())

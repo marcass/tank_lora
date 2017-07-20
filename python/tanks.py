@@ -9,7 +9,7 @@ class Tanks:
         self.max_payload = max_payload   #Distatnce from sensor to water outlet in tank in cm
         self.invalid_min = invalid_min   #Distatnce from sensor probe end to water level in full tank
         self.min_vol = min_vol 
-        self.line_colour = self.line_colour
+        self.line_colour = line_colour
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
         self.waterTop = 'tank/water/' +name
         self.batTop = "tank/battery/" +name
