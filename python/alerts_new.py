@@ -37,7 +37,7 @@ class Keyboard:
                         ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get link to graphs', callback_data='main thingspeak link'),
+                        InlineKeyboardButton(text='Get link to graphs', callback_data='meta graph'),
                         InlineKeyboardButton(text='Help', callback_data='help'),
                         ]])
         elif self.version == 'alert':
@@ -46,7 +46,8 @@ class Keyboard:
                         ]])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Oops get link to graphs', callback_data='main thingspeak link'),
+                        InlineKeyboardButton(text='Help', callback_data='help'),
+                        InlineKeyboardButton(text='Oops. get link to graphs', callback_data='meta graph'),
                         ]])
         return keyboard
     
@@ -63,16 +64,15 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     text = msg['text']
     if ('/help' in text) or ('/Help' in text):
-        message = bot.sendMessage(creds.group_ID, 'Send /Status to see all tanks status', reply_markup=h.format_keys())
+        message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Send /Status to see the status of all tanks", reply_markup=h.format_keys())
     elif ('/status' in text) or ('/Status' in text):
-        print 'IM AM HERE'
         for tank in inst.tank_list:
             message = bot.sendMessage(creds.group_ID, 
                 status_mess(tank) \
                 +'Status as requested',
             reply_markup=st.format_keys(tank))
     else:
-        message = bot.sendMessage(creds.group_ID, 'Bugger off, that does nothing. Send /help instead', reply_markup=h.format_keys())
+        message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Send /help to see a list of commands", reply_markup=h.format_keys())
 
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
@@ -83,7 +83,7 @@ def on_callback_query(msg):
     tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
     if inst.tanks_by_name.has_key(tank_name):
         tank = inst.tanks_by_name[tank_name]
-        #callbacks for 'reset_alert' 'thingspeak link' 'fetch graph'
+        #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
         if query_data == 'reset_alert':
             print tank.name +' ' +tank.statusFlag
             tank.statusFlag = 'OK'
@@ -93,11 +93,15 @@ def on_callback_query(msg):
         elif query_data == 'fetch graph':
             send_png(tank)
             bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
-        elif query_data == 'thingspeak link':
+        elif query_data == 'meta graph':
             graph = bot.sendMessage(creds.group_ID, tank.url, reply_markup=h.format_keys(tank))
             bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
         elif query_data == 'help':
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+    else:
+        if query_data == 'meta graph':
+            #somehow send an instance to generate png..
+        
 
 
 TOKEN = creds.botAPIKey
@@ -108,7 +112,7 @@ print('Listening ...')
 
 #make a pretty graph and send it
 def send_png(target):
-    Tanks.generate_png(target)
+    Tanks.generate_png(target, '1')
     # perform action required to send image with data
     send_graph = bot.sendPhoto(creds.group_ID, open(target.rrdpath +'net.png'), target.name +' tank')
 

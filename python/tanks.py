@@ -23,7 +23,7 @@ class Tanks:
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
     
-    def generate_png(self):
+    def generate_png(self, line):
         #print(self.rrdpath +"net.png",\
                         #"--start", "-1d",\
                         #"--vertical-label=Liter",\
