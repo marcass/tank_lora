@@ -93,29 +93,33 @@ def send_png(in_tank, period):
 def gen_mulit_png(period):
     #colours = ['place holder', #00C957 , #1874CD, #FF0000]
     #use inst.t.rrdpath as it point to them all
-    ret = rrdtool.graph(inst.t.rrdpath +"net.png",\
-                    "--start", "-" +period +"d",\
-                    "--vertical-label=Liter",\
-                    "-w 400",\
-                    "-h 200",\
-                    'DEF:topW='+inst.t.rrd_file+':level:AVERAGE', \
-                    'DEF:noelsW='+inst.n.rrd_file+':level:AVERAGE', \
-                    'DEF:salsW='+inst.s.rrd_file+':level:AVERAGE', \
-                    'LINE1:topW#EA644A:' +inst.t.name +' Water', \
-                    'LINE2:noelsW#54EC48:' +inst.n.name +' Water', \
-                    'LINE3:salsW#7648EC:' +inst.s.name +' Water')
-           
-    send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
+    #ret = rrdtool.graph(inst.t.rrdpath +"net.png",\
+                    #"--start", "-" +period +"d",\
+                    #"--vertical-label=Liter",\
+                    #"-w 400",\
+                    #"-h 200",\
+                    #'DEF:topW='+inst.t.rrd_file+':level:AVERAGE', \
+                    #'DEF:noelsW='+inst.n.rrd_file+':level:AVERAGE', \
+                    #'DEF:salsW='+inst.s.rrd_file+':level:AVERAGE', \
+                    #'LINE1:topW#EA644A:' +inst.t.name +' Water', \
+                    #'LINE2:noelsW#54EC48:' +inst.n.name +' Water', \
+                    #'LINE3:salsW#7648EC:' +inst.s.name +' Water')
+    rrd_graph_comm = (inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter","-w 400","-h 200",)
+    for objT in inst.tank_list:
+        rrd_graph_comm = rrd_graph_comm  + ('DEF:'+objT.name+'='+objT.rrd_file+'level:AVERAGE', 'LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
+    print rrd_graph_comm
+    #ret = rrdtool.graph rrd_graph_comm
+    #send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
     
 
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     #print('Callback Query:', query_id, from_id, query_data)
+    mess = msg['message']['text']     #pull text from message
+    tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
     #sort multi graph callback here
     if query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
-    mess = msg['message']['text']     #pull text from message
-    tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
     elif inst.tanks_by_name.has_key(tank_name):
         tank = inst.tanks_by_name[tank_name]
         #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
@@ -128,25 +132,16 @@ def on_callback_query(msg):
             bot.sendMessage(creds.group_ID, tank.name +' reset to ' +tank.statusFlag, reply_markup=h.format_keys())
         elif query_data == 'fetch graph':
             bot.sendMessage(creds.group_ID, tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(tank))
-            #send_png(tank, period)
-            #bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
         elif query_data == '1' or '3' or '7':
             conv = str(query_data)
             send_png(tank, conv)
-        
-        elif query_data == 'meta graph':
-            graph = bot.sendMessage(creds.group_ID, tank.url, reply_markup=h.format_keys(tank))
-            bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
         elif query_data == 'help':
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
     else: #catch all else
-        if query_data == 'meta graph':
-            bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         elif query_data == '1' or '3' or '7':
             conv = str(query_data)
             gen_mulit_png(conv)
             bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
-            
         elif query_data == 'status':
             status_mess()
 
