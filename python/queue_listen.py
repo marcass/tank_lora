@@ -16,12 +16,6 @@ water_APIKey = creds.water_APIKey #channel api key
 batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
 
-def generate_fake_data():
-    fake_dist = np.random.randint(0,255)
-    fake_voltage = np.random.randint(0,255)
-    fake_ID = np.random.randint(N)
-    return [fake_ID,fake_dist,fake_voltage]
-
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol):
         self.name = name
