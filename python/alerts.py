@@ -111,11 +111,12 @@ def gen_mulit_png(period):
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     #print('Callback Query:', query_id, from_id, query_data)
-    #print 'printing message now'
+    #sort multi graph callback here
+    if query_data == 'meta graph':
+        bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
     mess = msg['message']['text']     #pull text from message
-    #print mess
     tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
-    if inst.tanks_by_name.has_key(tank_name):
+    elif inst.tanks_by_name.has_key(tank_name):
         tank = inst.tanks_by_name[tank_name]
         #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
         if query_data == 'reset_alert':
@@ -138,7 +139,7 @@ def on_callback_query(msg):
             bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
         elif query_data == 'help':
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
-    else:
+    else: #catch all else
         if query_data == 'meta graph':
             bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         elif query_data == '1' or '3' or '7':
