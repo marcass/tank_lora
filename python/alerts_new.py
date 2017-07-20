@@ -12,7 +12,7 @@ import creds
 from pprint import pprint
 import json, ast
 import os.path
-#import rrdtool
+import rrdtool
 import tanks
 
 Tanks = tanks.Tanks     #ref class as Tanks in code
@@ -74,6 +74,33 @@ def on_chat_message(msg):
     else:
         message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Send /help to see a list of commands", reply_markup=h.format_keys())
 
+def generate_png(in_tank):
+    ret = rrdtool.graph(in_tank.rrdpath +"net.png",\
+                    "--start", "-1d",\
+                    "--vertical-label=Liter",\
+                    "-w 400",\
+                    "-h 200",\
+                    'DEF:f='+in_tank.rrd_file+':temp:AVERAGE', \
+                    'LINE1:f#0000ff:'+in_tank.name+' Water')
+        
+def gen_mulit_png():
+    #colours = ['place holder', #00C957 , #1874CD, #FF0000]
+    #use inst.t.rrdpath as it point to them all
+    ret = rrdtool.graph(inst.t.rrdpath +"net.png",\
+                    "--start", "-1d",\
+                    "--vertical-label=Liter",\
+                    "-w 400",\
+                    "-h 200",\
+                    'DEF:t='+inst.t.rrd_file+':temp:AVERAGE', \
+                    'DEF:n='+inst.n.rrd_file+':temp:AVERAGE', \
+                    'DEF:s='+inst.s.rrd_file+':temp:AVERAGE', \
+                    'LINE1:#EA644A:' +inst.t.name +' Water', \
+                    'LINE2:#54EC48:' +inst.n.name +' Water', \
+                    'LINE3:#7648EC:' +inst.s.name +' Water')
+           
+    send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
+    
+
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     print('Callback Query:', query_id, from_id, query_data)
@@ -91,7 +118,7 @@ def on_callback_query(msg):
             #timer.cancel()
             bot.answerCallbackQuery(query_id, text='Alert now reset')
         elif query_data == 'fetch graph':
-            send_png(tank)
+            send_png('1', tank)
             bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
         elif query_data == 'meta graph':
             graph = bot.sendMessage(creds.group_ID, tank.url, reply_markup=h.format_keys(tank))
@@ -100,7 +127,7 @@ def on_callback_query(msg):
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
     else:
         if query_data == 'meta graph':
-            #somehow send an instance to generate png..
+            gen_mulit_png()
         
 
 
@@ -112,9 +139,9 @@ print('Listening ...')
 
 #make a pretty graph and send it
 def send_png(target):
-    Tanks.generate_png(target, '1')
+    generate_png(target)
     # perform action required to send image with data
-    send_graph = bot.sendPhoto(creds.group_ID, open(target.rrdpath +'net.png'), target.name +' tank')
+    send_graph = bot.sendPhoto(creds.group_ID, open(target.rrdpath +'net.png'), target.name +' tank graph')
 
 #mqtt callbacks
 # The callback for when the client receives a CONNACK response from the server.

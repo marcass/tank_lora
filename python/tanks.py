@@ -1,5 +1,4 @@
 import creds
-import rrdtool
 
 
 class Tanks:
@@ -22,24 +21,6 @@ class Tanks:
         #litres (measurements in cm)
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
-    
-    def generate_png(self, line):
-        #print(self.rrdpath +"net.png",\
-                        #"--start", "-1d",\
-                        #"--vertical-label=Liter",\
-                        #"-w 400",\
-                        #"-h 200",\
-                        #'DEF:f='+self.rrd_file+':temp:AVERAGE', \
-                        #'LINE1:f#0000ff:'+self.name+' Water')
-        ret = rrdtool.graph(self.rrdpath +"net.png",\
-                        "--start", "-1d",\
-                        "--vertical-label=Liter",\
-                        "-w 400",\
-                        "-h 200",\
-                        'DEF:f='+self.rrd_file+':temp:AVERAGE', \
-                        'LINE1:f#0000ff:'+self.name+' Water')
-
-        
     
 t = Tanks("top",   "1", 250, 214, 40, 200)
 n = Tanks("noels", "2", 200, 100, 30, 150)
