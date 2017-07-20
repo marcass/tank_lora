@@ -12,11 +12,11 @@ import creds
 from pprint import pprint
 import json, ast
 import os.path
-import rrdtool
+#import rrdtool
 import tanks
 
 Tanks = tanks.Tanks     #ref class as Tanks in code
-tank = tanks            #eg refer to instance as tank.t
+inst = tanks            #eg refer to instance as inst.t
 
 class Keyboard:
     def __init__(self, version):
@@ -42,7 +42,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get link to ' +tank_instance.name +' graph', callback_data='graph'),
+                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
                         ]])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -66,10 +66,10 @@ def on_chat_message(msg):
         message = bot.sendMessage(creds.group_ID, 'Send /Status to see all tanks status', reply_markup=h.format_keys())
     elif ('/status' in text) or ('/Status' in text):
         print 'IM AM HERE'
-        for tank in tank_list:
+        for tank in inst.tank_list:
             message = bot.sendMessage(creds.group_ID, 
-                'Status as requested \n'\
-                + status_mess(tank) ,
+                status_mess(tank) \
+                +'Status as requested',
             reply_markup=st.format_keys(tank))
     else:
         message = bot.sendMessage(creds.group_ID, 'Bugger off, that does nothing. Send /help instead', reply_markup=h.format_keys())
@@ -81,9 +81,24 @@ def on_callback_query(msg):
     mess = msg['message']['text']     #pull text from message
     print mess
     tank_name = mess.split(' ')[0]         #split message on spaces and get first member   
-    if tanks_by_name.has_key(tank_name):
-        tank = tanks_by_name[tank_name]
-        tanks.manage_callback(tank, query_data)
+    if inst.tanks_by_name.has_key(tank_name):
+        tank = inst.tanks_by_name[tank_name]
+        #callbacks for 'reset_alert' 'thingspeak link' 'fetch graph'
+        if query_data == 'reset_alert':
+            print tank.name +' ' +tank.statusFlag
+            tank.statusFlag = 'OK'
+            print tank.statusFlag
+            #timer.cancel()
+            bot.answerCallbackQuery(query_id, text='Alert now reset')
+        elif query_data == 'fetch graph':
+            send_png(tank)
+            bot.answerCallbackQuery(query_id, text='Here you go (so demanding)') 
+        elif query_data == 'thingspeak link':
+            graph = bot.sendMessage(creds.group_ID, tank.url, reply_markup=h.format_keys(tank))
+            bot.answerCallbackQuery(query_id, text='Here you go (so demanding)')
+        elif query_data == 'help':
+            bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+
 
 TOKEN = creds.botAPIKey
 botID = creds.bot_ID
@@ -91,22 +106,39 @@ bot = telepot.Bot(TOKEN)
 MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 print('Listening ...')
 
+#make a pretty graph and send it
+def send_png(target):
+    Tanks.generate_png(target)
+    # perform action required to send image with data
+    send_graph = bot.sendPhoto(creds.group_ID, open(target.rrdpath +'net.png'), target.name +' tank')
+
 #mqtt callbacks
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe([(t.waterTop, 0), (n.waterTop, 0), (s.waterTop, 0)])
+    client.subscribe([(inst.t.waterTop, 0), (inst.n.waterTop, 0), (inst.s.waterTop, 0)])
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     #print(msg.topic+' '+msg.payload)
     vol = float(msg.payload)
-    in_tank = tanks_by_topic[msg.topic]
+    in_tank = inst.tanks_by_topic[msg.topic]
     #print in_tank.name
     print in_tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
-    tanks.vol_acton(in_tank)
+    if vol < in_tank.min_vol:
+        print in_tank.name +' under thresh'
+        if in_tank.statusFlag == 'OK':
+            in_tank.statusFlag = 'bad'
+            send_png(in_tank)
+            send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
+        elif in_tank.statusFlag == 'bad':
+            print 'ignoring low level'
+        else:
+            print 'status flag error'        
+    else:
+        print 'level fine, doing nothing'
 
 #subscribe to broker and test for messages below alert values
 client = mqtt.Client()
