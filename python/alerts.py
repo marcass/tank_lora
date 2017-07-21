@@ -82,7 +82,7 @@ def on_chat_message(msg):
 
 def send_png(in_tank, period):
     ret = rrdtool.graph(in_tank.rrdpath +"net.png",\
-                    "--start", "-" +period +"d",\
+                    "--start", "end-" +period +"d",\
                     "--vertical-label=Liter",\
                     "-w 400",\
                     "-h 200",\
@@ -92,7 +92,7 @@ def send_png(in_tank, period):
         
 def gen_mulit_png(period):
     #use inst.t.rrdpath as it point to them all
-    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter","-w 400","-h 200"]
+    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "end-" +period +"d", "--vertical-label=Liter","-w 400","-h 200"]
     for objT in inst.tank_list:
         rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrd_file+':level:AVERAGE')
         rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
