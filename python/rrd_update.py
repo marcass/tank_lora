@@ -14,16 +14,16 @@ t_name = tanks.tanks_by_name
     
 def rrd_update(target, data, vers):
     #check to see if database exists
+    hb = str(step)
     if not os.path.isfile(target.rrd_file):
         #DS:level:GAUGE:600:0:20000 = <datastore>:<DSname>:<DStype>:<heatbeat in s>:<low val>:<top val>
         # a step value of 30min with 1 value forming average and 1200 rows archived is 4 years of data (roughly)
-        rrdtool.create(
-            target.rrd_file,
+        rrdtool.create(target.rrd_file,
             "--start", "now",
-            "--step", step,
+            "--step", hb,
             "RRA:AVERAGE:0.5:1:1200",
-            "DS:level:GAUGE:"+step+":0:20000",
-            "DS:volts:GAUGE:"+step+":0:20000")
+            "DS:level:GAUGE:"+hb+":0:20000",
+            "DS:volts:GAUGE:"+hb+":0:20000")
     else:
         # feed updates to the database
         print('adding ' +data +' to ' +target.rrd_file)
@@ -34,7 +34,13 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe([(tanks.t.waterTop, 0), (tanks.n.waterTop, 0), (tanks.s.waterTop, 0)])
+    sub_list = []
+    for inst in tanks.tank_list:
+        sub_list.append((inst.waterTop, 0))
+        sub_list.append((inst.batTop, 0))
+    print sub_list
+    client.subscribe(sub_list)
+    #client.subscribe([(tanks.t.waterTop, 0), (tanks.n.waterTop, 0), (tanks.s.waterTop, 0)])
     
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
@@ -43,7 +49,7 @@ def on_message(client, userdata, msg):
     if 'water' in msg.topic:
         rrd = rrd_update(tank, msg.payload, 'level')
     elif 'battery' in msg.topic:
-        rrd = rrd_update(tank, msg.payload, batt, 'volts')
+        rrd = rrd_update(tank, msg.payload, 'volts')
     
     
 #subscribe to broker and test for messages below alert values

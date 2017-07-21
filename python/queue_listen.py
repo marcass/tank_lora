@@ -9,7 +9,7 @@ import requests
 import creds
 import tanks
 
-s_port = '/dev/ttyUSB0'
+s_port = '/dev/ttyUSB1'
 
 #mqtt
 broker = creds.mosq_auth['broker']
