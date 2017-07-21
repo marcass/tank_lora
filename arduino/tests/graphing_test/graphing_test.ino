@@ -1,7 +1,8 @@
 long randNumber;
+unsigned long interval;
 float volts;
-unsigned long SEND_INT = 150000;
 unsigned long timer_start = 0;
+int tank = 1;
 
 void setup(){
   Serial.begin(9600);
@@ -13,25 +14,28 @@ void setup(){
   randomSeed(analogRead(0));
 }
 
-void send_data(){
-  for(int x = 1; x < 5; x++) {
-    // print a random number from 10 to 19
-    randNumber = random(30, 70); // fake distances in cm
-    volts = ((float)random(290, 420)/100);
-    Serial.print("PY;");
-    Serial.print(x);
-    Serial.print(";");
-    Serial.print(randNumber);
-    Serial.print(";");
-    Serial.print(volts);
-    Serial.println(";");
-  }
+void compose_msg(){
+  randNumber = random(30, 100); // fake distances in cm
+  volts = ((float)random(290, 420)/100);
+  Serial.print("PY;");
+  Serial.print(tank);
+  Serial.print(";");
+  Serial.print(randNumber);
+  Serial.print(";");
+  Serial.print(volts);
+  Serial.println(";");
+  interval = random(120000, 1800000); //generate random interval for next publish between 2 and 30 min
 }
 
 void loop() { 
-  if (millis() - timer_start > SEND_INT) {
-      send_data();
-      timer_start = millis();
+  if (millis() - timer_start > interval) {
+    compose_msg();
+    if (tank >= 3){
+      tank = 1;
+    }else{
+      tank++;
+    }
+    timer_start = millis();
   }
   
 }

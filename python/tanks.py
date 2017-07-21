@@ -23,9 +23,14 @@ class Tanks:
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
     
-t = Tanks("top",   "1", 250, 214, 40, 200, '#EA644A')
-n = Tanks("noels", "2", 200, 100, 30, 150, '#54EC48')
-s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
+#t = Tanks("top",   "1", 250, 214, 40, 200, '#EA644A')
+#n = Tanks("noels", "2", 200, 100, 30, 150, '#54EC48')
+#s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
+
+#test data
+t = Tanks("top",   "1", 100, 100, 30, 200, '#EA644A')
+n = Tanks("noels", "2", 100, 100, 30, 150, '#54EC48')
+s = Tanks("sals",  "3", 100, 100, 30, 150, '#7648EC')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s]
