@@ -6,23 +6,28 @@ import paho.mqtt.client as mqtt
 import time
 import tanks
 
+step = 5 * 60 #5min - set to frequency of update of values, should equal interval in seconds which sensor sends tata (eg 30*60
+#heartbeat is the time rrdtool will wait for new data point before placing a UNKNOWN value in the datastore
+
 top = tanks.tanks_by_topic
 t_name = tanks.tanks_by_name
     
-def rrd_update(target, data):
+def rrd_update(target, data, vers):
     #check to see if database exists
     if not os.path.isfile(target.rrd_file):
         #DS:level:GAUGE:600:0:20000 = <datastore>:<DSname>:<DStype>:<heatbeat in s>:<low val>:<top val>
+        # a step value of 30min with 1 value forming average and 1200 rows archived is 4 years of data (roughly)
         rrdtool.create(
             target.rrd_file,
             "--start", "now",
-            "--step", "300",
+            "--step", step,
             "RRA:AVERAGE:0.5:1:1200",
-            "DS:level:GAUGE:600:0:20000")
+            "DS:level:GAUGE:"+step+":0:20000",
+            "DS:volts:GAUGE:"+step+":0:20000")
     else:
         # feed updates to the database
         print('adding ' +data +' to ' +target.rrd_file)
-        rrdtool.update(target.rrd_file, 'N:' +data)
+        rrdtool.update(target.rrd_file, '-t' +vers, 'N:' +data)
     
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -35,7 +40,10 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print msg.topic+' '+msg.payload
     tank = top[msg.topic]
-    rrd = rrd_update(tank, msg.payload)
+    if 'water' in msg.topic:
+        rrd = rrd_update(tank, msg.payload, 'level')
+    elif 'battery' in msg.topic:
+        rrd = rrd_update(tank, msg.payload, batt, 'volts')
     
     
 #subscribe to broker and test for messages below alert values
