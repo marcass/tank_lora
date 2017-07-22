@@ -26,6 +26,9 @@ bool intitialisePins;
 float voltage;
 int V_measurePin = 0;
 bool pulse = false;
+unsigned long gap;
+const byte interruptPin = 2;
+unsigned long timer;
 
 
 //sleep pin
@@ -34,7 +37,8 @@ const int SLEEP_PIN = 1;
 const int POWER = 6;
 
 void setup() {
-
+  pinMode(interruptPin, INPUT);
+  Serial.println("starting up");
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -42,10 +46,12 @@ void setup() {
   pinMode(POWER, OUTPUT);
   digitalWrite(POWER, LOW);
   pinMode(SLEEP_PIN, INPUT_PULLUP);
+  //tpl510 testing
+  attachInterrupt(digitalPinToInterrupt(interruptPin), heartbeat, RISING);
  
   Serial.begin(9600);
   //while (!Serial); //uncomment to require serial connection to work
-
+  gap = millis();
   Serial.println("LoRa Sender");
   LoRa.setPins(1, 4, 7); //reset is pd4, adc8, dio0 is P(ort)E 6 or int6
 
@@ -73,8 +79,7 @@ void batteryMeasure() {
   //convert. Returns actual voltage, ie 3.768 = 3.768V
   voltage = (val / 1024) / 1024 * 4.2;
 
-  //tpl510 testing
-  attachInterrupt(0, heartbeat, RISING);
+  
 }
 
 
@@ -128,10 +133,8 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
 }
 
 void loop() {
-  if(pulse){
-    Serial.print("This many wakes: ");
-    Serial.println(counter);
   
+  if(pulse){
     // send packet
     LoRa.beginPacket();
     LoRa.print("NodeID ");
@@ -140,6 +143,7 @@ void loop() {
     LoRa.print(counter);
     LoRa.endPacket();
     //send done
+    Serial.print("sending done");
     digitalWrite(DONE, HIGH);
     delay(15);
     digitalWrite(DONE, LOW);
@@ -147,6 +151,14 @@ void loop() {
   
     counter++;
     pulse = false;
+    timer = (millis() - gap)/60000;
+    Serial.print("This many wakes: ");
+    Serial.print(counter);
+    Serial.print(" Time gap = ");
+    Serial.print(timer);
+    Serial.print("min");
+    gap = millis();
+    
   }
 
   #ifdef sensor
