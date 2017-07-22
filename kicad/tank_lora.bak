@@ -613,15 +613,15 @@ F 3 "" H 9600 3850 50  0000 C CNN
 $EndComp
 Text GLabel 2000 3600 0    60   Input ~ 0
 A1
-Text GLabel 10100 3750 0    60   Input ~ 0
+Text GLabel 10100 3450 0    60   Input ~ 0
 A1
-Text GLabel 10100 3650 0    60   Input ~ 0
+Text GLabel 10100 3350 0    60   Input ~ 0
 A2
 Text GLabel 2000 3700 0    60   Input ~ 0
 A2
-Text GLabel 10100 3450 0    60   Input ~ 0
+Text GLabel 10100 3750 0    60   Input ~ 0
 D3
-Text GLabel 10100 3350 0    60   Input ~ 0
+Text GLabel 10100 3650 0    60   Input ~ 0
 D5
 Text GLabel 3700 4400 2    60   Input ~ 0
 D5
