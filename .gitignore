@@ -3,3 +3,4 @@
 rrd*
 *.swp
 *.pyc
+*-swp
