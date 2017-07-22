@@ -1,5 +1,5 @@
 long randNumber;
-unsigned long interval;
+unsigned long interval = 600000;
 float volts;
 unsigned long timer_start = 0;
 int tank = 1;
@@ -24,7 +24,7 @@ void compose_msg(){
   Serial.print(";");
   Serial.print(volts);
   Serial.println(";");
-  interval = random(120000, 1800000); //generate random interval for next publish between 2 and 30 min
+  //interval = random(120000, 1800000); //generate random interval for next publish between 2 and 30 min
 }
 
 void loop() { 
