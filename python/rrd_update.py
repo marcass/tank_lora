@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 import time
 import tanks
 
-step = 5 * 60 #5min - set to frequency of update of values, should equal interval in seconds which sensor sends tata (eg 30*60
+step = 27 * 60 #27min - set to frequency of update of values, should equal interval in seconds which sensor sends tata (eg 30*60
 #heartbeat is the time rrdtool will wait for new data point before placing a UNKNOWN value in the datastore
 
 top = tanks.tanks_by_topic
@@ -14,20 +14,19 @@ t_name = tanks.tanks_by_name
     
 def rrd_update(target, data, vers):
     #check to see if database exists
-    hb = str(step)
+    stepStr = str(step)
+    hb = '600' #5min to wait for value if late
     
     if not os.path.isfile(target.rrdpath+vers+target.name+'.rrd'):
         #DS:level:GAUGE:600:0:20000 = <datastore>:<DSname>:<DStype>:<heatbeat in s>:<low val>:<top val>
         # a step value of 30min with 1 value forming average and 1200 rows archived is 4 years of data (roughly)
         print(target.rrdpath+vers+target.name+'.rrd',
-            "--start", "now",
-            "--step", hb,
+            "--step", stepStr,
             "DS:"+vers+":GAUGE:"+hb+":0:U",
             "RRA:AVERAGE:0.5:1:1200",
             "RRA:MAX:0.5:1:1200")
         rrdtool.create(target.rrdpath+vers+target.name+'.rrd',
-            "--start", "now",
-            "--step", hb,
+            "--step", stepStr,
             "DS:"+vers+":GAUGE:"+hb+":0:U",
             "RRA:AVERAGE:0.5:1:1200",
             "RRA:MAX:0.5:1:1200")
