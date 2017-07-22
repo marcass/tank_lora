@@ -68,3 +68,10 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
    * 28uA when circuit above voltage?
    * 0.6uA when curcuit below voltage
 
+* Starting services
+ On raspberry pi: sudo systemctl start[stop][status][restart] <service name>
+
+Services are:
+* serial-attach.service
+* mqtt2rrd.service
+* telegram-bot.service
