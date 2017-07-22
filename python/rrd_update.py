@@ -15,19 +15,28 @@ t_name = tanks.tanks_by_name
 def rrd_update(target, data, vers):
     #check to see if database exists
     hb = str(step)
-    if not os.path.isfile(target.rrd_file):
+    
+    if not os.path.isfile(target.rrdpath+vers+target.name+'.rrd'):
         #DS:level:GAUGE:600:0:20000 = <datastore>:<DSname>:<DStype>:<heatbeat in s>:<low val>:<top val>
         # a step value of 30min with 1 value forming average and 1200 rows archived is 4 years of data (roughly)
-        rrdtool.create(target.rrd_file,
+        print(target.rrdpath+vers+target.name+'.rrd',
             "--start", "now",
             "--step", hb,
+            "DS:"+vers+":GAUGE:"+hb+":0:U",
             "RRA:AVERAGE:0.5:1:1200",
-            "DS:level:GAUGE:"+hb+":0:20000",
-            "DS:volts:GAUGE:"+hb+":0:20000")
+            "RRA:MAX:0.5:1:1200")
+        rrdtool.create(target.rrdpath+vers+target.name+'.rrd',
+            "--start", "now",
+            "--step", hb,
+            "DS:"+vers+":GAUGE:"+hb+":0:U",
+            "RRA:AVERAGE:0.5:1:1200",
+            "RRA:MAX:0.5:1:1200")
+        print 'data store created'
     else:
+        print 'updating database this time'
         # feed updates to the database
         print('adding ' +data +' to ' +target.rrd_file)
-        rrdtool.update(target.rrd_file, '-t' +vers, 'N:' +data)
+        rrdtool.update(target.rrdpath+vers+target.name+'.rrd', 'N:' +data)
     
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -47,9 +56,9 @@ def on_message(client, userdata, msg):
     print msg.topic+' '+msg.payload
     tank = top[msg.topic]
     if 'water' in msg.topic:
-        rrd = rrd_update(tank, msg.payload, 'level')
+        rrd = rrd_update(tank, msg.payload,'water')
     elif 'battery' in msg.topic:
-        rrd = rrd_update(tank, msg.payload, 'volts')
+        rrd = rrd_update(tank, msg.payload,'batt')
     
     
 #subscribe to broker and test for messages below alert values
