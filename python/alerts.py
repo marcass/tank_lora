@@ -80,21 +80,21 @@ def on_chat_message(msg):
     else:
         message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Send /help to see a list of commands", reply_markup=h.format_keys())
 
-def send_png(in_tank, period, ver):
+def send_png(in_tank, period, vers):
     ret = rrdtool.graph(in_tank.rrdpath +"net.png",\
                     "--start", "end-" +period +"d",\
                     "--vertical-label=Liter",\
                     "-w 400",\
                     "-h 200",\
-                    'DEF:'+in_tank.name+'='+in_tank.rrd_file+':'+ver+':AVERAGE', \
+                    'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':MAX', \
                     'LINE1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
     send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph')
         
-def gen_mulit_png(period, ver):
+def gen_mulit_png(period, vers):
     #use inst.t.rrdpath as it point to them all
     rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "end-" +period +"d", "--vertical-label=Liter","-w 400","-h 200"]
     for objT in inst.tank_list:
-        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrd_file+':'+ver+':AVERAGE')
+        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':MAX')
         rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
     ret = rrdtool.graph(rrd_graph_comm)
     send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
@@ -128,7 +128,7 @@ def on_callback_query(msg):
     else: #catch all else
         if query_data == '1' or '3' or '7':
             conv = str(query_data)
-            gen_mulit_png(conv, 'level')
+            gen_mulit_png(conv, 'water')
             bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
         elif query_data == 'status':
             status_mess()
@@ -159,7 +159,7 @@ def on_message(client, userdata, msg):
         print in_tank.name +' under thresh'
         if in_tank.statusFlag == 'OK':
             in_tank.statusFlag = 'bad'
-            send_png(in_tank, '1')
+            send_png(in_tank, '1', 'water')
             send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
         elif in_tank.statusFlag == 'bad':
             print 'ignoring low level'

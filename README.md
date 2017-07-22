@@ -62,3 +62,9 @@ RST |   4
 DIO0 | 7 (PE6) https://www.arduino.cc/en/Hacking/PinMapping32u4  
 
 These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md)
+
+# Power consumption
+* Battery protection circuit:
+   * 28uA when circuit above voltage?
+   * 0.6uA when curcuit below voltage
+
