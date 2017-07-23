@@ -29,7 +29,11 @@ bool pulse = false;
 unsigned long gap;
 const byte interruptPin = 2;
 unsigned long timer;
-
+unsigned long print_timer;
+unsigned long PRINT_THRESH = 1000; //60000;
+unsigned long last_gap;
+unsigned long DONE_TIME = 20;
+bool done_start = false;
 
 //sleep pin
 const int SLEEP_PIN = 1;
@@ -37,6 +41,7 @@ const int SLEEP_PIN = 1;
 const int POWER = 6;
 
 void setup() {
+  print_timer = millis();
   pinMode(interruptPin, INPUT);
   Serial.println("starting up");
   //disable sleep bit:
@@ -87,6 +92,7 @@ void batteryMeasure() {
 void heartbeat(){
   pulse = true;
   detachInterrupt(0);
+  last_gap = (millis() - gap)/1000;
 }
 void wake (){
   // cancel sleep as a precaution
@@ -135,6 +141,7 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
 void loop() {
   
   if(pulse){
+    gap = millis();
     // send packet
     LoRa.beginPacket();
     LoRa.print("NodeID ");
@@ -143,7 +150,7 @@ void loop() {
     LoRa.print(counter);
     LoRa.endPacket();
     //send done
-    Serial.print("sending done");
+    Serial.println("sending done");
     digitalWrite(DONE, HIGH);
     delay(15);
     digitalWrite(DONE, LOW);
@@ -151,72 +158,42 @@ void loop() {
   
     counter++;
     pulse = false;
-    timer = (millis() - gap)/60000;
+    done_start = true;
+    
+    
+    
+  }
+  timer = (millis() - gap)/1000;
+  if (millis() - print_timer > PRINT_THRESH){
+    //timer = (millis() - gap)/1000;
     Serial.print("This many wakes: ");
     Serial.print(counter);
     Serial.print(" Time gap = ");
     Serial.print(timer);
-    Serial.print("min");
-    gap = millis();
-    
+
+    Serial.print("s, = ");
+    Serial.print(timer/60);
+    Serial.print("min. Last gap was: ");
+    Serial.print(last_gap);
+    Serial.print("s, = ");
+    Serial.print(last_gap/60);
+    Serial.println("min");
+    print_timer = millis();
   }
 
-  #ifdef sensor
-    //Send successful wake pulse to external watchdog
+  //Send successful wake pulse to external watchdog
+  if (done_start){
     if (done_timer == 0){
       digitalWrite(DONE, HIGH);
       done_timer = millis();
     }
-    if ((millis() - done_timer) > DONE_TIME){
-      digitalWrite(DONE, LOW);
-    }
+  }
+  if ((millis() - done_timer) > DONE_TIME){
+    digitalWrite(DONE, LOW);
+    done_timer = 0;
+    done_start = false;
+  }
 
-    //send battery stats
-    voltage = getBandgap ();
-    LoRa.beginPacket();
-    //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
-    LoRa.print("NodeID");
-    LoRa.print(";1;1;1;38;");
-    LoRa.print(voltage);
-    LoRa.endPacket();       
-    
-    //send distance to water
-    //power up ultrasonic sensor
-    digitalWrite(POWER, HIGH);
-    delay(30); //wait for board to warm up
-    distance = sonar.ping_cm();
-    //TURN u/s module off
-    digitalWrite(POWER, LOW);
-    //send packet
-    LoRa.beginPacket();
-    #ifdef mycontoller
-      //configure MyController packet: set,req described here: https://www.mysensors.org/download/serial_api_20
-      LoRa.print(NodeID);
-      LoRa.print(";1;1;1;13;");
-      LoRa.print(distance);
-    #endif
-    #ifdef python
-      LoRa.print("PYTHON:");//tag for serial listner
-      LoRa.print(NodeID);
-      LoRa.print(";");
-      LoRa.print(distance);
-    #endif
-    LoRa.endPacket();
-    //go to sleep when done
-    //first check to see if we want to sleep (for testing/debugging purposes)
-    //if(digital.read(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
-    //  sleepNow();
-    //}else{
-    delay(10000); //10s between measurements for testing
-    //}
-    #ifdef sleeps
-      //go to sleep when done
-      //first check to see if we want to sleep (for testing/debugging purposes)
-      if(digital.read(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
-        sleepNow();
-      }
-    #endif
-  #endif
 }
 
 

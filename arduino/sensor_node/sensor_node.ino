@@ -61,7 +61,7 @@ void setup() {
     pinMode(DONE, OUTPUT);
     digitalWrite(DONE, LOW);
     pinMode(POWER, OUTPUT);
-    digitalWrite(POWER, LOW);
+    digitalWrite(POWER, HIGH);
     pinMode(SLEEP_PIN, INPUT_PULLUP);
     NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
   #endif
@@ -78,9 +78,6 @@ void setup() {
   }
   //.setup analog ref for battery testing
   analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
-  //initialise measurement pin
-  pinMode(V_measurePin, OUTPUT);
-  digitalWrite(V_measurePin, HIGH);
 }
 
 //battery testing function

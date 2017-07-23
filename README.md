@@ -1,6 +1,11 @@
 # tank_lora
 Meaure water tank levels with and send signal with LoRa radion on private network
 
+## Need to procure:
+* Better logic level P-channel mosfet, try NDP6020P
+* MCP112-300 (for 3v cutoff)
+* 10.54k ohm resistor for voltage dividor (or slightly larger)
+
 ## Hardware overview
 Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic distance measuring device and powering with solar we will send signal from remote locations to a hub and publish water levels to the web
 * 5V power rail to supply
@@ -67,4 +72,4 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
 * Battery protection circuit:
    * 28uA when circuit above voltage?
    * 0.6uA when curcuit below voltage
-
+* Battery testing circuit = 0uA. However, the P-channel mosfet will not switch when battery gets below 3.3V (damnit)
