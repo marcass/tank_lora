@@ -94,19 +94,31 @@ def send_png(in_tank, period, vers):
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
     #"--step 3600",\ #one hour resolution
-    print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'AREA1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
-    ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
-    send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph')
+    if vers == 'water':
+        label = 'Litres'
+        legend = 'Water'
+    if vers == 'batt':
+        label = 'Volts'
+        legend = 'Battery'
+    print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'AREA1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
+    ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label="+label, "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
+    send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph for the '+legend)
         
 def gen_mulit_png(period, vers):
     #hack for error: start time: There should be number after '-'
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
     #use inst.t.rrdpath as it point to them all
-    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter","-w 400","-h 200"]
+    if vers == 'water':
+        label = 'Litres'
+        legend = 'Water'
+    if vers == 'batt':
+        label = 'Volts'
+        legend = 'Battery'
+    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
     for objT in inst.tank_list:
         rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
-        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' Water')
+        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
     ret = rrdtool.graph(rrd_graph_comm)
     send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
     
@@ -171,7 +183,7 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    #print(msg.topic+' '+msg.payload)
+    print(msg.topic+' '+msg.payload)
     vol = float(msg.payload)
     in_tank = inst.tanks_by_topic[msg.topic]
     if 'water' in msg.topic:
@@ -191,7 +203,8 @@ def on_message(client, userdata, msg):
             print 'level fine, doing nothing'
     elif 'battery' in msg.topic:
         val = float(msg.payload)
-        if msg.payload < 3.2:
+        print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual volume = ' +str(val)
+        if val < 3.2:
             send_png(in_tank, '1', 'batt')
 
 #subscribe to broker and test for messages below alert values
