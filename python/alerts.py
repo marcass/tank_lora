@@ -204,7 +204,7 @@ def on_message(client, userdata, msg):
     elif 'battery' in msg.topic:
         val = float(msg.payload)
         print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual volume = ' +str(val)
-        if val < 3.2:
+        if val < 2.9:
             send_png(in_tank, '1', 'batt')
 
 #subscribe to broker and test for messages below alert values
