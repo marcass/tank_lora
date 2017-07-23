@@ -94,8 +94,8 @@ def send_png(in_tank, period, vers):
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
     #"--step 3600",\ #one hour resolution
-    print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'LINE1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
-    ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'LINE1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
+    print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'AREA1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
+    ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' Water')
     send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph')
         
 def gen_mulit_png(period, vers):
