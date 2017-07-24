@@ -72,9 +72,8 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
 * Battery protection circuit:
    * 28uA when circuit above voltage?
    * 0.6uA when curcuit below voltage
-<<<<<<< HEAD
 * Battery testing circuit = 0uA. However, the P-channel mosfet will not switch when battery gets below 3.3V (damnit)
-=======
+NOTE: TPL 5010 with ~90k Ohm resistor gives 26min between wakes
 
 * Starting services
  On raspberry pi: sudo systemctl start[stop][status][restart] <service name>
@@ -83,4 +82,4 @@ Services are:
 * serial-attach.service
 * mqtt2rrd.service
 * telegram-bot.service
->>>>>>> eccb2a59d7001d2084ae71b121efda64e59c2a3b
+

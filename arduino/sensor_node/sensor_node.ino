@@ -78,6 +78,9 @@ void setup() {
   }
   //.setup analog ref for battery testing
   analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
+  //initialise measurement pin
+  pinMode(V_measurePin, OUTPUT);
+  digitalWrite(V_measurePin, HIGH);
 }
 
 //battery testing function
