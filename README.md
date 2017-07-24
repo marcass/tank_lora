@@ -4,6 +4,7 @@ Meaure water tank levels with and send signal with LoRa radion on private networ
 ## Need to procure:
 * Better logic level P-channel mosfet, try NDP6020P
 * MCP112-300 (for 3v cutoff)
+* MCP112-315 and 5 more mosfets for cutting power to arduino when VIN<3.1V
 * 10.54k ohm resistor for voltage dividor (or slightly larger) (or MF1/4DCT52R1132F that is 11.3k)
 
 ## Hardware overview
@@ -73,6 +74,8 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
    * 28uA when circuit above voltage?
    * 0.6uA when curcuit below voltage
 * Battery testing circuit = 0uA. However, the P-channel mosfet will not switch when battery gets below 3.3V (damnit)
+* LoRa module is flaky when voltages < 3.09V supplied to 5V pin, otherwise works well.
+   * consider another siwtched mosfet circuit that cuts supply to module when supply is below 3.1V
 NOTE: TPL 5010 with ~90k Ohm resistor gives 26min between wakes
 
 * Starting services
