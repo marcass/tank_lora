@@ -14,6 +14,14 @@ import json, ast
 import os.path
 import rrdtool
 import tanks
+import telepot.api
+
+#fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
+def always_use_new(req, **user_kw):
+    return None
+
+telepot.api._which_pool = always_use_new
+
 
 Tanks = tanks.Tanks     #ref class as Tanks in code
 inst = tanks            #eg refer to instance as inst.t
