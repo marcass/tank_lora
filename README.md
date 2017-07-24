@@ -4,7 +4,7 @@ Meaure water tank levels with and send signal with LoRa radion on private networ
 ## Need to procure:
 * Better logic level P-channel mosfet, try NDP6020P
 * MCP112-300 (for 3v cutoff)
-* 10.54k ohm resistor for voltage dividor (or slightly larger)
+* 10.54k ohm resistor for voltage dividor (or slightly larger) (or MF1/4DCT52R1132F that is 11.3k)
 
 ## Hardware overview
 Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic distance measuring device and powering with solar we will send signal from remote locations to a hub and publish water levels to the web
