@@ -74,8 +74,8 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
    * 28uA when circuit above voltage?
    * 0.6uA when curcuit below voltage
 * Battery testing circuit = 0uA. However, the P-channel mosfet will not switch when battery gets below 3.3V (damnit)
-* LoRa module is flaky when voltages < 3.09V supplied to 5V pin, otherwise works well.
-   * consider another siwtched mosfet circuit that cuts supply to module when supply is below 3.1V
+* LoRa module is flaky when voltages < 2.80 (when on external watcdog) supplied to 5V pin, otherwise works well.
+* LoRa module uses ~387microA when in power down sleep mode
 NOTE: TPL 5010 with ~90k Ohm resistor gives 26min between wakes
 
 * Starting services
