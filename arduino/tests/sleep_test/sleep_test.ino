@@ -73,8 +73,8 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
   // Choose our preferred sleep mode:
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   
-  // disable ADC
-  ADCSRA = 0;
+  // disable ADC- this does not work for me! Commented out
+  //ADCSRA = 0;
   
   //power_all_disable();//disables power to all modules careful here as not sure how to wake up
   // Set sleep enable (SE) bit:
@@ -101,47 +101,31 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
 }
 
 void loop() {
-  if(ADCSRA != adcsra_save){//reset adc back to on
-    ADCSRA = adcsra_save;
-  }
   
-    //delay(5000);
-    //if (!done_start){ //sleep if signal sent and watchdog had a done pulse
-      //go to sleep when done
-      //first check to see if we want to sleep (for testing/debugging purposes)
-      //if(digitalRead(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
-        Serial.print("Sleeping now. Had ");
-        Serial.print(counter);
-        Serial.println(" sleeps.");
-        
-        
-        // send packet
-        LoRa.beginPacket();
-        LoRa.print("count = ");
-        LoRa.print(counter);
-        LoRa.endPacket();
-      
-        counter++;
-        sleepNow();
-//      }else{
-//        Serial.println("Not sleeping");
-//        delay(3000);
-//      }
-    //}
+  
+  digitalWrite(DONE, HIGH);
+  delayMicroseconds(1); //pulse must be at least 100ns
+  digitalWrite(DONE, LOW);
+  
+  
+  
+  // send packet
+  LoRa.beginPacket();
+  LoRa.print("Aread = ");
+  LoRa.print(analogRead(1));
+  LoRa.print(": ADCSRA = ");
+  LoRa.print(ADCSRA);
+  ADCSRA = adcsra_save;
+  LoRa.print(": Reset ADCSRA = ");
+  LoRa.print(ADCSRA);
+  LoRa.print(": Aread = ");
+  LoRa.print(analogRead(1));  
+  LoRa.print(": count = ");
+  LoRa.print(counter);
+  LoRa.endPacket();
 
-
-  //Send successful wake pulse to external watchdog
-//  if (done_start){
-//    if (done_timer == 0){
-//      digitalWrite(DONE, HIGH);
-//      done_timer = millis();
-//    }
-//  }
-//  if ((millis() - done_timer) > DONE_TIME){
-//    digitalWrite(DONE, LOW);
-//    done_timer = 0;
-//    done_start = false;
-//  }
+  counter++;
+  sleepNow();
 }
 
 
