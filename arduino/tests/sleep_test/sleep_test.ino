@@ -6,9 +6,6 @@
 
 #include <SPI.h>
 #include <LoRa.h>
-//Sonar stuff
-#include <NewPing.h>
-//sleep stuff http://www.engblaze.com/hush-little-microprocessor-avr-and-arduino-sleep-mode-basics/
 #include <avr/interrupt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
@@ -21,7 +18,7 @@ int counter = 0;
 
 //external watchdog
 //wake pin on D2 (interrupt 0)
-const byte wakepin = 2;
+const int WAKE_PIN = 2;
 
 unsigned long timer;
 unsigned long print_timer;
@@ -34,7 +31,7 @@ unsigned long done_timer = 0;
 
 //sleep pin
 const int SLEEP_PIN = 3;
-
+byte adcsra_save = ADCSRA;
 
 void setup() {
   pinMode(DONE, OUTPUT);
@@ -52,6 +49,8 @@ void setup() {
   if (!LoRa.begin(433E6)) { // initialise at 433MHz
     Serial.println("Starting LoRa failed!");
     while (1);
+    //record current state of analogue read pins
+    
     
   }
 }
@@ -61,7 +60,7 @@ void wake (){
   // cancel sleep as a precaution
   sleep_disable();
   // precautionary while we do other stuff
-  detachInterrupt (digitalPinToInterrupt(wakepin));
+  detachInterrupt (digitalPinToInterrupt(WAKE_PIN));
   done_start = true;
 
 }  // end of wake
@@ -89,7 +88,7 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
   noInterrupts ();           // timed sequence follows
   
   // will be called when pin D2 goes high  
-  attachInterrupt (digitalPinToInterrupt(wakepin), wake, RISING);
+  attachInterrupt (digitalPinToInterrupt(WAKE_PIN), wake, RISING);
   EIFR = bit (INTF0);  // clear flag for interrupt 0
 
   //to turn of BOD in hardware (fuses) use "avrdude <programmer> <chip> -U efuse:w:0xFE:m" see http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega32u4&LOW=62&HIGH=D9&EXTENDED=FF&LOCKBIT=FF
@@ -102,12 +101,15 @@ void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
 }
 
 void loop() {
+  if(ADCSRA != adcsra_save){//reset adc back to on
+    ADCSRA = adcsra_save;
+  }
   
     //delay(5000);
-    if (!done_start){ //sleep if signal sent and watchdog had a done pulse
+    //if (!done_start){ //sleep if signal sent and watchdog had a done pulse
       //go to sleep when done
       //first check to see if we want to sleep (for testing/debugging purposes)
-      if(digitalRead(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
+      //if(digitalRead(SLEEP_PIN) == HIGH){ //Sleep mode enabled as it is pulled up when sleeping enabled
         Serial.print("Sleeping now. Had ");
         Serial.print(counter);
         Serial.println(" sleeps.");
@@ -121,25 +123,25 @@ void loop() {
       
         counter++;
         sleepNow();
-      }else{
-        Serial.println("Not sleeping");
-        delay(3000);
-      }
-    }
+//      }else{
+//        Serial.println("Not sleeping");
+//        delay(3000);
+//      }
+    //}
 
 
   //Send successful wake pulse to external watchdog
-  if (done_start){
-    if (done_timer == 0){
-      digitalWrite(DONE, HIGH);
-      done_timer = millis();
-    }
-  }
-  if ((millis() - done_timer) > DONE_TIME){
-    digitalWrite(DONE, LOW);
-    done_timer = 0;
-    done_start = false;
-  }
+//  if (done_start){
+//    if (done_timer == 0){
+//      digitalWrite(DONE, HIGH);
+//      done_timer = millis();
+//    }
+//  }
+//  if ((millis() - done_timer) > DONE_TIME){
+//    digitalWrite(DONE, LOW);
+//    done_timer = 0;
+//    done_start = false;
+//  }
 }
 
 
