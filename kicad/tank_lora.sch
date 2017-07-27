@@ -164,7 +164,7 @@ U 1 1 59489D86
 P 4500 1900
 F 0 "P1" H 4500 2050 50  0000 C CNN
 F 1 "CONN_01X02" V 4600 1900 50  0000 C CNN
-F 2 "Connectors_Phoenix:PhoenixContact_MCV-G_02x5.08mm_Vertical" H 4500 1900 50  0001 C CNN
+F 2 "Connectors_JST:JST_PH_B2B-PH-K_02x2.00mm_Straight" H 4500 1900 50  0001 C CNN
 F 3 "" H 4500 1900 50  0000 C CNN
 	1    4500 1900
 	-1   0    0    1   
@@ -308,10 +308,10 @@ F 3 "" H 5500 4250 50  0000 L CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR014
+L GND #PWR013
 U 1 1 595DBAFF
 P 4700 5100
-F 0 "#PWR014" H 4700 4850 50  0001 C CNN
+F 0 "#PWR013" H 4700 4850 50  0001 C CNN
 F 1 "GND" H 4700 4950 50  0000 C CNN
 F 2 "" H 4700 5100 50  0000 C CNN
 F 3 "" H 4700 5100 50  0000 C CNN
@@ -347,10 +347,10 @@ Load
 Text GLabel 3900 6500 0    60   Input ~ 0
 VBAT_OUT
 $Comp
-L GND #PWR015
+L GND #PWR014
 U 1 1 5960060B
 P 1000 6800
-F 0 "#PWR015" H 1000 6550 50  0001 C CNN
+F 0 "#PWR014" H 1000 6550 50  0001 C CNN
 F 1 "GND" H 1000 6650 50  0000 C CNN
 F 2 "" H 1000 6800 50  0000 C CNN
 F 3 "" H 1000 6800 50  0000 C CNN
@@ -366,6 +366,243 @@ F 1 "100k" V 5400 5900 50  0000 C CNN
 F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 5330 5900 50  0001 C CNN
 F 3 "" H 5400 5900 50  0000 C CNN
 	1    5400 5900
+	1    0    0    -1  
+$EndComp
+Text GLabel 5400 5750 1    60   Input ~ 0
+LOAD
+$Comp
+L GND #PWR015
+U 1 1 59606172
+P 3350 6650
+F 0 "#PWR015" H 3350 6400 50  0001 C CNN
+F 1 "GND" H 3350 6500 50  0000 C CNN
+F 2 "" H 3350 6650 50  0000 C CNN
+F 3 "" H 3350 6650 50  0000 C CNN
+	1    3350 6650
+	1    0    0    -1  
+$EndComp
+Text GLabel 4750 1400 2    60   Input ~ 0
+VBAT_IN
+Text GLabel 4950 1950 2    60   Input ~ 0
+VBAT_OUT
+$Comp
+L CONN_01X08 P2
+U 1 1 59606AFB
+P 10300 3700
+F 0 "P2" H 10300 4150 50  0000 C CNN
+F 1 "CONN_01X08" V 10400 3700 50  0000 C CNN
+F 2 "Connectors_Phoenix:PhoenixContact_MCV-G_08x5.08mm_Vertical" H 10300 3700 50  0001 C CNN
+F 3 "" H 10300 3700 50  0000 C CNN
+	1    10300 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR016
+U 1 1 59606B5C
+P 9200 3850
+F 0 "#PWR016" H 9200 3600 50  0001 C CNN
+F 1 "GND" H 9200 3700 50  0000 C CNN
+F 2 "" H 9200 3850 50  0000 C CNN
+F 3 "" H 9200 3850 50  0000 C CNN
+	1    9200 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR017
+U 1 1 59606B9D
+P 9300 3350
+F 0 "#PWR017" H 9300 3200 50  0001 C CNN
+F 1 "+5V" H 9300 3490 50  0000 C CNN
+F 2 "" H 9300 3350 50  0000 C CNN
+F 3 "" H 9300 3350 50  0000 C CNN
+	1    9300 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR018
+U 1 1 59606BF0
+P 9600 3750
+F 0 "#PWR018" H 9600 3600 50  0001 C CNN
+F 1 "+3.3V" H 9600 3890 50  0000 C CNN
+F 2 "" H 9600 3750 50  0000 C CNN
+F 3 "" H 9600 3750 50  0000 C CNN
+	1    9600 3750
+	1    0    0    -1  
+$EndComp
+Text GLabel 2000 3600 0    60   Input ~ 0
+A1
+Text GLabel 10100 3650 0    60   Input ~ 0
+A1
+Text GLabel 10100 3550 0    60   Input ~ 0
+A2
+Text GLabel 2000 3700 0    60   Input ~ 0
+A2
+Text GLabel 10100 3850 0    60   Input ~ 0
+D3
+Text GLabel 10100 3950 0    60   Input ~ 0
+D5
+Text GLabel 3700 4400 2    60   Input ~ 0
+D5
+Text GLabel 3700 4500 2    60   Input ~ 0
+D3
+Text GLabel 3700 4200 2    60   Input ~ 0
+D9
+Text GLabel 10100 4050 0    60   Input ~ 0
+D9
+$Comp
+L R R6
+U 1 1 59617861
+P 9100 5350
+F 0 "R6" V 9180 5350 50  0000 C CNN
+F 1 "10.54k" V 9100 5350 50  0000 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9030 5350 50  0001 C CNN
+F 3 "" H 9100 5350 50  0000 C CNN
+	1    9100 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L R R7
+U 1 1 596178D4
+P 8950 5750
+F 0 "R7" V 9030 5750 50  0000 C CNN
+F 1 "3.74k" V 8950 5750 50  0000 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8880 5750 50  0001 C CNN
+F 3 "" H 8950 5750 50  0000 C CNN
+	1    8950 5750
+	1    0    0    -1  
+$EndComp
+Text GLabel 8100 4900 0    60   Input ~ 0
+VBAT_IN
+Text GLabel 8600 5500 0    60   Input ~ 0
+A3
+Text GLabel 2000 3800 0    60   Input ~ 0
+A3
+Text GLabel 10400 5050 2    60   Input ~ 0
+D0
+Text GLabel 2000 4400 0    60   Input ~ 0
+D0
+$Comp
+L R R5
+U 1 1 59617F72
+P 9450 4600
+F 0 "R5" H 9530 4600 50  0000 C CNN
+F 1 "10k" V 9450 4600 50  0000 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9380 4600 50  0001 C CNN
+F 3 "" H 9450 4600 50  0000 C CNN
+	1    9450 4600
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR019
+U 1 1 596183C8
+P 8950 5900
+F 0 "#PWR019" H 8950 5650 50  0001 C CNN
+F 1 "GND" H 8950 5750 50  0000 C CNN
+F 2 "" H 8950 5900 50  0000 C CNN
+F 3 "" H 8950 5900 50  0000 C CNN
+	1    8950 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L IRF9540N Q2
+U 1 1 59618880
+P 9450 5100
+F 0 "Q2" H 9700 5175 50  0000 L CNN
+F 1 "IPP45P03P4L-11" H 9700 5100 50  0000 L CNN
+F 2 "TO_SOT_Packages_THT:TO-220_Neutral123_Vertical" H 9700 5025 50  0001 L CIN
+F 3 "" H 9450 5100 50  0000 L CNN
+	1    9450 5100
+	-1   0    0    1   
+$EndComp
+$Comp
+L +3.3V #PWR020
+U 1 1 59619B8A
+P 9100 4600
+F 0 "#PWR020" H 9100 4450 50  0001 C CNN
+F 1 "+3.3V" H 9100 4740 50  0000 C CNN
+F 2 "" H 9100 4600 50  0000 C CNN
+F 3 "" H 9100 4600 50  0000 C CNN
+	1    9100 4600
+	1    0    0    -1  
+$EndComp
+Text Notes 8550 6250 0    60   ~ 0
+Voltage measurement
+Text Notes 3300 7350 0    60   ~ 0
+Low battery protection
+Text Notes 5800 4600 0    60   ~ 0
+Ultrasonic range detector power circuit
+Text Notes 6600 3150 0    60   ~ 0
+External watchdog circuit
+Text Notes 3900 2250 0    60   ~ 0
+Solar charging circuit
+Text Notes 1600 1950 0    60   ~ 0
+Ultrasonic range detector
+$Comp
+L MCP112-300 U6
+U 1 1 5972B815
+P 1800 6450
+F 0 "U6" H 1800 6350 50  0000 C CNN
+F 1 "MCP112-300" H 1800 6550 50  0000 C CNN
+F 2 "TO_SOT_Packages_THT:TO-92_Inline_Wide" H 1800 6450 50  0001 C CNN
+F 3 "DOCUMENTATION" H 1800 6450 50  0001 C CNN
+	1    1800 6450
+	-1   0    0    1   
+$EndComp
+Text Notes 4650 3150 0    60   ~ 0
+Can handle 5.7v (down \nconverted from charger)\nbut convert module can't!
+$Comp
+L +3.3V #PWR021
+U 1 1 5977FE2D
+P 5950 3050
+F 0 "#PWR021" H 5950 2900 50  0001 C CNN
+F 1 "+3.3V" H 5950 3190 50  0000 C CNN
+F 2 "" H 5950 3050 50  0000 C CNN
+F 3 "" H 5950 3050 50  0000 C CNN
+	1    5950 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 J1
+U 1 1 597911DD
+P 9650 1250
+F 0 "J1" H 9650 1350 50  0000 C CNN
+F 1 "CONN_01X01" V 9750 1250 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3_DIN965_Pad" H 9650 1250 50  0001 C CNN
+F 3 "" H 9650 1250 50  0001 C CNN
+	1    9650 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 J4
+U 1 1 5979146A
+P 9800 1650
+F 0 "J4" H 9800 1750 50  0000 C CNN
+F 1 "CONN_01X01" V 9900 1650 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3_DIN965_Pad" H 9800 1650 50  0001 C CNN
+F 3 "" H 9800 1650 50  0001 C CNN
+	1    9800 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 J2
+U 1 1 597914C6
+P 10150 1150
+F 0 "J2" H 10150 1250 50  0000 C CNN
+F 1 "CONN_01X01" V 10250 1150 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3_DIN965_Pad" H 10150 1150 50  0001 C CNN
+F 3 "" H 10150 1150 50  0001 C CNN
+	1    10150 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 J3
+U 1 1 59791523
+P 10500 1650
+F 0 "J3" H 10500 1750 50  0000 C CNN
+F 1 "CONN_01X01" V 10600 1650 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3_DIN965_Pad" H 10500 1650 50  0001 C CNN
+F 3 "" H 10500 1650 50  0001 C CNN
+	1    10500 1650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -460,8 +697,6 @@ Wire Wire Line
 	2550 6550 2550 7150
 Wire Wire Line
 	5400 6050 5400 6300
-Text GLabel 5400 5750 1    60   Input ~ 0
-LOAD
 Wire Wire Line
 	2550 7150 6100 7150
 Wire Wire Line
@@ -470,167 +705,21 @@ Wire Wire Line
 	6100 6400 5400 6400
 Wire Wire Line
 	5550 6500 5400 6500
-$Comp
-L GND #PWR016
-U 1 1 59606172
-P 3350 6650
-F 0 "#PWR016" H 3350 6400 50  0001 C CNN
-F 1 "GND" H 3350 6500 50  0000 C CNN
-F 2 "" H 3350 6650 50  0000 C CNN
-F 3 "" H 3350 6650 50  0000 C CNN
-	1    3350 6650
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	3350 6300 3350 6650
-Text GLabel 4750 1400 2    60   Input ~ 0
-VBAT_IN
 Wire Wire Line
 	3900 6300 3350 6300
-Text GLabel 4950 1950 2    60   Input ~ 0
-VBAT_OUT
-$Comp
-L CONN_01X08 P2
-U 1 1 59606AFB
-P 10300 3700
-F 0 "P2" H 10300 4150 50  0000 C CNN
-F 1 "CONN_01X08" V 10400 3700 50  0000 C CNN
-F 2 "Connectors_Phoenix:PhoenixContact_MCV-G_08x5.08mm_Vertical" H 10300 3700 50  0001 C CNN
-F 3 "" H 10300 3700 50  0000 C CNN
-	1    10300 3700
-	1    0    0    -1  
-$EndComp
-$Comp
-L GND #PWR017
-U 1 1 59606B5C
-P 10000 4250
-F 0 "#PWR017" H 10000 4000 50  0001 C CNN
-F 1 "GND" H 10000 4100 50  0000 C CNN
-F 2 "" H 10000 4250 50  0000 C CNN
-F 3 "" H 10000 4250 50  0000 C CNN
-	1    10000 4250
-	1    0    0    -1  
-$EndComp
-$Comp
-L +5V #PWR018
-U 1 1 59606B9D
-P 9300 3950
-F 0 "#PWR018" H 9300 3800 50  0001 C CNN
-F 1 "+5V" H 9300 4090 50  0000 C CNN
-F 2 "" H 9300 3950 50  0000 C CNN
-F 3 "" H 9300 3950 50  0000 C CNN
-	1    9300 3950
-	1    0    0    -1  
-$EndComp
-$Comp
-L +3.3V #PWR019
-U 1 1 59606BF0
-P 9600 3850
-F 0 "#PWR019" H 9600 3700 50  0001 C CNN
-F 1 "+3.3V" H 9600 3990 50  0000 C CNN
-F 2 "" H 9600 3850 50  0000 C CNN
-F 3 "" H 9600 3850 50  0000 C CNN
-	1    9600 3850
-	1    0    0    -1  
-$EndComp
-Text GLabel 2000 3600 0    60   Input ~ 0
-A1
-Text GLabel 10100 3450 0    60   Input ~ 0
-A1
-Text GLabel 10100 3350 0    60   Input ~ 0
-A2
-Text GLabel 2000 3700 0    60   Input ~ 0
-A2
-Text GLabel 10100 3750 0    60   Input ~ 0
-D3
-Text GLabel 10100 3650 0    60   Input ~ 0
-D5
-Text GLabel 3700 4400 2    60   Input ~ 0
-D5
-Text GLabel 3700 4500 2    60   Input ~ 0
-D3
-Text GLabel 3700 4200 2    60   Input ~ 0
-D9
-Text GLabel 10100 3550 0    60   Input ~ 0
-D9
 Wire Wire Line
-	10100 4050 10000 4050
+	9200 3450 10100 3450
 Wire Wire Line
-	10000 4050 10000 4250
+	10100 3350 9300 3350
 Wire Wire Line
-	10100 3950 9300 3950
-Wire Wire Line
-	10100 3850 9600 3850
-$Comp
-L R R6
-U 1 1 59617861
-P 9100 5350
-F 0 "R6" V 9180 5350 50  0000 C CNN
-F 1 "10.54k" V 9100 5350 50  0000 C CNN
-F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9030 5350 50  0001 C CNN
-F 3 "" H 9100 5350 50  0000 C CNN
-	1    9100 5350
-	0    1    1    0   
-$EndComp
-$Comp
-L R R7
-U 1 1 596178D4
-P 8950 5750
-F 0 "R7" V 9030 5750 50  0000 C CNN
-F 1 "3.74k" V 8950 5750 50  0000 C CNN
-F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8880 5750 50  0001 C CNN
-F 3 "" H 8950 5750 50  0000 C CNN
-	1    8950 5750
-	1    0    0    -1  
-$EndComp
-Text GLabel 8100 4900 0    60   Input ~ 0
-VBAT_IN
-Text GLabel 8600 5500 0    60   Input ~ 0
-A3
-Text GLabel 2000 3800 0    60   Input ~ 0
-A3
+	10100 3750 9600 3750
 Wire Wire Line
 	8950 5600 8950 5350
 Wire Wire Line
 	8600 5500 8950 5500
 Connection ~ 8950 5500
-Text GLabel 10400 5050 2    60   Input ~ 0
-D0
-Text GLabel 2000 4400 0    60   Input ~ 0
-D0
-$Comp
-L R R5
-U 1 1 59617F72
-P 9450 4600
-F 0 "R5" H 9530 4600 50  0000 C CNN
-F 1 "10k" V 9450 4600 50  0000 C CNN
-F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 9380 4600 50  0001 C CNN
-F 3 "" H 9450 4600 50  0000 C CNN
-	1    9450 4600
-	0    1    1    0   
-$EndComp
-$Comp
-L GND #PWR020
-U 1 1 596183C8
-P 8950 5900
-F 0 "#PWR020" H 8950 5650 50  0001 C CNN
-F 1 "GND" H 8950 5750 50  0000 C CNN
-F 2 "" H 8950 5900 50  0000 C CNN
-F 3 "" H 8950 5900 50  0000 C CNN
-	1    8950 5900
-	1    0    0    -1  
-$EndComp
-$Comp
-L IRF9540N Q2
-U 1 1 59618880
-P 9450 5100
-F 0 "Q2" H 9700 5175 50  0000 L CNN
-F 1 "IPP45P03P4L-11" H 9700 5100 50  0000 L CNN
-F 2 "TO_SOT_Packages_THT:TO-220_Neutral123_Vertical" H 9700 5025 50  0001 L CIN
-F 3 "" H 9450 5100 50  0000 L CNN
-	1    9450 5100
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	9650 5050 10400 5050
 Wire Wire Line
@@ -646,29 +735,6 @@ Wire Wire Line
 Wire Wire Line
 	9750 4600 9750 5050
 Connection ~ 9750 5050
-$Comp
-L +3.3V #PWR021
-U 1 1 59619B8A
-P 9100 4600
-F 0 "#PWR021" H 9100 4450 50  0001 C CNN
-F 1 "+3.3V" H 9100 4740 50  0000 C CNN
-F 2 "" H 9100 4600 50  0000 C CNN
-F 3 "" H 9100 4600 50  0000 C CNN
-	1    9100 4600
-	1    0    0    -1  
-$EndComp
-Text Notes 8550 6250 0    60   ~ 0
-Voltage measurement
-Text Notes 3300 7350 0    60   ~ 0
-Low battery protection
-Text Notes 5800 4600 0    60   ~ 0
-Ultrasonic range detector power circuit
-Text Notes 6600 3150 0    60   ~ 0
-External watchdog circuit
-Text Notes 3900 2250 0    60   ~ 0
-Solar charging circuit
-Text Notes 1600 1950 0    60   ~ 0
-Ultrasonic range detector
 Wire Wire Line
 	2550 6450 2950 6450
 Wire Wire Line
@@ -681,28 +747,6 @@ Wire Wire Line
 	900  5900 900  6800
 Wire Wire Line
 	900  6800 1000 6800
-$Comp
-L MCP112-300 U6
-U 1 1 5972B815
-P 1800 6450
-F 0 "U6" H 1800 6350 50  0000 C CNN
-F 1 "MCP112-300" H 1800 6550 50  0000 C CNN
-F 2 "TO_SOT_Packages_THT:TO-92_Inline_Wide" H 1800 6450 50  0001 C CNN
-F 3 "DOCUMENTATION" H 1800 6450 50  0001 C CNN
-	1    1800 6450
-	-1   0    0    1   
-$EndComp
-Text Notes 4650 3150 0    60   ~ 0
-Can handle 5.7v (down \nconverted from charger)\nbut convert module can't!
-$Comp
-L +3.3V #PWR022
-U 1 1 5977FE2D
-P 5950 3050
-F 0 "#PWR022" H 5950 2900 50  0001 C CNN
-F 1 "+3.3V" H 5950 3190 50  0000 C CNN
-F 2 "" H 5950 3050 50  0000 C CNN
-F 3 "" H 5950 3050 50  0000 C CNN
-	1    5950 3050
-	1    0    0    -1  
-$EndComp
+Wire Wire Line
+	9200 3850 9200 3450
 $EndSCHEMATC
