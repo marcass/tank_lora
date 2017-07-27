@@ -15,7 +15,7 @@ int dist;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(POWER, INPUT);
+  pinMode(POWER, OUTPUT);
   digitalWrite(POWER, LOW);
   Serial.println("LoRa Sender");
   LoRa.setPins(1, 4, 7); //reset is pd4, adc8, dio0 is P(ort)E 6 or int6
@@ -30,20 +30,26 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+  delay(3000);
   //READ MESSAGE
-  //digitalWrite(POWER, HIGH);
-  //delay(10);
+  digitalWrite(POWER, HIGH);
+  delay(3000);
   dist = sonar.ping_cm();
-  //digitalWrite(POWER, LOW);
+  digitalWrite(POWER, LOW);
   // send packet
-  LoRa.beginPacket();
-  LoRa.print("Ping = ");
-  LoRa.print(sonar.ping_cm());
-  LoRa.print("cm");  
-  LoRa.print(": count = ");
-  LoRa.print(counter);
-  LoRa.endPacket();
+//  LoRa.beginPacket();
+//  LoRa.print("Ping = ");
+//  LoRa.print(sonar.ping_cm());
+//  LoRa.print("cm");  
+//  LoRa.print(": count = ");
+//  LoRa.print(counter);
+//  LoRa.endPacket();
+
+  Serial.print("Ping = ");
+  Serial.print(sonar.ping_cm());
+  Serial.print("cm");  
+  Serial.print(": count = ");
+  Serial.println(counter);
 
   counter++;
 }
