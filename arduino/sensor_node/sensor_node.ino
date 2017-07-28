@@ -45,6 +45,7 @@ float voltage;
 //ultrasonic setup
 #define MAX_DISTANCE 300 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 int dist;
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
@@ -61,8 +62,7 @@ void setup() {
   digitalWrite(POWER, LOW);
   pinMode(V_POWER, OUTPUT);
   digitalWrite(V_POWER, HIGH);
-  NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
-  
+ 
   #ifdef debug
     Serial.begin(9600);
     while (!Serial); //uncomment to require serial connection to work
@@ -152,7 +152,8 @@ void loop() {
   //power up ultrasonic sensor
   digitalWrite(POWER, HIGH);
   delay(5); //wait for board to warm up
-  dist = sonar.ping_cm();
+  Serial.print(sonar.ping_cm());
+  //dist = sonar.ping_cm();
   //TURN u/s module off
   digitalWrite(POWER, LOW);
   //send packet

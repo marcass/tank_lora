@@ -186,7 +186,7 @@ Text GLabel 4200 4600 2    60   Input ~ 0
 WAKE
 Text GLabel 7550 2650 2    60   Input ~ 0
 DONE
-Text GLabel 4200 4100 2    60   Input ~ 0
+Text GLabel 4200 4200 2    60   Input ~ 0
 DONE
 $Comp
 L +3.3V #PWR06
@@ -299,23 +299,23 @@ $EndComp
 $Comp
 L GND #PWR013
 U 1 1 595DBAFF
-P 4700 5100
-F 0 "#PWR013" H 4700 4850 50  0001 C CNN
-F 1 "GND" H 4700 4950 50  0000 C CNN
-F 2 "" H 4700 5100 50  0000 C CNN
-F 3 "" H 4700 5100 50  0000 C CNN
-	1    4700 5100
+P 4700 5300
+F 0 "#PWR013" H 4700 5050 50  0001 C CNN
+F 1 "GND" H 4700 5150 50  0000 C CNN
+F 2 "" H 4700 5300 50  0000 C CNN
+F 3 "" H 4700 5300 50  0000 C CNN
+	1    4700 5300
 	1    0    0    -1  
 $EndComp
 $Comp
 L R R4
 U 1 1 595DBB24
-P 4700 4750
-F 0 "R4" V 4780 4750 50  0000 C CNN
-F 1 "100k" V 4700 4750 50  0000 C CNN
-F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 4630 4750 50  0001 C CNN
-F 3 "" H 4700 4750 50  0000 C CNN
-	1    4700 4750
+P 4700 4950
+F 0 "R4" V 4780 4950 50  0000 C CNN
+F 1 "100k" V 4700 4950 50  0000 C CNN
+F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 4630 4950 50  0001 C CNN
+F 3 "" H 4700 4950 50  0000 C CNN
+	1    4700 4950
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -427,17 +427,15 @@ A2
 Text GLabel 2000 3700 0    60   Input ~ 0
 A2
 Text GLabel 10100 3850 0    60   Input ~ 0
-D3
-Text GLabel 10100 3950 0    60   Input ~ 0
-D5
+D6
 Text GLabel 3700 4400 2    60   Input ~ 0
-D5
-Text GLabel 3700 4500 2    60   Input ~ 0
-D3
-Text GLabel 3700 4200 2    60   Input ~ 0
-D9
+V_POWER
+Text GLabel 3700 4300 2    60   Input ~ 0
+D6
+Text GLabel 3700 4100 2    60   Input ~ 0
+D10
 Text GLabel 10100 4050 0    60   Input ~ 0
-D9
+D10
 $Comp
 L R R6
 U 1 1 59617861
@@ -460,14 +458,14 @@ F 3 "" H 8950 5750 50  0000 C CNN
 	1    8950 5750
 	1    0    0    -1  
 $EndComp
-Text GLabel 8100 4900 0    60   Input ~ 0
+Text GLabel 8850 4900 0    60   Input ~ 0
 VBAT_IN
 Text GLabel 8600 5500 0    60   Input ~ 0
-A3
+BATT
 Text GLabel 2000 3800 0    60   Input ~ 0
-A3
+BATT
 Text GLabel 10400 5050 2    60   Input ~ 0
-D0
+V_POWER
 Text GLabel 2000 4400 0    60   Input ~ 0
 D0
 $Comp
@@ -514,15 +512,15 @@ F 3 "" H 9100 4600 50  0000 C CNN
 	1    9100 4600
 	1    0    0    -1  
 $EndComp
-Text Notes 8550 6250 0    60   ~ 0
+Text Notes 9600 4500 0    60   ~ 0
 Voltage measurement
-Text Notes 3300 7350 0    60   ~ 0
+Text Notes 3300 5750 0    60   ~ 0
 Low battery protection
 Text Notes 5800 4600 0    60   ~ 0
 Ultrasonic range detector power circuit
 Text Notes 6600 3150 0    60   ~ 0
 External watchdog circuit
-Text Notes 5600 2000 0    60   ~ 0
+Text Notes 5650 700  0    60   ~ 0
 Solar charging circuit
 Text Notes 1600 1950 0    60   ~ 0
 Ultrasonic range detector
@@ -537,17 +535,15 @@ F 3 "DOCUMENTATION" H 1800 6450 50  0001 C CNN
 	1    1800 6450
 	-1   0    0    1   
 $EndComp
-Text Notes 4650 3150 0    60   ~ 0
-Can handle 5.7v (down \nconverted from charger)\nbut convert module can't!
 $Comp
 L +3.3V #PWR021
 U 1 1 5977FE2D
-P 5950 3050
-F 0 "#PWR021" H 5950 2900 50  0001 C CNN
-F 1 "+3.3V" H 5950 3190 50  0000 C CNN
-F 2 "" H 5950 3050 50  0000 C CNN
-F 3 "" H 5950 3050 50  0000 C CNN
-	1    5950 3050
+P 5950 3950
+F 0 "#PWR021" H 5950 3800 50  0001 C CNN
+F 1 "+3.3V" H 5950 4090 50  0000 C CNN
+F 2 "" H 5950 3950 50  0000 C CNN
+F 3 "" H 5950 3950 50  0000 C CNN
+	1    5950 3950
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -622,7 +618,7 @@ Wire Wire Line
 Wire Wire Line
 	6650 1700 6400 1700
 Wire Wire Line
-	4200 4100 3700 4100
+	4200 4200 3700 4200
 Wire Wire Line
 	4200 4600 3700 4600
 Wire Wire Line
@@ -643,8 +639,6 @@ Wire Wire Line
 	3950 4000 3700 4000
 Wire Wire Line
 	6150 3950 5950 3950
-Wire Wire Line
-	5950 3950 5950 3050
 Wire Wire Line
 	7800 4200 7800 4050
 Wire Wire Line
@@ -672,10 +666,10 @@ Wire Wire Line
 Wire Wire Line
 	7650 1250 7650 2250
 Wire Wire Line
-	4700 4600 4700 4300
-Connection ~ 4700 4300
+	4700 4800 4700 4500
+Connection ~ 4700 4500
 Wire Wire Line
-	4700 4900 4700 5100
+	4700 5100 4700 5300
 Wire Wire Line
 	5600 4450 5600 5100
 Wire Wire Line
@@ -714,8 +708,6 @@ Wire Wire Line
 Wire Wire Line
 	9350 5350 9250 5350
 Wire Wire Line
-	8100 4900 9350 4900
-Wire Wire Line
 	9300 4600 9100 4600
 Wire Wire Line
 	9600 4600 9750 4600
@@ -752,7 +744,7 @@ L JSN-SR40T S2
 U 1 1 597A9F74
 P 4650 1650
 F 0 "S2" H 4650 1550 50  0000 C CNN
-F 1 "JSN-SR40T" H 4650 1750 50  0000 C CNN
+F 1 "JSN-SR40T v2" H 4650 1750 50  0000 C CNN
 F 2 "jsn--sr04t:JSN-SR04T" H 4650 1650 50  0001 C CNN
 F 3 "DOCUMENTATION" H 4650 1650 50  0001 C CNN
 F 4 "Ultrasonic measuring device" H 4650 1650 50  0001 C CNN "Type"
@@ -763,8 +755,6 @@ Text GLabel 3700 1600 0    60   Input ~ 0
 TRIGGER
 Text GLabel 3650 1700 0    60   Input ~ 0
 ECHO
-Text Notes 4050 2250 0    60   ~ 0
-Ultrasonic range detector
 Wire Wire Line
 	2900 1800 3900 1800
 Wire Wire Line
@@ -775,7 +765,7 @@ Wire Wire Line
 	3700 1600 3900 1600
 Wire Wire Line
 	3650 1700 3900 1700
-Text Notes 3100 2650 0    60   ~ 0
+Text Notes 1700 750  0    60   ~ 0
 Ultrasonic range detector power circuit
 $Comp
 L 2N7002 Q3
@@ -789,10 +779,10 @@ F 3 "" H 2800 2300 50  0001 L CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3700 4300 4850 4300
+	3700 4500 4850 4500
 Text GLabel 5300 4300 0    60   Input ~ 0
 US
-Text GLabel 4850 4300 2    60   Input ~ 0
+Text GLabel 4850 4500 2    60   Input ~ 0
 US
 Text GLabel 2600 2350 0    60   Input ~ 0
 US
@@ -820,4 +810,102 @@ F 3 "" H 3700 1200 50  0000 C CNN
 	1    3700 1200
 	1    0    0    -1  
 $EndComp
+Text GLabel 10100 3950 0    60   Input ~ 0
+A0
+Text GLabel 2000 3500 0    60   Input ~ 0
+A0
+Wire Notes Line
+	5400 2750 600  2750
+Wire Notes Line
+	600  2750 600  600 
+Wire Notes Line
+	600  600  5400 600 
+Wire Notes Line
+	5400 600  5400 2750
+Wire Notes Line
+	600  2800 5000 2800
+Wire Notes Line
+	5000 2800 5000 5550
+Wire Notes Line
+	5000 5550 600  5550
+Wire Notes Line
+	600  5550 600  2800
+Wire Notes Line
+	600  5600 6350 5600
+Wire Notes Line
+	6350 5600 6350 7400
+Wire Notes Line
+	6350 7400 700  7400
+Wire Notes Line
+	700  7400 700  5600
+Wire Notes Line
+	5600 2050 7400 2050
+Wire Notes Line
+	7400 2050 7400 600 
+Wire Notes Line
+	7400 600  5550 600 
+Wire Notes Line
+	5550 600  5550 2050
+Wire Notes Line
+	5550 2050 5650 2050
+Wire Notes Line
+	6050 2100 6050 3250
+Wire Notes Line
+	6050 3250 8850 3250
+Wire Notes Line
+	8850 3250 8850 2550
+Wire Notes Line
+	8850 2550 9200 2550
+Wire Notes Line
+	9200 2550 9200 800 
+Wire Notes Line
+	9200 800  7450 800 
+Wire Notes Line
+	7450 800  7450 2100
+Wire Notes Line
+	7450 2100 6050 2100
+Wire Notes Line
+	6050 2200 6100 2200
+Wire Wire Line
+	9350 4900 8850 4900
+Wire Notes Line
+	8100 4350 8100 6400
+Wire Notes Line
+	8100 6400 11050 6400
+Wire Notes Line
+	11050 6400 11050 4350
+Wire Notes Line
+	11050 4350 8100 4350
+Wire Notes Line
+	5050 5300 5050 3400
+Wire Notes Line
+	5050 3400 7900 3400
+Wire Notes Line
+	7900 3400 7900 5200
+Wire Notes Line
+	7900 5200 5050 5200
+Wire Notes Line
+	5050 5200 5050 5250
+Wire Notes Line
+	9100 4250 10750 4250
+Wire Notes Line
+	10750 4250 10750 3000
+Wire Notes Line
+	10750 3000 9000 3000
+Wire Notes Line
+	9000 3000 9000 4250
+Wire Notes Line
+	9000 4250 9150 4250
+Text Notes 9750 700  0    60   ~ 0
+Mounting holes
+Text Notes 9500 3150 0    60   ~ 0
+Spare connections
+Wire Notes Line
+	9300 600  9300 2100
+Wire Notes Line
+	9300 2100 11100 2100
+Wire Notes Line
+	11100 2100 11100 600 
+Wire Notes Line
+	11100 600  9300 600 
 $EndSCHEMATC
