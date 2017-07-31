@@ -16,6 +16,10 @@ class Tanks:
         self.rrdpath = '/home/pi/git/tank_lora/python/rrd/'
         self.rrd_file = self.rrdpath +name +'.rrd'
         self.url = 'https://thingspeak.com/channels/300940'
+        #rrd stuff
+        #DEF
+        self.rrd_def = 'DEF:'+self.name+'='+self.rrdpath+vers+self.name+'.rrd'+':'+vers+':AVERAGE:step=3600'
+        self.rrd_line = 'LINE'+self.nodeID+':'+self.name+self.line_colour+':'+self.name+' '+legend
         
     def volume(self, payload):
         #litres (measurements in cm)

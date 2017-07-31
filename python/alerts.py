@@ -25,13 +25,14 @@ telepot.api._which_pool = always_use_new
 
 Tanks = tanks.Tanks     #ref class as Tanks in code
 inst = tanks            #eg refer to instance as inst.t
+build_list = []
 
 class Keyboard:
     def __init__(self, version):
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
         
-    def format_keys(self, tank_instance=0):
+    def format_keys(self, tank_instance=0, tank_list=0):
         if self.version == 'status':
             if tank_instance.statusFlag == 'OK':
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -41,8 +42,9 @@ class Keyboard:
                 
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
-                        InlineKeyboardButton(text='Get ' +tank_instance.name +' graph', callback_data='fetch graph'),
+                        for tank in tank_list:
+                            InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'), 
+                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'),
                         ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -59,6 +61,12 @@ class Keyboard:
                         InlineKeyboardButton(text='3 days', callback_data='3'),
                         InlineKeyboardButton(text='7 days', callback_data='7'),
                         ]])
+        elif self.version == 'build':
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        for tank in tank_list:
+                            InlineKeyboardButton(text='Add ' +tank.name, callback_data=tank+' add tank'), 
+                        InlineKeyboardButton(text='Build graph', callback_data='add tank build'),
+                        ]])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Help', callback_data='help'),
@@ -71,21 +79,28 @@ h = Keyboard('helpMe')
 st = Keyboard('status')
 a = Keyboard('alert')
 g = Keyboard('graphs')
+b = Keyboard('build')
     
 def status_mess(tag):
     if tag == 'all':
+        data = 'Tank status:\n'
+        bad = []
         for tank in inst.tank_list:
-            message = bot.sendMessage(creds.group_ID, 
-            tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
+            data = data +tank.name +' is ' +tank.statusFlag +'\n'
+            if tank.statusFlag == 'bad':
+                bad = bad.append(tank)
+            #message = bot.sendMessage(creds.group_ID, 
+            #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
+        message = bot.sendMessage(creds.group_ID, data, reply_markup=st.format_keys(0, bad))
     else:
         message = bot.sendMessage(creds.group_ID, 
-            tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
+            tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag, 0))
 
 def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     text = msg['text']
     if ('/help' in text) or ('/Help' in text):
-        message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+        message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
     elif ('/status' in text) or ('/Status' in text):
         #hasKey = lambda text, inst.tanks_by_name: any(k in text for k in inst.tanks_by_name)
         if any(k in text for k in inst.tanks_by_name):
@@ -95,6 +110,8 @@ def on_chat_message(msg):
             status_mess('all')
     elif ('/URL' in text) or ('/url' in text):
         message = bot.sendMessage(creds.group_ID, inst.t.url, reply_markup=h.format_keys())
+    elif ('/build' in text) or ('/Build' in text):
+        message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(0, inst.tank_list))
     else:
         message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
 
@@ -112,7 +129,7 @@ def send_png(in_tank, period, vers):
     ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label="+label, "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
     send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph for the '+legend)
         
-def gen_mulit_png(period, vers):
+def gen_multi_png(period, vers, tanks_graph):
     #hack for error: start time: There should be number after '-'
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
@@ -124,9 +141,12 @@ def gen_mulit_png(period, vers):
         label = 'Volts'
         legend = 'Battery'
     rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
-    for objT in inst.tank_list:
-        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
-        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
+    for objT in tank_graph:
+        rrd_graph_comm.append(objT.rrd_def)
+        rrd_graph_comm.append(objT.rrd_line)
+        #rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
+        #rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
+    print(rrd_graph_comm)
     ret = rrdtool.graph(rrd_graph_comm)
     send_graph = bot.sendPhoto(creds.group_ID, open(inst.t.rrdpath +'net.png'), 'One tank graph to rule them all')
     
@@ -139,6 +159,13 @@ def on_callback_query(msg):
     #sort multi graph callback here
     if query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
+    # do multi tank build here
+    elif 'add tank' in query_data:
+        if 'build' in query_data:
+            gen_multi_png('2', 'water' build_list)
+            build_list = [] # finished build, so empty list
+        else:
+            build_list = build_list.append(query_data.split(' ')[0])
     elif inst.tanks_by_name.has_key(tank_name):
         tank = inst.tanks_by_name[tank_name]
         #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
@@ -165,7 +192,7 @@ def on_callback_query(msg):
             print query_data
             conv = str(query_data)
             print('This is query_data'+query_data+'stop')
-            gen_mulit_png(conv, 'water')
+            gen_multi_png(conv, 'water')
             bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
 
 
