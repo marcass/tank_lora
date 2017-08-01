@@ -27,6 +27,7 @@ Tanks = tanks.Tanks     #ref class as Tanks in code
 build_list = []
 days = '1'
 
+
 class Keyboard:
     def __init__(self, version):
         #disp = single alert, multi alert, graph request, help etc
@@ -61,11 +62,11 @@ class Keyboard:
                         InlineKeyboardButton(text='7 days', callback_data='7'),
                         ]])
         elif self.version == 'build':
-            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        for tank in tank_list:
-                            InlineKeyboardButton(text='Add ' +tank.name, callback_data=tank+' add tank'), 
-                        InlineKeyboardButton(text='Build graph', callback_data='add tank build'),
-                        ]])
+            keyb_list = []
+            for tank in tank_list:
+                keyb_list = keyb_list.append(InlineKeyboardButton(text='Add ' +tank.name, callback_data=tank+' add tank'))
+            keyb_list = keyb_list.append(InlineKeyboardButton(text='Build graph', callback_data='add tank build'))
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[keyb_list])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Help', callback_data='help'),
@@ -158,13 +159,14 @@ def on_callback_query(msg):
     if query_data == 'all reset':
         for tank in tanks.tank_list:
             tank.statusFlag = 'OK'
+        bot.sendMessage(creds.group_ID, "All tank's status now reset to OK", reply_markup=h.format_keys())
     #sort multi graph callback here
     if query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
     # do multi tank build here
     elif 'add tank' in query_data:
         if 'build' in query_data:
-            gen_multi_png(days, 'water' build_list)
+            gen_multi_png(days, 'water', build_list)
             build_list = [] # finished build, so empty list
         else:
             build_list = build_list.append(query_data.split(' ')[0])

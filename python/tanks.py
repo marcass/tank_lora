@@ -1,5 +1,8 @@
 import creds
 
+vers = ''
+legend = ''
+
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, line_colour):
         self.name = name
