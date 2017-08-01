@@ -33,18 +33,18 @@ class Keyboard:
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
         
-    def format_keys(self, tank_instance=0, tank_list=0):
+    def format_keys(self, tank=0):
         if self.version == 'status':
-            if tank_list != 0:
+            if type(tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
-                for tank in tank_list:
-                            key_list = key_list.append(InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
-                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'))
+                for x in tank:
+                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data='reset_alert'))
+                            key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data='fetch graph'))
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
-                            InlineKeyboardButton(text='Get ' +tank_instance.name +' graph', callback_data='fetch graph'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
+                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'),
                             ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -53,7 +53,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank_instance.name, callback_data='reset_alert'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -63,9 +63,10 @@ class Keyboard:
                         ]])
         elif self.version == 'build':
             keyb_list = []
-            for tank in tank_list:
-                keyb_list = keyb_list.append(InlineKeyboardButton(text='Add ' +tank.name, callback_data=tank+' add tank'))
-            keyb_list = keyb_list.append(InlineKeyboardButton(text='Build graph', callback_data='add tank build'))
+            for x in tank:
+                keyb_list.append(InlineKeyboardButton(text=x.name+' ', callback_data=x.name+' add tank')) 
+            keyb_list.append(InlineKeyboardButton(text='Build graph', callback_data='add tank build'))
+            print keyb_list
             keyboard = InlineKeyboardMarkup(inline_keyboard=[keyb_list])
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -87,15 +88,16 @@ def status_mess(tag):
         for tank in tanks.tank_list:
             data = data +tank.name +' is ' +tank.statusFlag +'\n'
             if tank.statusFlag == 'bad':
-                bad = bad.append(tank)
+                bad.append(tank)
             #message = bot.sendMessage(creds.group_ID, 
             #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
-        message = bot.sendMessage(creds.group_ID, data, reply_markup=st.format_keys(0, bad))
+        message = bot.sendMessage(creds.group_ID, data, reply_markup=st.format_keys(bad))
     else:
         message = bot.sendMessage(creds.group_ID, 
-            tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag, 0))
+            tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
 
 def on_chat_message(msg):
+    global days
     content_type, chat_type, chat_id = telepot.glance(msg)
     text = msg['text']
     if ('/help' in text) or ('/Help' in text):
@@ -112,7 +114,7 @@ def on_chat_message(msg):
     elif ('/build' in text) or ('/Build' in text):
         days = text.split(' ')[-1]
         print days
-        message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(0, tanks.tank_list))
+        message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
     else:
         message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
 
@@ -142,16 +144,16 @@ def gen_multi_png(period, vers, tanks_graph):
         legend = 'Battery'
     rrd_graph_comm = [tanks.tank_list[0].rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
     for objT in tanks_graph:
-        rrd_graph_comm.append(objT.rrd_def)
-        rrd_graph_comm.append(objT.rrd_line)
-        #rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
-        #rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
+        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
+        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
     print(rrd_graph_comm)
     ret = rrdtool.graph(rrd_graph_comm)
     send_graph = bot.sendPhoto(creds.group_ID, open(tanks.tank_list[0].rrdpath +'net.png'), 'One tank graph to rule them all')
     
 
 def on_callback_query(msg):
+    global days
+    global build_list
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     #print('Callback Query:', query_id, from_id, query_data)
     mess = msg['message']['text']     #pull text from message
@@ -160,16 +162,19 @@ def on_callback_query(msg):
         for tank in tanks.tank_list:
             tank.statusFlag = 'OK'
         bot.sendMessage(creds.group_ID, "All tank's status now reset to OK", reply_markup=h.format_keys())
+        return
     #sort multi graph callback here
     if query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
     # do multi tank build here
     elif 'add tank' in query_data:
         if 'build' in query_data:
-            gen_multi_png(days, 'water', build_list)
+            gen_multi_png(str(days), 'water', build_list)
             build_list = [] # finished build, so empty list
         else:
-            build_list = build_list.append(query_data.split(' ')[0])
+            tank_is = query_data.split(' ')[0]
+            this_tank = tanks.tanks_by_name[tank_is]
+            build_list.append(this_tank)
     elif tanks.tanks_by_name.has_key(tank_name):
         tank = tanks.tanks_by_name[tank_name]
         #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
