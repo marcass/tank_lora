@@ -113,8 +113,12 @@ def on_chat_message(msg):
         message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
     elif ('/build' in text) or ('/Build' in text):
         days = text.split(' ')[-1]
+        print type(days)
         print days
-        message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
+        if type(days) == int:
+            message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
+        else:
+            message = bot.sendMessage(creds.group_ID, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2", reply_markup=b.format_keys(tanks.tank_list))
     else:
         message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
 
