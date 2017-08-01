@@ -34,18 +34,17 @@ class Keyboard:
         
     def format_keys(self, tank_instance=0, tank_list=0):
         if self.version == 'status':
-            if tank_instance.statusFlag == 'OK':
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get ' +tank_instance.name +' graph', callback_data='fetch graph'),
-                        InlineKeyboardButton(text='Get composite graph', callback_data='meta graph'),
-                        ]])
-                
+            if tank_instance == 0:
+                key_list = []
+                for tank in tank_list:
+                            key_list = key_list.append(InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
+                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'))
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        for tank in tank_list:
-                            InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'), 
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
                             InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'),
-                        ]])
+                            ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Get composite graph', callback_data='meta graph'),
@@ -140,7 +139,7 @@ def gen_multi_png(period, vers, tanks_graph):
     if vers == 'batt':
         label = 'Volts'
         legend = 'Battery'
-    rrd_graph_comm = [inst.t.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
+    rrd_graph_comm = [inst.tank_list[0].rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
     for objT in tank_graph:
         rrd_graph_comm.append(objT.rrd_def)
         rrd_graph_comm.append(objT.rrd_line)
