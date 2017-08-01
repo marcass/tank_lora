@@ -1,8 +1,5 @@
 import creds
 
-#vers = ''
-#legend = ''
-
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, line_colour):
         self.name = name
@@ -38,7 +35,8 @@ s = Tanks("sals",  "3", 100, 100, 30, 150, '#7648EC')
 #b = Tanks("main",  "3", 100, 100, 30, 150, '#B54FC6')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
-tank_list = [t,n,s,m,b]
+#tank_list = [t,n,s,m,b]
+tank_list = [t,n,s]
 tanks_by_wtopic = {tank.waterTop : tank for tank in tank_list}
 tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
 tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
