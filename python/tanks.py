@@ -31,12 +31,12 @@ class Tanks:
 t = Tanks("top",   "1", 100, 100, 30, 200, '#EA644A')
 n = Tanks("noels", "2", 100, 100, 30, 150, '#54EC48')
 s = Tanks("sals",  "3", 100, 100, 30, 150, '#7648EC')
-#m = Tanks("bay",  "3", 100, 100, 30, 150, '#AFB0C5')
-#b = Tanks("main",  "3", 100, 100, 30, 150, '#B54FC6')
+m = Tanks("bay",  "4",  100, 100, 30, 150, '#AFB0C5')
+b = Tanks("main",  "5", 100, 100, 30, 150, '#B54FC6')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
-#tank_list = [t,n,s,m,b]
-tank_list = [t,n,s]
+tank_list = [t,n,s,m,b]
+#tank_list = [t,n,s]
 tanks_by_wtopic = {tank.waterTop : tank for tank in tank_list}
 tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
 tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())

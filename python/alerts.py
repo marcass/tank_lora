@@ -38,12 +38,12 @@ class Keyboard:
             if type(tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in tank:
-                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data=x.name+' reset_alert'))
+                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data=x.name+' reset alert'))
                             key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name+' reset_alert'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name+' reset alert'),
                             InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
                             ]])
         elif self.version == 'helpMe':
@@ -53,7 +53,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name +' reset_alert'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name +' reset alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -113,6 +113,7 @@ def on_chat_message(msg):
         message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
     elif ('/build' in text) or ('/Build' in text):
         days = text.split(' ')[-1]
+        print 'days = '+days
         if days.isdigit():
             message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
         else:
@@ -147,7 +148,9 @@ def gen_multi_png(period, vers, tanks_graph):
     rrd_graph_comm = [tanks.tank_list[0].rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
     for objT in tanks_graph:
         rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
-        rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
+        #line colour followed by 00 - FF (in range FF being opaque
+        rrd_graph_comm.append('AREA:'+objT.name+objT.line_colour+'AA'+':'+objT.name+' '+legend)
+        #rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
     #print(rrd_graph_comm)
     ret = rrdtool.graph(rrd_graph_comm)
     send_graph = bot.sendPhoto(creds.group_ID, open(tanks.tank_list[0].rrdpath +'net.png'), 'One tank graph to rule them all')
@@ -157,50 +160,56 @@ def on_callback_query(msg):
     global days
     global build_list
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    #print('Callback Query:', query_id, from_id, query_data)
-    mess = msg['message']['text']     #pull text from message
-    tank_name = mess.split(' ')[0]         #split message on spaces and get first member 
+    print('Callback Query:', query_id, from_id, query_data)
+    #mess = msg['message']['text']     #pull text from message
+    #tank_name = mess.split(' ')[0]         #split message on spaces and get first member 
     if query_data == 'all reset':
         for tank in tanks.tank_list:
             tank.statusFlag = 'OK'
         bot.sendMessage(creds.group_ID, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     #sort multi graph callback here
-    elif query_data == 'meta graph':
+    if query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
+        return
     # do multi tank build here
-    elif 'add tank' in query_data:
-        if 'build' in query_data:
-            gen_multi_png(str(days), 'water', build_list)
-            build_list = [] # finished build, so empty list
-        else:
-            tank_is = query_data.split(' ')[0]
-            this_tank = tanks.tanks_by_name[tank_is]
-            build_list.append(this_tank)
-    #elif tanks.tanks_by_name.has_key(tank_name):
-        #tank = tanks.tanks_by_name[tank_name]
-    #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
-    elif 'reset_alert' in query_data:
-        alert_tank = tanks.tanks_by_name[query_data.split(' ')[0]]
-        #print tank.name +' ' +tank.statusFlag
-        alert_tank.statusFlag = 'OK'
-        #print tank.statusFlag
-        bot.answerCallbackQuery(query_id, text='Alert now reset')
-        bot.sendMessage(creds.group_ID, alert_tank.name +' reset to ' +alert_tank.statusFlag, reply_markup=h.format_keys())
+    query_tank_name = query_data.split(' ')[0]
+    print 'query tank name = '+query_tank_name
+    if tanks.tanks_by_name.has_key(query_tank_name):
+        query_tank = tanks.tanks_by_name[query_tank_name]
+        print 'found a tank called '+query_tank.name
+        if 'add tank' in query_data:
+            print 'found "add tank" in query data'
+            print 'appending '+query_tank.name
+            build_list.append(query_tank)
+            return
+        #elif tanks.tanks_by_name.has_key(tank_name):
+            #tank = tanks.tanks_by_name[tank_name]
+        #callbacks for 'reset alert' 'meta graph' 'fetch graph'
+        if 'reset alert' in query_data:
+            #print tank.name +' ' +tank.statusFlag
+            query_tank.statusFlag = 'OK'
+            #print tank.statusFlag
+            bot.answerCallbackQuery(query_id, text='Alert now reset')
+            bot.sendMessage(creds.group_ID, query_tank.name +' reset to ' +query_tank.statusFlag)
+            return
+        if 'fetch graph' in query_data:
+            bot.sendMessage(creds.group_ID, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
+            return
+        elif query_data == 'status':
+            status_mess(query_tank)
+            return
+        #elif query_data == '1' or '3' or '7':
+            #conv = str(query_data)
+            #send_png(query_tank, conv, 'water')
+            #return
+    if query_data == 'help':
+        bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys())
         return
-    elif 'fetch graph' in query_data:
-        alert_tank = tanks.tanks_by_name[query_data.split(' ')[0]]
-        bot.sendMessage(creds.group_ID, alert_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(alert_tank))
-        return
-    elif query_data == 'status':
-        status_mess(tank)
-        return
-    elif query_data == '1' or '3' or '7':
-        conv = str(query_data)
-        send_png(tank, conv, 'water')
-        return
-    elif query_data == 'help':
-        bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+    if 'add tank build' in query_data:
+        print 'days in build = '+days
+        gen_multi_png(str(days), 'water', build_list)
+        build_list = [] # finished build, so empty list
         return
     else: #catch all else
         if query_data == 'status':
@@ -208,8 +217,17 @@ def on_callback_query(msg):
         elif query_data == '1' or '3' or '7':
             #print query_data
             conv = str(query_data)
-            gen_multi_png(conv, 'water', tanks.tank_list)
-            bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
+            in_tank_name = msg['message']['text'].split(' ')[0]
+            print 'tanks is '+in_tank_name
+            if tanks.tanks_by_name.has_key(in_tank_name):
+                graph_tank = tanks.tanks_by_name[in_tank_name]
+                print 'tank is '+graph_tank.name
+                send_png(graph_tank, conv, 'water')
+                return
+            else:
+                gen_multi_png(conv, 'water', tanks.tank_list)
+                #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
+                return
 
 
 TOKEN = creds.botAPIKey
