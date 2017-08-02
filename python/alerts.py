@@ -186,15 +186,20 @@ def on_callback_query(msg):
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
             bot.sendMessage(creds.group_ID, tank.name +' reset to ' +tank.statusFlag, reply_markup=h.format_keys())
+            return
         elif query_data == 'fetch graph':
             bot.sendMessage(creds.group_ID, tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(tank))
+            return
         elif query_data == 'status':
             status_mess(tank)
+            return
         elif query_data == '1' or '3' or '7':
             conv = str(query_data)
             send_png(tank, conv, 'water')
+            return
         elif query_data == 'help':
             bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+            return
     else: #catch all else
         if query_data == 'status':
             status_mess('all')
