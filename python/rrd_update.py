@@ -34,7 +34,7 @@ def rrd_update(target, data, vers):
     else:
         print 'updating database this time'
         # feed updates to the database
-        print('adding ' +data +' to ' +target.rrd_file)
+        print('adding ' +data +' to ' +target.rrdpath+vers+target.name+'.rrd')
         rrdtool.update(target.rrdpath+vers+target.name+'.rrd', 'N:' +data)
     
 # The callback for when the client receives a CONNACK response from the server.
