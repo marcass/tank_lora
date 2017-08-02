@@ -38,13 +38,13 @@ class Keyboard:
             if type(tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in tank:
-                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data='reset_alert'))
-                            key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data='fetch graph'))
+                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data=x.name+' reset_alert'))
+                            key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
-                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data='fetch graph'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name+' reset_alert'),
+                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
                             ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -53,7 +53,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data='reset_alert'),
+                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name +' reset_alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -166,7 +166,7 @@ def on_callback_query(msg):
         bot.sendMessage(creds.group_ID, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     #sort multi graph callback here
-    if query_data == 'meta graph':
+    elif query_data == 'meta graph':
         bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
     # do multi tank build here
     elif 'add tank' in query_data:
@@ -177,29 +177,31 @@ def on_callback_query(msg):
             tank_is = query_data.split(' ')[0]
             this_tank = tanks.tanks_by_name[tank_is]
             build_list.append(this_tank)
-    elif tanks.tanks_by_name.has_key(tank_name):
-        tank = tanks.tanks_by_name[tank_name]
-        #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
-        if query_data == 'reset_alert':
-            #print tank.name +' ' +tank.statusFlag
-            tank.statusFlag = 'OK'
-            #print tank.statusFlag
-            bot.answerCallbackQuery(query_id, text='Alert now reset')
-            bot.sendMessage(creds.group_ID, tank.name +' reset to ' +tank.statusFlag, reply_markup=h.format_keys())
-            return
-        elif query_data == 'fetch graph':
-            bot.sendMessage(creds.group_ID, tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(tank))
-            return
-        elif query_data == 'status':
-            status_mess(tank)
-            return
-        elif query_data == '1' or '3' or '7':
-            conv = str(query_data)
-            send_png(tank, conv, 'water')
-            return
-        elif query_data == 'help':
-            bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
-            return
+    #elif tanks.tanks_by_name.has_key(tank_name):
+        #tank = tanks.tanks_by_name[tank_name]
+    #callbacks for 'reset_alert' 'meta graph' 'fetch graph'
+    elif 'reset_alert' in query_data:
+        alert_tank = tanks.tanks_by_name[query_data.split(' ')[0]]
+        #print tank.name +' ' +tank.statusFlag
+        alert_tank.statusFlag = 'OK'
+        #print tank.statusFlag
+        bot.answerCallbackQuery(query_id, text='Alert now reset')
+        bot.sendMessage(creds.group_ID, alert_tank.name +' reset to ' +alert_tank.statusFlag, reply_markup=h.format_keys())
+        return
+    elif 'fetch graph' in query_data:
+        alert_tank = tanks.tanks_by_name[query_data.split(' ')[0]]
+        bot.sendMessage(creds.group_ID, alert_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(alert_tank))
+        return
+    elif query_data == 'status':
+        status_mess(tank)
+        return
+    elif query_data == '1' or '3' or '7':
+        conv = str(query_data)
+        send_png(tank, conv, 'water')
+        return
+    elif query_data == 'help':
+        bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys(tank))
+        return
     else: #catch all else
         if query_data == 'status':
             status_mess('all')
