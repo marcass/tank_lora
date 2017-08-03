@@ -41,4 +41,4 @@ tanks_by_wtopic = {tank.waterTop : tank for tank in tank_list}
 tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
 tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
-
+tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
