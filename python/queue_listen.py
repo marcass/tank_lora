@@ -19,9 +19,9 @@ water_APIKey = creds.water_APIKey #channel api key
 batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
 
-tank_dict = {}
-for tank in [tanks.t,tanks.n,tanks.s]:
-    tank_dict[tank.nodeID] = tank
+#tank_dict = {}
+#for tank in [tanks.tank_list]:
+#    tank_dict[tank.nodeID] = tank
 
 
 def readlineCR(port):
@@ -43,8 +43,8 @@ def pub_msg():
         while (q.empty() == False):
             data = q.get()
             in_node = data[0]
-            if tank_dict.has_key(in_node):
-                tank = tank_dict[in_node]
+            if tanks.tanks_by_nodeID.has_key(in_node):
+                tank = tanks.tanks_by_nodeID[in_node]
             else:
                 break
             print data
