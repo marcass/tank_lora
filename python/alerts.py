@@ -39,7 +39,7 @@ class Keyboard:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in tank:
                             key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data=x.name+' reset alert'))
-                            key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
+                            #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
