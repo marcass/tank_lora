@@ -38,12 +38,12 @@ class Keyboard:
             if type(tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in tank:
-                            key_list.append(InlineKeyboardButton(text='Reset ' +x.name, callback_data=x.name+' reset alert'))
+                            key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset alert'))
                             #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name+' reset alert'),
+                        InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name+' reset alert'),
                             InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
                             ]])
         elif self.version == 'helpMe':
@@ -53,7 +53,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Reset ' +tank.name, callback_data=tank.name +' reset alert'),
+                        InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name +' reset alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -173,11 +173,11 @@ def on_callback_query(msg):
     if query_data == 'all reset':
         for tank in tanks.tank_list:
             tank.statusFlag = 'OK'
-        bot.sendMessage(creds.group_ID, "All tank's status now reset to OK", reply_markup=h.format_keys())
+        bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     #sort multi graph callback here
     if query_data == 'meta graph':
-        bot.sendMessage(creds.group_ID, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
+        bot.sendMessage(target_id, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         return
     # do multi tank build here
     query_tank_name = query_data.split(' ')[0]
