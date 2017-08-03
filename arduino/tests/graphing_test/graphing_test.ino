@@ -1,12 +1,12 @@
 long randNumber;
-unsigned long interval = 600000;
+unsigned long interval = 312000; //1/5th of 26 min
 float volts;
 unsigned long timer_start = 0;
 int tank = 1;
 
 void setup(){
   Serial.begin(9600);
-
+  timer_start = millis();
   // if analog input pin 0 is unconnected, random analog
   // noise will cause the call to randomSeed() to generate
   // different seed numbers each time the sketch runs.
@@ -30,7 +30,7 @@ void compose_msg(){
 void loop() { 
   if (millis() - timer_start > interval) {
     compose_msg();
-    if (tank >= 3){
+    if (tank >= 5){
       tank = 1;
     }else{
       tank++;
