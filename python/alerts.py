@@ -81,7 +81,7 @@ a = Keyboard('alert')
 g = Keyboard('graphs')
 b = Keyboard('build')
     
-def status_mess(tag):
+def status_mess(tag, chat_id):
     if tag == 'all':
         data = 'Tank status:\n'
         bad = []
@@ -91,37 +91,41 @@ def status_mess(tag):
                 bad.append(tank)
             #message = bot.sendMessage(creds.group_ID, 
             #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
-        message = bot.sendMessage(creds.group_ID, data, reply_markup=st.format_keys(bad))
+        message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
-        message = bot.sendMessage(creds.group_ID, 
-            tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
+        message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
 
 def on_chat_message(msg):
     global days
     content_type, chat_type, chat_id = telepot.glance(msg)
-    text = msg['text']
-    if ('/help' in text) or ('/Help' in text):
-        message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
-    elif ('/status' in text) or ('/Status' in text):
-        #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
-        if any(k in text for k in tanks.tanks_by_name):
-            in_tank = tanks.tanks_by_name[text.split(' ')[-1]]
-            status_mess(in_tank)
+    try:
+        text = msg['text']
+        if ('/help' in text) or ('/Help' in text):
+            #message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+        elif ('/status' in text) or ('/Status' in text):
+            #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
+            if any(k in text for k in tanks.tanks_by_name):
+                in_tank = tanks.tanks_by_name[text.split(' ')[-1]]
+                status_mess(in_tank, chat_id)
+            else:
+                status_mess('all', chat_id)
+        elif ('/URL' in text) or ('/url' in text):
+            message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
+        elif ('/build' in text) or ('/Build' in text):
+            days = text.split(' ')[-1]
+            print 'days = '+days
+            if days.isdigit():
+                message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
+            else:
+                message = bot.sendMessage(chatr_id, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2")
         else:
-            status_mess('all')
-    elif ('/URL' in text) or ('/url' in text):
-        message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
-    elif ('/build' in text) or ('/Build' in text):
-        days = text.split(' ')[-1]
-        print 'days = '+days
-        if days.isdigit():
-            message = bot.sendMessage(creds.group_ID, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
-        else:
-            message = bot.sendMessage(creds.group_ID, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2")
-    else:
-        message = bot.sendMessage(creds.group_ID, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+    except KeyError:
+        bot.sendMessage(chat_id, "There's been a cock-up. Please let Marcus know what you just did")
 
-def send_png(in_tank, period, vers):
+def send_png(in_tank, period, vers, target_id):
+    print target_id
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
     #"--step 3600",\ #one hour resolution
@@ -133,9 +137,10 @@ def send_png(in_tank, period, vers):
         legend = 'Battery'
     #print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'AREA1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
     ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label="+label, "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
-    send_graph = bot.sendPhoto(creds.group_ID, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph for the '+legend)
+    send_graph = bot.sendPhoto(target_id, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph for the '+legend)
         
-def gen_multi_png(period, vers, tanks_graph):
+def gen_multi_png(period, vers, tanks_graph, target_id):
+    print target_id
     #hack for error: start time: There should be number after '-'
     #if (period != '1') or (period != '3') or (period != '7'):
         #period = '1'
@@ -153,7 +158,7 @@ def gen_multi_png(period, vers, tanks_graph):
         #rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
     #print(rrd_graph_comm)
     ret = rrdtool.graph(rrd_graph_comm)
-    send_graph = bot.sendPhoto(creds.group_ID, open(tanks.tank_list[0].rrdpath +'net.png'), 'One tank graph to rule them all')
+    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].rrdpath +'net.png'), 'One tank graph to rule them all')
     
 
 def on_callback_query(msg):
@@ -161,6 +166,8 @@ def on_callback_query(msg):
     global build_list
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     print('Callback Query:', query_id, from_id, query_data)
+    print msg
+    target_id = msg['message']['chat']['id']
     #mess = msg['message']['text']     #pull text from message
     #tank_name = mess.split(' ')[0]         #split message on spaces and get first member 
     if query_data == 'all reset':
@@ -191,24 +198,24 @@ def on_callback_query(msg):
             query_tank.statusFlag = 'OK'
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
-            bot.sendMessage(creds.group_ID, query_tank.name +' reset to ' +query_tank.statusFlag)
+            bot.sendMessage(target_id, query_tank.name +' reset to ' +query_tank.statusFlag)
             return
         if 'fetch graph' in query_data:
-            bot.sendMessage(creds.group_ID, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
+            bot.sendMessage(target_id, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
             return
         elif query_data == 'status':
-            status_mess(query_tank)
+            status_mess(query_tank, target_id)
             return
         #elif query_data == '1' or '3' or '7':
             #conv = str(query_data)
             #send_png(query_tank, conv, 'water')
             #return
     if query_data == 'help':
-        bot.sendMessage(creds.group_ID, 'Send "/help" for more info', reply_markup=h.format_keys())
+        bot.sendMessage(target_id, 'Send "/help" for more info', reply_markup=h.format_keys())
         return
     if 'add tank build' in query_data:
         print 'days in build = '+days
-        gen_multi_png(str(days), 'water', build_list)
+        gen_multi_png(str(days), 'water', build_list, target_id)
         build_list = [] # finished build, so empty list
         return
     else: #catch all else
@@ -222,10 +229,10 @@ def on_callback_query(msg):
             if tanks.tanks_by_name.has_key(in_tank_name):
                 graph_tank = tanks.tanks_by_name[in_tank_name]
                 print 'tank is '+graph_tank.name
-                send_png(graph_tank, conv, 'water')
+                send_png(graph_tank, conv, 'water', target_id)
                 return
             else:
-                gen_multi_png(conv, 'water', tanks.tank_list)
+                gen_multi_png(conv, 'water', tanks.tank_list, target_id)
                 #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
                 return
 
@@ -262,7 +269,7 @@ def on_message(client, userdata, msg):
             print in_tank.name +' under thresh'
             if in_tank.statusFlag == 'OK':
                 in_tank.statusFlag = 'bad'
-                send_png(in_tank, '1', 'water')
+                send_png(in_tank, '1', 'water', creds.group_ID)
                 send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
             elif in_tank.statusFlag == 'bad':
                 print 'ignoring low level'
