@@ -40,7 +40,10 @@ class Keyboard:
                 for x in tank:
                             key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset alert'))
                             #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
+                #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
+                #the following makes a row of buttons (hard to read when lots of alerts)
+                #keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name+' reset alert'),
@@ -65,7 +68,7 @@ class Keyboard:
             keyb_list = []
             for x in tank:
                 keyb_list.append(InlineKeyboardButton(text=x.name+' ', callback_data=x.name+' add tank')) 
-            keyb_list.append(InlineKeyboardButton(text='Build graph', callback_data='add tank build'))
+            keyb_list.append(InlineKeyboardButton(text='Build', callback_data='add tank build'))
             #print keyb_list
             keyboard = InlineKeyboardMarkup(inline_keyboard=[keyb_list])
         else:
