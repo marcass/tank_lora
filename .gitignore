@@ -4,3 +4,4 @@ rrd*
 *.swp
 *.pyc
 *-swp
+*.db

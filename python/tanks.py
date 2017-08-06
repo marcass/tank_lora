@@ -1,4 +1,8 @@
 import creds
+import numpy as np
+import matplotlib.pyplot as plt
+import datetime
+import sqlite3
 
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, line_colour):
@@ -42,3 +46,20 @@ tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
 tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
+
+def get_db():
+    conn = sqlite3.connect('tank_database.db')
+    c = conn.cursor()
+    return conn, c
+
+def setup_db():
+    # Create table
+    conn, c = get_db()
+    c.execute('''CREATE TABLE IF NOT EXISTS measurements
+                    (timestamp TIMESTAMP, tank_id INTEGER, water_volume REAL, voltage REAL)''')
+
+def add_measurement(tank_id,water_volume,voltage):
+    # Insert a row of data
+    conn, c = get_db()
+    c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
+    conn.commit() # Save (commit) the changes

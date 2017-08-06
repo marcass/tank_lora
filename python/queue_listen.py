@@ -19,11 +19,6 @@ water_APIKey = creds.water_APIKey #channel api key
 batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
 
-#tank_dict = {}
-#for tank in [tanks.tank_list]:
-#    tank_dict[tank.nodeID] = tank
-
-
 def readlineCR(port):
     rv = ''
     while True:
@@ -51,6 +46,8 @@ def pub_msg():
             water = int(data[1])
             batt = data[2]
             vol = tank.volume(water)
+            #add to db
+            tanks.add_measurement(in_node,vol,batt)
             #publish to thingspeak
             r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})
             publish.single(tank.waterTop, vol , auth=auth, hostname=broker, retain=True)        
