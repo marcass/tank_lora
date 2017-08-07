@@ -36,7 +36,7 @@ def query_via_tankid(tank_id, days=None):
         return ret_dict
 
 def plot_tank(tank_id):
-    d = query_via_tankid(tank_id,1)
+    d = query_via_tankid(tank_id)
     #plt.figure()
     #plt.plot_date(d['timestamp'],d['water_volume'])
     #plt.savefig('tank_%i_volume.png' % (d['tank_id']))

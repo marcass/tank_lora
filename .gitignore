@@ -5,3 +5,4 @@ rrd*
 *.pyc
 *-swp
 *.db
+*.png
