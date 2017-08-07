@@ -12,7 +12,8 @@ class Tanks:
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
         self.statusFlag = 'OK'
         self.url = 'https://thingspeak.com/channels/300940'
-
+        self.waterTop = 'tank/water/' +name
+        self.batTop = "tank/battery/" +name
         
     def volume(self, payload):
         #litres (measurements in cm)
