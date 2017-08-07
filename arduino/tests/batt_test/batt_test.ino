@@ -11,13 +11,13 @@
 
 
 float voltage;
-int V_measurePin = 1;
+#define V_measurePin 3
 unsigned long timer;
 unsigned long print_timer;
 unsigned long PRINT_THRESH = 1000; //60000;
 
 //power pin mosfet
-const int POWER = 2;
+#define POWER 5
 
 void setup() {
   print_timer = millis();
@@ -38,15 +38,12 @@ void setup() {
 void batteryMeasure() {
   digitalWrite(POWER, LOW);//close mosfet to measure
   delayMicroseconds(20); //wait for cap to discharge before reading
-  Serial.print("Value of measure pin is: ");
+  //Serial.print("Value of measure pin is: ");
   int val = analogRead(V_measurePin); //measure analog val for conversion
-  Serial.println(val);
-
-  //delay(2);
+  //Serial.println(val);
   digitalWrite(POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
-  voltage = (((float)val / 1024) * 1.1) / (1.1 / 4.2);
- 
+  voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
 }
 
 

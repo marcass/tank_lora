@@ -87,12 +87,14 @@ void setup() {
 //specified voltage divider (3.74kOhnm high side and 10k to drain) gives a 4.2V down converted to 1.14V)
 
 void batteryMeasure() {
-  digitalWrite(V_POWER, LOW);//close mosfet to measure
+  digitalWrite(POWER, LOW);//close mosfet to measure
   delayMicroseconds(20); //wait for cap to discharge before reading
-  float val = analogRead(V_PIN); //measure analog val for conversion
-  digitalWrite(V_POWER, HIGH);//open mosfet to conserve power
+  //Serial.print("Value of measure pin is: ");
+  int val = analogRead(V_measurePin); //measure analog val for conversion
+  //Serial.println(val);
+  digitalWrite(POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
-  voltage = (((float)val / 1024) * 1.1) / (1.1 / 4.2);
+  voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
 }
 
 void wake (){
