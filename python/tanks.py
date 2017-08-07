@@ -10,13 +10,10 @@ class Tanks:
         self.min_vol = min_vol 
         self.line_colour = line_colour
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
+        self.statusFlag = 'OK'
+        self.url = 'https://thingspeak.com/channels/300940'
         self.waterTop = 'tank/water/' +name
         self.batTop = "tank/battery/" +name
-        self.statusFlag = 'OK'
-        self.rrdpath = '/home/pi/git/tank_lora/python/rrd/'
-        self.rrd_file = self.rrdpath +name +'.rrd'
-        self.url = 'https://thingspeak.com/channels/300940'
-
         
     def volume(self, payload):
         #litres (measurements in cm)
@@ -42,3 +39,4 @@ tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
 tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
+

@@ -6,22 +6,40 @@ import paho.mqtt.publish as publish
 import serial
 import smtplib
 import requests
+import matplotlib.pyplot as plt
+import datetime
+import sqlite3
 import creds
 import tanks
 
 s_port = '/dev/ttyUSB0'
 
-#mqtt
-broker = creds.mosq_auth['broker']
-auth = creds.mosq_auth
 #thingspeak
 water_APIKey = creds.water_APIKey #channel api key
 batt_APIKey = creds.batt_APIKey
 thingURL = "https://api.thingspeak.com/update"
+#mqtt
+broker = creds.mosq_auth['broker']
+auth = creds.mosq_auth
 
-#tank_dict = {}
-#for tank in [tanks.tank_list]:
-#    tank_dict[tank.nodeID] = tank
+#db
+def get_db():
+    conn = sqlite3.connect('tank_database.db')
+    c = conn.cursor()
+    return conn, c
+
+def setup_db():
+    # Create table
+    conn, c = get_db()
+    c.execute('''CREATE TABLE IF NOT EXISTS measurements
+                    (timestamp TIMESTAMP, tank_id INTEGER, water_volume REAL, voltage REAL)''')
+
+def add_measurement(tank_id,water_volume,voltage):
+    # Insert a row of data
+    conn, c = get_db()
+    c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
+    conn.commit() # Save (commit) the changes
+
 
 
 def readlineCR(port):
@@ -51,6 +69,8 @@ def pub_msg():
             water = int(data[1])
             batt = data[2]
             vol = tank.volume(water)
+            #add to db
+            add_measurement(in_node,vol,batt)
             #publish to thingspeak
             r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})
             publish.single(tank.waterTop, vol , auth=auth, hostname=broker, retain=True)        
@@ -64,6 +84,8 @@ def pub_msg():
 
 #instatiate queue
 q = Q()
+#setup database
+setup_db()
 
 port = serial.Serial(s_port, baudrate=9600, timeout=3.0)
 
