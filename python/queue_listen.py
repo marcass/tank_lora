@@ -84,6 +84,8 @@ def pub_msg():
 
 #instatiate queue
 q = Q()
+#setup database
+setup_db()
 
 port = serial.Serial(s_port, baudrate=9600, timeout=3.0)
 
