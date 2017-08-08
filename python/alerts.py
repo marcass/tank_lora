@@ -96,7 +96,9 @@ def query_via_tankid(tank_id, days_str):
     #else:
         #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
     ret = c.fetchall()
-    timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
+    #datetime.datetime(2017, 8, 7, 6, 0, 40, 467797)
+    #timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
+    timestamp = matplotlib.dates.date2num([datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret])
     volume = [i[2] for i in ret]
     voltage = [i[3] for i in ret]
     ret_dict = {'timestamp':timestamp, 'tank_id':tank_id, 'water_volume':volume, 'voltage':voltage }
@@ -117,19 +119,21 @@ def plot_tank(tank, period, vers, target_id):
         title_name = ''
         for i in tank:
             d = query_via_tankid(i.nodeID, period)
-            ax.plot(d['timestamp'],d[data], i.line_colour)
+            ax.plot_date(d['timestamp'],d[data], i.line_colour)
             title_name += ' '+i.name
             ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
     else:
         title_name = tank.name
         d = query_via_tankid(tank.nodeID, period)  
-        ax.plot(d['timestamp'],d[data], tank.line_colour)
+        ax.plot_date(d['timestamp'],d[data], tank.line_colour)
         ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
+    labels = ax.get_xticklabels()
+    plt.setp(labels, rotation=30)
     ax.grid()
     fig.savefig(tanks.tank_list[0].pngpath+'net.png')
     #fig.savefig('tank_%i_volume.png' % (d['tank_id']))
     plt.close()
-    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name +' tank graph for the '+label)
+    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name +' tank graph for '+label)
     
 def status_mess(tag, chat_id):
     if tag == 'all':
