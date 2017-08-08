@@ -1,4 +1,5 @@
 import creds
+import sqlite3
 
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, line_colour):
@@ -14,6 +15,7 @@ class Tanks:
         self.url = 'https://thingspeak.com/channels/300940'
         self.waterTop = 'tank/water/' +name
         self.batTop = "tank/battery/" +name
+        self.pngpath = '/home/pi/git/tank_lora/python/'
         
     def volume(self, payload):
         #litres (measurements in cm)
@@ -25,11 +27,11 @@ class Tanks:
 #s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
 
 #test data
-t = Tanks("top",   "1", 100, 100, 30, 200, '#EA644A')
-n = Tanks("noels", "2", 100, 100, 30, 150, '#54EC48')
-s = Tanks("sals",  "3", 100, 100, 30, 150, '#7648EC')
-m = Tanks("bay",  "4",  100, 100, 30, 150, '#AFB0C5')
-b = Tanks("main",  "5", 100, 100, 30, 150, '#B54FC6')
+t = Tanks("top",   "1", 100, 100, 30, 200, 'b')
+n = Tanks("noels", "2", 100, 100, 30, 150, 'g')
+s = Tanks("sals",  "3", 100, 100, 30, 150, 'r')
+m = Tanks("bay",  "4",  100, 100, 30, 150, 'm')
+b = Tanks("main",  "5", 100, 100, 30, 150, 'k')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s,m,b]
@@ -40,3 +42,10 @@ tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 
+#sqlite stuff
+tanks_db = '/home/pi/git/tank_lora/python/tank_database.db'
+
+def get_db():
+    conn = sqlite3.connect(tanks_db)
+    c = conn.cursor()
+    return conn, c

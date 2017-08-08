@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import sys
 import paho.mqtt.client as mqtt
 import time
@@ -15,6 +17,10 @@ import os.path
 import rrdtool
 import tanks
 import telepot.api
+import matplotlib.pyplot as plt
+import datetime
+import sqlite3
+
 
 #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
 def always_use_new(req, **user_kw):
@@ -22,11 +28,9 @@ def always_use_new(req, **user_kw):
 
 telepot.api._which_pool = always_use_new
 
-
-Tanks = tanks.Tanks     #ref class as Tanks in code
+#global variables
 build_list = []
 days = '1'
-
 
 class Keyboard:
     def __init__(self, version):
@@ -83,6 +87,49 @@ st = Keyboard('status')
 a = Keyboard('alert')
 g = Keyboard('graphs')
 b = Keyboard('build')
+
+def query_via_tankid(tank_id, days_str):
+    days = int(days_str)
+    conn, c = tanks.get_db()
+    #if days is not None:
+    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i days') AND datetime('now','localtime')" % (days), (tank_id,))
+    #else:
+        #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
+    ret = c.fetchall()
+    timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
+    volume = [i[2] for i in ret]
+    voltage = [i[3] for i in ret]
+    ret_dict = {'timestamp':timestamp, 'tank_id':tank_id, 'water_volume':volume, 'voltage':voltage }
+    print ret_dict 
+    return ret_dict
+
+def plot_tank(tank, period, vers, target_id):
+    if vers == 'water':
+        data = 'water_volume'
+        label = 'volume (l)'
+    else: #must be voltage
+        data = 'voltage'
+        label = data
+    # Note that using plt.subplots below is equivalent to using
+    # fig = plt.figure and then ax = fig.add_subplot(111)
+    fig, ax = plt.subplots()
+    if type(tank) is list:
+        title_name = ''
+        for i in tank:
+            d = query_via_tankid(i.nodeID, period)
+            ax.plot(d['timestamp'],d[data], i.line_colour)
+            title_name += ' '+i.name
+            ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
+    else:
+        title_name = tank.name
+        d = query_via_tankid(tank.nodeID, period)  
+        ax.plot(d['timestamp'],d[data], tank.line_colour)
+        ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
+    ax.grid()
+    fig.savefig(tanks.tank_list[0].pngpath+'net.png')
+    #fig.savefig('tank_%i_volume.png' % (d['tank_id']))
+    plt.close()
+    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name +' tank graph for the '+label)
     
 def status_mess(tag, chat_id):
     if tag == 'all':
@@ -218,7 +265,7 @@ def on_callback_query(msg):
         return
     if 'add tank build' in query_data:
         print 'days in build = '+days
-        gen_multi_png(str(days), 'water', build_list, target_id)
+        plot_tank(build_list, str(days), 'water', target_id)
         build_list = [] # finished build, so empty list
         return
     else: #catch all else
@@ -232,10 +279,10 @@ def on_callback_query(msg):
             if tanks.tanks_by_name.has_key(in_tank_name):
                 graph_tank = tanks.tanks_by_name[in_tank_name]
                 print 'tank is '+graph_tank.name
-                send_png(graph_tank, conv, 'water', target_id)
+                plot_tank(graph_tank, conv, 'water', target_id)
                 return
             else:
-                gen_multi_png(conv, 'water', tanks.tank_list, target_id)
+                plot_tank(tanks.tank_list, conv, 'water', target_id)
                 #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
                 return
 
@@ -272,7 +319,7 @@ def on_message(client, userdata, msg):
             print in_tank.name +' under thresh'
             if in_tank.statusFlag == 'OK':
                 in_tank.statusFlag = 'bad'
-                send_png(in_tank, '1', 'water', creds.group_ID)
+                plot_tank(in_tank, '1', 'water', creds.group_ID)
                 send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
             elif in_tank.statusFlag == 'bad':
                 print 'ignoring low level'
@@ -284,7 +331,7 @@ def on_message(client, userdata, msg):
         val = float(msg.payload)
         print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual volume = ' +str(val)
         if val < 2.9:
-            send_png(in_tank, '1', 'batt')
+            plot_tank(in_tank, '1', 'batt',creds.group_ID)
 
 #subscribe to broker and test for messages below alert values
 client = mqtt.Client()

@@ -23,20 +23,15 @@ broker = creds.mosq_auth['broker']
 auth = creds.mosq_auth
 
 #db
-def get_db():
-    conn = sqlite3.connect('tank_database.db')
-    c = conn.cursor()
-    return conn, c
-
 def setup_db():
     # Create table
-    conn, c = get_db()
+    conn, c = tanks.get_db()
     c.execute('''CREATE TABLE IF NOT EXISTS measurements
                     (timestamp TIMESTAMP, tank_id INTEGER, water_volume REAL, voltage REAL)''')
 
 def add_measurement(tank_id,water_volume,voltage):
     # Insert a row of data
-    conn, c = get_db()
+    conn, c = tanks.get_db()
     c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
     conn.commit() # Save (commit) the changes
 
