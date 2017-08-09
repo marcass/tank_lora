@@ -1,5 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
+matplotlib.rcParams['timezone'] = 'Pacific/Auckland'
+import pytz
 import sys
 import paho.mqtt.client as mqtt
 import time
@@ -22,8 +24,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import datetime
 import sqlite3
-from pytz import timezone
-import pytz
 
 
 #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
@@ -41,7 +41,7 @@ class Keyboard:
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
         
-    def format_keys(self, tank=0):
+    def format_keys(self, tank=0, vers=0):
         if self.version == 'status':
             if type(tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
@@ -76,9 +76,11 @@ class Keyboard:
             keyb_list = []
             for x in tank:
                 keyb_list.append(InlineKeyboardButton(text=x.name+' ', callback_data=x.name+' add tank')) 
-            keyb_list.append(InlineKeyboardButton(text='Build', callback_data='add tank build'))
+            keyb_list.append(InlineKeyboardButton(text='Build', callback_data='add tank build ' +vers))
             #print keyb_list
             keyboard = InlineKeyboardMarkup(inline_keyboard=[keyb_list])
+        #elif self.version == 'batt':
+            
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Help', callback_data='help'),
@@ -91,7 +93,13 @@ st = Keyboard('status')
 a = Keyboard('alert')
 g = Keyboard('graphs')
 b = Keyboard('build')
+#v = Keyboard('batt')
 
+def localtime_from_response(resp):
+    ts = datetime.datetime.strptime(resp, "%Y-%m-%d %H:%M:%S.%f")
+    ts = ts.replace(tzinfo=pytz.UTC)
+    return ts.astimezone(pytz.timezone('Pacific/Auckland'))
+    
 def query_via_tankid(tank_id, days_str):
     days = int(days_str)
     conn, c = tanks.get_db()
@@ -100,16 +108,11 @@ def query_via_tankid(tank_id, days_str):
     #else:
         #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
     ret = c.fetchall()
-    #datetime.datetime(2017, 8, 7, 6, 0, 40, 467797)
-    #timestamp_utc = [i[0] for i in ret]
-    #timestamp = [matplotlib.dates.num2date(i[0], tz='Pacific/Auckland') for i in ret]
-    timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
-    #timestamp = matplotlib.dates.date2num([datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret])
-    #timestamp = matplotlib.dates.num2date(timestamp_utc, tz='Pacific/Auckland')
+    timestamp = [localtime_from_response(i[0]) for i in ret]
     volume = [i[2] for i in ret]
     voltage = [i[3] for i in ret]
     ret_dict = {'timestamp':timestamp, 'tank_id':tank_id, 'water_volume':volume, 'voltage':voltage }
-    print ret_dict 
+    #print ret_dict 
     return ret_dict
 
 def plot_tank(tank, period, vers, target_id):
@@ -119,7 +122,7 @@ def plot_tank(tank, period, vers, target_id):
     else: #must be voltage
         data = 'voltage'
         label = data
-    format_date = md.DateFormatter('%d-%m %H:%M')
+    format_date = md.DateFormatter('%d-%m\n%H:%M')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
     fig, ax = plt.subplots()
@@ -127,24 +130,21 @@ def plot_tank(tank, period, vers, target_id):
         title_name = ''
         for i in tank:
             d = query_via_tankid(i.nodeID, period)
-            ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
+            ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
     else:
         title_name = tank.name
         d = query_via_tankid(tank.nodeID, period)  
-        ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name)
+        ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
         ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
-    #ax.xaxis.set_major_locator(DayLocator())
-    #ax.xaxis.set_minor_locator(HourLocator())
-    #ax.xaxis.set_major_formatter(DateFormatter('%d %H:%M'))
     ax.get_xaxis().set_major_formatter(format_date)
     times = ax.get_xticklabels()
-    plt.setp(times, rotation=30)
+    #plt.setp(times, rotation=30)
     plt.legend()
     ax.grid()
+    plt.tight_layout()
     fig.savefig(tanks.tank_list[0].pngpath+'net.png')
-    #fig.savefig('tank_%i_volume.png' % (d['tank_id']))
     plt.close()
     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name +' tank graph for '+label)
     
@@ -179,54 +179,42 @@ def on_chat_message(msg):
                 status_mess('all', chat_id)
         elif ('/URL' in text) or ('/url' in text):
             message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
-        elif ('/build' in text) or ('/Build' in text):
-            days = text.split(' ')[1]
-            print 'days = '+days
-            if days.isdigit():
-                message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
+        elif ('/build' in text) or ('/Build' in text) or ('/batt' in text):
+            if '/batt' in text:
+                vers = 'batt'
             else:
-                message = bot.sendMessage(chatr_id, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2")
+                vers = 'water'
+            in_msg = text.split(' ')
+            msg_error = 0
+            if len(in_msg) == 2:
+	        days = in_msg[1]
+                #print 'days = '+days
+                if days.isdigit():
+                    message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
+                else:
+                    msg_error = 1
+            else:
+                msg_error = 1
+            if msg_error:
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2")
+        elif '/batt' in text:
+            in_msg = text.split(' ')
+            msg_error = 0
+            if len(in_msg) == 2:
+	        days = in_msg[1]
+                #print 'days = '+days
+                if days.isdigit():
+                    message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=v.format_keys(tanks.tank_list))
+                else:
+                    msg_error = 1
+            else:
+                msg_error = 1
+            if msg_error:
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt [number]', eg /batt 2")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
     except KeyError:
         bot.sendMessage(chat_id, "There's been a cock-up. Please let Marcus know what you just did")
-
-def send_png(in_tank, period, vers, target_id):
-    print target_id
-    #if (period != '1') or (period != '3') or (period != '7'):
-        #period = '1'
-    #"--step 3600",\ #one hour resolution
-    if vers == 'water':
-        label = 'Litres'
-        legend = 'Water'
-    if vers == 'batt':
-        label = 'Volts'
-        legend = 'Battery'
-    #print(in_tank.rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label=Liter", "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE', 'AREA1:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
-    ret = rrdtool.graph(in_tank.rrdpath +"net.png", "--slope-mode", "--start", "end-" +period +"d", "--vertical-label="+label, "-w 400", "-h 200", 'DEF:'+in_tank.name+'='+in_tank.rrdpath+vers+in_tank.name+'.rrd'+':'+vers+':AVERAGE:step=3600', 'AREA:'+in_tank.name+in_tank.line_colour+':'+in_tank.name+' '+legend)
-    send_graph = bot.sendPhoto(target_id, open(in_tank.rrdpath +'net.png'), in_tank.name +' tank graph for the '+legend)
-        
-def gen_multi_png(period, vers, tanks_graph, target_id):
-    print target_id
-    #hack for error: start time: There should be number after '-'
-    #if (period != '1') or (period != '3') or (period != '7'):
-        #period = '1'
-    if vers == 'water':
-        label = 'Litres'
-        legend = 'Water'
-    if vers == 'batt':
-        label = 'Volts'
-        legend = 'Battery'
-    rrd_graph_comm = [tanks.tank_list[0].rrdpath +"net.png", "--start", "-" +period +"d", "--vertical-label="+label,"-w 400","-h 200"]
-    for objT in tanks_graph:
-        rrd_graph_comm.append('DEF:'+objT.name+'='+objT.rrdpath+vers+objT.name+'.rrd'+':'+vers+':AVERAGE:step=3600')
-        #line colour followed by 00 - FF (in range FF being opaque
-        rrd_graph_comm.append('AREA:'+objT.name+objT.line_colour+'AA'+':'+objT.name+' '+legend)
-        #rrd_graph_comm.append('LINE'+objT.nodeID+':'+objT.name+objT.line_colour+':'+objT.name+' '+legend)
-    #print(rrd_graph_comm)
-    ret = rrdtool.graph(rrd_graph_comm)
-    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].rrdpath +'net.png'), 'One tank graph to rule them all')
-    
 
 def on_callback_query(msg):
     global days
@@ -281,13 +269,17 @@ def on_callback_query(msg):
         bot.sendMessage(target_id, 'Send "/help" for more info', reply_markup=h.format_keys())
         return
     if 'add tank build' in query_data:
+        if 'batt' in query_data:
+            vers = 'batt'
+        else: #'water' in query_data:
+            vers = 'water'
         print 'days in build = '+days
-        plot_tank(build_list, str(days), 'water', target_id)
+        plot_tank(build_list, str(days), vers, target_id)
         build_list = [] # finished build, so empty list
         return
     else: #catch all else
         if query_data == 'status':
-            status_mess('all')
+            status_mess('all', target_id)
         elif query_data == '1' or '3' or '7':
             #print query_data
             conv = str(query_data)
