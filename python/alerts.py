@@ -18,8 +18,12 @@ import rrdtool
 import tanks
 import telepot.api
 import matplotlib.pyplot as plt
+#from matplotlib.dates import DayLocator, HourLocator, DateFormatter, drange
+import matplotlib.dates as md
 import datetime
 import sqlite3
+from pytz import timezone
+import pytz
 
 
 #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
@@ -97,8 +101,11 @@ def query_via_tankid(tank_id, days_str):
         #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
     ret = c.fetchall()
     #datetime.datetime(2017, 8, 7, 6, 0, 40, 467797)
-    #timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
-    timestamp = matplotlib.dates.date2num([datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret])
+    #timestamp_utc = [i[0] for i in ret]
+    #timestamp = [matplotlib.dates.num2date(i[0], tz='Pacific/Auckland') for i in ret]
+    timestamp = [datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret]
+    #timestamp = matplotlib.dates.date2num([datetime.datetime.strptime(i[0], "%Y-%m-%d %H:%M:%S.%f") for i in ret])
+    #timestamp = matplotlib.dates.num2date(timestamp_utc, tz='Pacific/Auckland')
     volume = [i[2] for i in ret]
     voltage = [i[3] for i in ret]
     ret_dict = {'timestamp':timestamp, 'tank_id':tank_id, 'water_volume':volume, 'voltage':voltage }
@@ -112,6 +119,7 @@ def plot_tank(tank, period, vers, target_id):
     else: #must be voltage
         data = 'voltage'
         label = data
+    format_date = md.DateFormatter('%d-%m %H:%M')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
     fig, ax = plt.subplots()
@@ -119,16 +127,21 @@ def plot_tank(tank, period, vers, target_id):
         title_name = ''
         for i in tank:
             d = query_via_tankid(i.nodeID, period)
-            ax.plot_date(d['timestamp'],d[data], i.line_colour)
+            ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
             title_name += ' '+i.name
             ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
     else:
         title_name = tank.name
         d = query_via_tankid(tank.nodeID, period)  
-        ax.plot_date(d['timestamp'],d[data], tank.line_colour)
+        ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name)
         ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
-    labels = ax.get_xticklabels()
-    plt.setp(labels, rotation=30)
+    #ax.xaxis.set_major_locator(DayLocator())
+    #ax.xaxis.set_minor_locator(HourLocator())
+    #ax.xaxis.set_major_formatter(DateFormatter('%d %H:%M'))
+    ax.get_xaxis().set_major_formatter(format_date)
+    times = ax.get_xticklabels()
+    plt.setp(times, rotation=30)
+    plt.legend()
     ax.grid()
     fig.savefig(tanks.tank_list[0].pngpath+'net.png')
     #fig.savefig('tank_%i_volume.png' % (d['tank_id']))
@@ -167,7 +180,7 @@ def on_chat_message(msg):
         elif ('/URL' in text) or ('/url' in text):
             message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
         elif ('/build' in text) or ('/Build' in text):
-            days = text.split(' ')[-1]
+            days = text.split(' ')[1]
             print 'days = '+days
             if days.isdigit():
                 message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list))
