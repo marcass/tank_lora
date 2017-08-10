@@ -190,7 +190,7 @@ def on_chat_message(msg):
             else:
                 status_mess('all', chat_id)
         elif ('/URL' in text) or ('/url' in text):
-            message = bot.sendMessage(creds.group_ID, tanks.t.url, reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, tanks.t.url, reply_markup=h.format_keys())
         elif ('/build' in text) or ('/Build' in text) or ('/batt' in text):
             if '/batt' in text:
                 vers = 'batt'
