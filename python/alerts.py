@@ -179,9 +179,9 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/build [days] to build a graph with custom tank volumes in it over [days] eg, /build 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/volt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /volt_vol 1 top\n/url to get thingspeak link for data"
         if ('/help' in text) or ('/Help' in text):
-            #message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
-            message = bot.sendMessage(chat_id, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/build [days] to build a graph with custom tank volumes in it over [days] eg, /build 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/volt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /volt_vol 1 top\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
             #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
             if any(k in text for k in tanks.tanks_by_name):
@@ -242,16 +242,16 @@ def on_chat_message(msg):
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/volt_vol [days] [tank name]', eg /batt_tank 1 top")
         else:
-            message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
-        bot.sendMessage(chat_id, "There's been a cock-up. Please let Marcus know what you just did")
+        bot.sendMessage(chat_id, "There's been a cock-up. Please let Marcus know what you just did (if it wasn't adding somebody to the chat group)")
 
 def on_callback_query(msg):
     global days
     global build_list
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    print('Callback Query:', query_id, from_id, query_data)
-    print msg
+    #print('Callback Query:', query_id, from_id, query_data)
+    #print msg
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
         for tank in tanks.tank_list:
@@ -263,12 +263,12 @@ def on_callback_query(msg):
         bot.sendMessage(target_id, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         return
     query_tank_name = query_data.split(' ')[0]
-    print 'query tank name = '+query_tank_name
+    #print 'query tank name = '+query_tank_name
     if tanks.tanks_by_name.has_key(query_tank_name):
         query_tank = tanks.tanks_by_name[query_tank_name]
-        print 'found a tank called '+query_tank.name
+        #print 'found a tank called '+query_tank.name
         if 'add tank' in query_data:
-            print 'found "add tank" in query data'
+            #print 'found "add tank" in query data'
             if (query_tank not in build_list):
                 print 'appending '+query_tank.name
                 build_list.append(query_tank)
@@ -296,7 +296,7 @@ def on_callback_query(msg):
             vers = 'batt'
         else: #'water' in query_data:
             vers = 'water'
-        print 'days in build = '+days
+        #print 'days in build = '+days
         plot_tank(build_list, str(days), vers, target_id)
         build_list = [] # finished build, so empty list
         return
