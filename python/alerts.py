@@ -150,8 +150,8 @@ def plot_tank(tank, period, vers, target_id):
         else:
             title_name = tank.name+' plot'
             ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
-            ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+data)
-            plt.axhspan(tank.min_vol, tank.calced_vol, facecolor='#1f77b4', alpha=0.3)
+            ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+label)
+            plt.axhspan(tank.min_vol, tank.calced_vol, facecolor='#2ca02c', alpha=0.3)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)       
