@@ -120,7 +120,6 @@ def plot_tank(tank, period, vers, target_id):
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
     fig, ax = plt.subplots()
-    d = query_via_tankid(i.nodeID, period)
     if vers == 'water':
         data = 'water_volume'
         label = 'volume (l)'
@@ -130,24 +129,27 @@ def plot_tank(tank, period, vers, target_id):
     if type(tank) is list:
         title_name = ''
         for i in tank:
+            d = query_via_tankid(i.nodeID, period)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
-    if vers == 'bi_plot':
-        title_name = 'Water Level and Voltage for '+tank.name+' Tank'
-        ax.plot_date(d['timestamp'],d['water_volume'], 'b', label=tank.name, marker='o', markersize='5')
-        ax.set_xlabel('Time')
-        # Make the y-axis label, ticks and tick labels match the line color.
-        ax.set_ylabel('Water Volume', color='b')
-        ax.tick_params('y', colors='b')
-        ax2 = ax.twinx()
-        ax2.plot_date(d['timestamp'],d['voltage'], 'r', label=tank.name, marker='p', markersize='5')
-        ax2.set_ylabel('Voltage', color='r')
-        ax2.tick_params('y', colors='r')
     else:
-        title_name = tank.name
-        ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
-        ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
+        d = query_via_tankid(tank.nodeID, period)
+        if vers == 'bi_plot':
+            title_name = 'Water Level and Voltage for '+tank.name+' Tank'
+            ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume',  marker='o', markersize='5')
+            ax.set_xlabel('Time')
+            # Make the y-axis label, ticks and tick labels match the line color.
+            ax.set_ylabel('Water Volume', color='b')
+            ax.tick_params('y', colors='b')
+            ax2 = ax.twinx()
+            ax2.plot_date(d['timestamp'],d['voltage'], 'r', label='Voltage', marker='p', markersize='5')
+            ax2.set_ylabel('Voltage', color='r')
+            ax2.tick_params('y', colors='r')
+        else:
+            title_name = tank.name
+            ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
+            ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)       
@@ -156,7 +158,7 @@ def plot_tank(tank, period, vers, target_id):
     plt.tight_layout()
     fig.savefig(tanks.tank_list[0].pngpath+'net.png')
     plt.close()
-    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name +' tank graph for '+label)
+    send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name)
     
 def status_mess(tag, chat_id):
     if tag == 'all':
@@ -179,7 +181,7 @@ def on_chat_message(msg):
         text = msg['text']
         if ('/help' in text) or ('/Help' in text):
             #message = bot.sendMessage(creds.group_ID, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
-            message = bot.sendMessage(chat_id, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Send (or click the status button) /status alone or followed by tank name (top, noels or sals to get tank status(es)\n/build [days] to build a graph with custom tanks in it over [days] (eg, /build 10 will give you last 10 days)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
+            message = bot.sendMessage(chat_id, "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/build [days] to build a graph with custom tank volumes in it over [days] eg, /build 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/volt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /volt_vol 1 top\n/url to get thingspeak link for data", reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
             #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
             if any(k in text for k in tanks.tanks_by_name):
@@ -221,7 +223,7 @@ def on_chat_message(msg):
                 msg_error = 1
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt [number]', eg /batt 2")
-        elif '/batt_tank' in text:
+        elif '/volt_vol' in text:
             in_msg = text.split(' ')
             msg_error = 0
             if len(in_msg) == 3:
@@ -230,7 +232,7 @@ def on_chat_message(msg):
                     print 'in_tank = '+in_tank.name
                     days = text.split(' ')[-2]
                     if days.isdigit():
-                        plot_tank(in_tank, days, 'bi_plot', target_id)
+                        plot_tank(in_tank, days, 'bi_plot', chat_id)
                     else:
                         msg_error = 1
                 else:
@@ -238,7 +240,7 @@ def on_chat_message(msg):
             else:
                 msg_error = 1
             if msg_error:
-                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt_tank [days] [tank name]', eg /batt_tank 1 top")
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/volt_vol [days] [tank name]', eg /batt_tank 1 top")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
     except KeyError:
