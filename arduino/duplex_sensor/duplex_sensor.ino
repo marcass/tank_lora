@@ -1,5 +1,6 @@
 /* TODO
- * 
+ *  set list of allowed nodes for forwarding
+ *  test
  */  
 
 
@@ -22,29 +23,29 @@ int counter = 0;
  * 2. Sal's bush
  */
 const int NODE_ID = 1;
+//allowed to forward for sals - more verstile than using syncword
+int allowed_senders [] = {}//declare allowed address values here
 
 #define SS 1                 //NSS pin def for lora lib
 #define V_PIN  0             //measure voltage off this pin
-#define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
 #define V_POWER 5            //pull down p-channel mosfet to measure voltage
 #define DIO  7               //DIO 0  for lora lib
-#define DONE  9              //Done pulse goes here
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
 
-byte DONE_T = 1;
-bool intitialisePins;
 float voltage;
+unsigned long send_timer;
+const unsigned long SEND_THRESH = 1500000; //25min
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
 
 void setup() {
-  
+  send_timer = millis();
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -78,8 +79,6 @@ void setup() {
 //battery testing function
 //A3 connected to voltage divider form battery, this is turned on by D0
 // see http://fettricks.blogspot.co.nz/2014/01/reducing-voltage-divider-load-to-extend.html
-//specified voltage divider (3.74kOhnm high side and 10k to drain) gives a 4.2V down converted to 1.14V)
-
 void batteryMeasure() {
   digitalWrite(POWER, LOW);//close mosfet to measure
   delayMicroseconds(20); //wait for cap to discharge before reading
@@ -91,6 +90,7 @@ void batteryMeasure() {
   voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
 }
 
+//measrue distance to water
 void distMeasure(){
   digitalWrite(POWER, HIGH);
   delay(350); //measured as nneding to be above 280ms for saturation of boost converter
@@ -107,57 +107,51 @@ void distMeasure(){
   #endif
 }
 
-void wake (){
-  // cancel sleep as a precaution
-  sleep_disable();
-  // precautionary while we do other stuff
-  detachInterrupt(digitalPinToInterrupt(WAKE_PIN));
-}  // end of wake
+void onReceive(int packetSize) {
+  if (packetSize == 0) return;          // if there's no packet, return
 
-void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
+  // read packet header bytes:
+  int recipient = LoRa.read();          // recipient address
+  byte sender = LoRa.read();            // sender address
+  byte incomingMsgId = LoRa.read();     // incoming msg ID
+  byte incomingLength = LoRa.read();    // incoming msg length
 
-  //sleep lora radio
-  LoRa.sleep();
-  
-  // Choose our preferred sleep mode:
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  
-  //power_all_disable();//disables power to all modules careful here as not sure how to wake up
-  // Set sleep enable (SE) bit:
-  sleep_enable();
-  
-  // Do not interrupt before we go to sleep, or the
-  // ISR will detach interrupts and we won't wake.
-  noInterrupts();           // timed sequence follows
-  
-  // will be called when pin D2 goes high  
-  attachInterrupt(digitalPinToInterrupt(WAKE_PIN), wake, RISING);
-  
-  // We are guaranteed that the sleep_cpu call will be done
-  // as the processor executes the next instruction after
-  // interrupts are turned on.
-  interrupts();  // one cycle
-  sleep_cpu();   // one cycle
+  String incoming = "";
+
+  while (LoRa.available()) {
+    incoming += (char)LoRa.read();
+  }
+
+  if (incomingLength != incoming.length()) {   // check length for error
+    Serial.println("error: message length does not match length");
+    return;                             // skip rest of function
+  }
+
+  // if the recipient isn't this device or broadcast,
+  if (recipient != localAddress && recipient != 0xFF) {
+    Serial.println("This message is not for me.");
+    return;                             // skip rest of function
+  }
+
+  //forward the packet
+  LoRa.beginPacket();
+  LoRa.print(incoming);
+  LoRa.endPacket();
+
+  #ifdef debug
+    // if message is for this device, or broadcast, print details:
+    Serial.println("Received from: 0x" + String(sender, HEX));
+    Serial.println("Sent to: 0x" + String(recipient, HEX));
+    Serial.println("Message ID: " + String(incomingMsgId));
+    Serial.println("Message length: " + String(incomingLength));
+    Serial.println("Message: " + incoming);
+    Serial.println("RSSI: " + String(LoRa.packetRssi()));
+    Serial.println("Snr: " + String(LoRa.packetSnr()));
+    Serial.println();
+  #endif
 }
 
-void loop() {
-  #ifdef debug
-    Serial.print("Sending packet: ");
-    Serial.println(counter);
-  
-    // send packet
-    LoRa.beginPacket();
-    LoRa.print("NodeID ");
-    LoRa.print(NODE_ID);
-    LoRa.print("count ");
-    LoRa.print(counter);
-    LoRa.endPacket();
-  
-    counter++;
-  
-    delay(5000);
-  #endif
-  
+void send_local_data(){
   batteryMeasure();
   distMeasure();
   //send packet
@@ -170,12 +164,18 @@ void loop() {
   LoRa.print(voltage);
   LoRa.print(";");
   LoRa.endPacket();
-  sleepNow();
-  //Send successful wake pulse to external watchdog
-  digitalWrite(DONE, HIGH);
-  delayMicroseconds(DONE_T);
-  digitalWrite(DONE, LOW);
-  //start loop again
+}
+
+
+void loop() {
+  //send local data now and then
+  if (millis() - send_timer > SEND_THRESH) {
+    send_local_data();
+    send_timer = millis();
+  }
+
+  // parse for a packet, and call onReceive with the result:
+  onReceive(LoRa.parsePacket());
 }
 
 

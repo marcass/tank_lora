@@ -116,31 +116,41 @@ def query_via_tankid(tank_id, days_str):
     return ret_dict
 
 def plot_tank(tank, period, vers, target_id):
-    if vers == 'water':
-        data = 'water_volume'
-        label = 'volume (l)'
-    else: #must be voltage
-        data = 'voltage'
-        label = data
-    format_date = md.DateFormatter('%d-%m\n%H:%M')
+    format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
     fig, ax = plt.subplots()
+    d = query_via_tankid(i.nodeID, period)
+    if vers == 'water':
+        data = 'water_volume'
+        label = 'volume (l)'
+    if vers == 'batt':
+        data = 'voltage'
+        label = data
     if type(tank) is list:
         title_name = ''
         for i in tank:
-            d = query_via_tankid(i.nodeID, period)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='time', ylabel=label, title='Tanks '+data)
+    if vers == 'bi_plot':
+        title_name = 'Water Level and Voltage for '+tank.name+' Tank'
+        ax.plot_date(d['timestamp'],d['water_volume'], 'b', label=tank.name, marker='o', markersize='5')
+        ax.set_xlabel('Time')
+        # Make the y-axis label, ticks and tick labels match the line color.
+        ax.set_ylabel('Water Volume', color='b')
+        ax.tick_params('y', colors='b')
+        ax2 = ax.twinx()
+        ax2.plot_date(d['timestamp'],d['voltage'], 'r', label=tank.name, marker='p', markersize='5')
+        ax2.set_ylabel('Voltage', color='r')
+        ax2.tick_params('y', colors='r')
     else:
         title_name = tank.name
-        d = query_via_tankid(tank.nodeID, period)  
         ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
         ax.set(xlabel='time', ylabel=label, title=tank.name+' '+data)
     ax.get_xaxis().set_major_formatter(format_date)
-    times = ax.get_xticklabels()
-    #plt.setp(times, rotation=30)
+    #times = ax.get_xticklabels()
+    #plt.setp(times, rotation=30)       
     plt.legend()
     ax.grid()
     plt.tight_layout()
@@ -211,6 +221,24 @@ def on_chat_message(msg):
                 msg_error = 1
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt [number]', eg /batt 2")
+        elif '/batt_tank' in text:
+            in_msg = text.split(' ')
+            msg_error = 0
+            if len(in_msg) == 3:
+                if any(k in text for k in tanks.tanks_by_name):
+                    in_tank = tanks.tanks_by_name[text.split(' ')[-1]]                
+                    print 'in_tank = '+in_tank.name
+                    days = text.split(' ')[-2]
+                    if days.isdigit():
+                        plot_tank(in_tank, days, 'bi_plot', target_id)
+                    else:
+                        msg_error = 1
+                else:
+                    msg_error = 1
+            else:
+                msg_error = 1
+            if msg_error:
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt_tank [days] [tank name]', eg /batt_tank 1 top")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). Commands that will do something are: \n/help to see a list of commands\n/status alone or followed by tank name (top, noels or sals to get tank status(es)\n/url to get thingspeak link for data", reply_markup=h.format_keys())
     except KeyError:
@@ -223,8 +251,6 @@ def on_callback_query(msg):
     print('Callback Query:', query_id, from_id, query_data)
     print msg
     target_id = msg['message']['chat']['id']
-    #mess = msg['message']['text']     #pull text from message
-    #tank_name = mess.split(' ')[0]         #split message on spaces and get first member 
     if query_data == 'all reset':
         for tank in tanks.tank_list:
             tank.statusFlag = 'OK'
@@ -234,7 +260,6 @@ def on_callback_query(msg):
     if query_data == 'meta graph':
         bot.sendMessage(target_id, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         return
-    # do multi tank build here
     query_tank_name = query_data.split(' ')[0]
     print 'query tank name = '+query_tank_name
     if tanks.tanks_by_name.has_key(query_tank_name):
@@ -242,12 +267,12 @@ def on_callback_query(msg):
         print 'found a tank called '+query_tank.name
         if 'add tank' in query_data:
             print 'found "add tank" in query data'
-            print 'appending '+query_tank.name
-            build_list.append(query_tank)
+            if (query_tank not in build_list):
+                print 'appending '+query_tank.name
+                build_list.append(query_tank)
+            else:
+                print query_tank.name+' already added'
             return
-        #elif tanks.tanks_by_name.has_key(tank_name):
-            #tank = tanks.tanks_by_name[tank_name]
-        #callbacks for 'reset alert' 'meta graph' 'fetch graph'
         if 'reset alert' in query_data:
             #print tank.name +' ' +tank.statusFlag
             query_tank.statusFlag = 'OK'
@@ -261,10 +286,6 @@ def on_callback_query(msg):
         elif query_data == 'status':
             status_mess(query_tank, target_id)
             return
-        #elif query_data == '1' or '3' or '7':
-            #conv = str(query_data)
-            #send_png(query_tank, conv, 'water')
-            #return
     if query_data == 'help':
         bot.sendMessage(target_id, 'Send "/help" for more info', reply_markup=h.format_keys())
         return

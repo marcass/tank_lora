@@ -2,9 +2,10 @@
 #define TRIGPIN 11// Pin to send trigger pulse
 void setup(){
   Serial.begin(9600);
-  pinMode(ECHOPIN, INPUT);
+  //pinMode(ECHOPIN, INPUT);
   pinMode(TRIGPIN, OUTPUT);
-  digitalWrite(ECHOPIN, HIGH);
+  //digitalWrite(ECHOPIN, HIGH);
+  pinMode(ECHOPIN, INPUT_PULLUP);
 }
 void loop(){
   digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
