@@ -2,7 +2,6 @@
  * 
  */  
 
-
 #include <SPI.h>
 #include <LoRa.h>
 //Sonar stuff
@@ -14,6 +13,11 @@
 
 //debug
 #define debug
+//#define forwarded  //uncomment if node needs to be forwarded
+
+#ifdef forwarded
+  byte destination = 0xFF;
+#endif
 
 int counter = 0;
 /*Assign node numbers
@@ -23,7 +27,7 @@ int counter = 0;
  */
 const int NODE_ID = 1;
 
-#define SS 1                 //NSS pin def for lora lib
+#define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 #define V_PIN  0             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
@@ -81,30 +85,32 @@ void setup() {
 //specified voltage divider (3.74kOhnm high side and 10k to drain) gives a 4.2V down converted to 1.14V)
 
 void batteryMeasure() {
-  digitalWrite(POWER, LOW);//close mosfet to measure
+  digitalWrite(V_POWER, LOW);//close mosfet to measure
   delayMicroseconds(20); //wait for cap to discharge before reading
   //Serial.print("Value of measure pin is: ");
   int val = analogRead(V_measurePin); //measure analog val for conversion
   //Serial.println(val);
-  digitalWrite(POWER, HIGH);//open mosfet to conserve power
+  digitalWrite(V_POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
   voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
 }
 
 void distMeasure(){
   digitalWrite(POWER, HIGH);
-  delay(350); //measured as nneding to be above 280ms for saturation of boost converter
+  delay(350); //measured as needing to be above 280ms for saturation of boost converter
   digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
   delayMicroseconds(10);
   digitalWrite(TRIGPIN, LOW); // Send pin low again
-  int distance = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
-  distance= distance/58;
+  int dist = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
+  dist= dist/58;
   #ifdef debug
-    Serial.print(distance);
-    Serial.println("   cm");                    
+    Serial.print(dist);
+    Serial.println("   cm"); 
   #endif
+  //power down mosfet
+  digitalWrite(POWER, LOW);                   
 }
 
 void wake (){
@@ -162,6 +168,9 @@ void loop() {
   distMeasure();
   //send packet
   LoRa.beginPacket();
+  #ifdef forwarded
+    LoRa.write(destination);
+  #endif
   LoRa.print("PY:");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");

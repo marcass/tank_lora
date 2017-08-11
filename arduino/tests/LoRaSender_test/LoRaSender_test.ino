@@ -4,6 +4,7 @@ long randNumber;
 float v;
 float volts;
 int counter = 0;
+byte destination = 0xFF;
 
 
 void setup() {
@@ -12,7 +13,7 @@ void setup() {
   randomSeed(analogRead(0));
 
   Serial.println("LoRa Sender");
-  LoRa.setPins(1, 4, 7);
+  LoRa.setPins(8, 4, 7);
 
   if (!LoRa.begin(433E6)) {
     Serial.println("Starting LoRa failed!");
@@ -22,8 +23,8 @@ void setup() {
 
 void loop() {
   LoRa.beginPacket();
-  LoRa.print("Counter =  ");
-  LoRa.print(counter);
+  LoRa.write(destination);
+  LoRa.print("PY;5;201;3.20;");
   LoRa.endPacket();
   delay(10000);
   counter++;

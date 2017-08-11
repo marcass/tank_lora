@@ -27,7 +27,6 @@ void setup() {
     
     
   }
-  pinMode(ECHO_PIN, INPUT_PULLUP);
 }
 
 void loop() {

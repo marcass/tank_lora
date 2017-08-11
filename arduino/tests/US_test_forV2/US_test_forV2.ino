@@ -1,13 +1,24 @@
 #define ECHOPIN 12// Pin to receive echo pulse
 #define TRIGPIN 11// Pin to send trigger pulse
+#define POWER 3
 void setup(){
   Serial.begin(9600);
   //pinMode(ECHOPIN, INPUT);
   pinMode(TRIGPIN, OUTPUT);
+<<<<<<< HEAD
+  digitalWrite(ECHOPIN, HIGH);
+  pinMode(POWER, OUTPUT);
+  digitalWrite(POWER, LOW);
+=======
   //digitalWrite(ECHOPIN, HIGH);
   pinMode(ECHOPIN, INPUT_PULLUP);
+>>>>>>> fddaa0e6566ac439f7dfb29618c20f0326fd9783
 }
 void loop(){
+  //power up mosfet
+  digitalWrite(POWER, HIGH);
+  //delay for saturation
+  delay(350);
   digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
@@ -16,6 +27,9 @@ void loop(){
   int distance = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
   distance= distance/58;
   Serial.print(distance);
-  Serial.println("   cm");                    
-  delay(50);// Wait 50mS before next ranging
+  Serial.println("   cm"); 
+  //power down mosfet
+  //delay(500);
+  digitalWrite(POWER, LOW);                   
+  delay(1000);// Wait 50mS before next ranging
 }
