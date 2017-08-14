@@ -1,9 +1,9 @@
 (kicad_pcb (version 4) (host pcbnew 4.0.5+dfsg1-4)
 
   (general
-    (links 53)
+    (links 52)
     (no_connects 0)
-    (area 64.966667 66.525 165.833334 156.627901)
+    (area 65.964999 66.980999 164.717801 156.627901)
     (thickness 1.6)
     (drawings 22)
     (tracks 244)
@@ -181,6 +181,7 @@
     (add_net "Net-(U2-Pad3)")
     (add_net "Net-(U2-Pad30)")
     (add_net "Net-(U2-Pad9)")
+    (add_net "Net-(U4-Pad4)")
     (add_net "Net-(U5-Pad2)")
     (add_net "Net-(U5-Pad5)")
     (add_net Reset)
@@ -560,7 +561,7 @@
     )
   )
 
-  (module Boost_module:Boost_module (layer F.Cu) (tedit 5961B280) (tstamp 596A044A)
+  (module Boost_module:Boost_module (layer F.Cu) (tedit 59917590) (tstamp 596A044A)
     (at 77.47 142.24 90)
     (path /595B5EBC)
     (fp_text reference U4 (at 0 0.5 90) (layer F.SilkS)
@@ -599,8 +600,6 @@
       (net 6 +5V))
     (pad 5 thru_hole circle (at -7.62 -1.27 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
     (pad 6 thru_hole circle (at -7.62 1.27 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
-    (pad 4 thru_hole circle (at -7.62 3.81 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask)
-      (net 3 GND))
   )
 
   (module TO_SOT_Packages_SMD:TSOT-6-MK06A_Handsoldering (layer F.Cu) (tedit 54E9291B) (tstamp 596A0457)
@@ -1016,7 +1015,7 @@
     (fp_text reference S2 (at 21.497 13.869 180) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (fp_text value JSN-SR40T (at 0 -2.54 180) (layer F.Fab)
+    (fp_text value "JSN-SR40T v2" (at 0 -2.54 180) (layer F.Fab)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_line (start -22.86 15.24) (end -22.86 -5.08) (layer F.SilkS) (width 0.15))

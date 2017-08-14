@@ -12,7 +12,7 @@
 #include <avr/io.h>
 
 //debug
-#define debug
+//#define debug
 //#define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
@@ -154,15 +154,6 @@ void loop() {
   #ifdef debug
     Serial.print("Sending packet: ");
     Serial.println(counter);
-  
-    // send packet
-    LoRa.beginPacket();
-    LoRa.print("NodeID ");
-    LoRa.print(NODE_ID);
-    LoRa.print("count ");
-    LoRa.print(counter);
-    LoRa.endPacket();
-  
     counter++;
   
     delay(5000);

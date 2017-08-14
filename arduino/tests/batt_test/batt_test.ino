@@ -11,7 +11,7 @@
 
 
 float voltage;
-#define V_measurePin 3
+#define V_measurePin 0
 unsigned long timer;
 unsigned long print_timer;
 unsigned long PRINT_THRESH = 1000; //60000;
@@ -28,6 +28,13 @@ void setup() {
 
     //.setup analog ref for battery testing
   analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
+  Serial.println("LoRa Sender");
+  LoRa.setPins(1, 4, 7);
+
+  if (!LoRa.begin(433E6)) {
+    Serial.println("Starting LoRa failed!");
+    while (1);
+  }
 }
 
 //battery testing function
@@ -54,6 +61,10 @@ void loop() {
     Serial.print("battery voltage is ");
     Serial.print(voltage);
     Serial.println("V");
+    LoRa.beginPacket();
+    LoRa.write("V = ");
+    LoRa.print(voltage);
+    LoRa.endPacket();
     print_timer = millis();
   }
 }

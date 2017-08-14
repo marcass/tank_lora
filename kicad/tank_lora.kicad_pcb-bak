@@ -1,21 +1,21 @@
 (kicad_pcb (version 4) (host pcbnew 4.0.5+dfsg1-4)
 
   (general
-    (links 53)
+    (links 52)
     (no_connects 0)
-    (area 64.966667 66.525 165.833334 156.627901)
+    (area 65.964999 66.980999 164.717801 156.627901)
     (thickness 1.6)
     (drawings 22)
     (tracks 244)
     (zones 0)
     (modules 24)
-    (nets 44)
+    (nets 45)
   )
 
   (page A4)
   (layers
-    (0 F.Cu signal hide)
-    (31 B.Cu signal hide)
+    (0 F.Cu signal)
+    (31 B.Cu signal)
     (32 B.Adhes user)
     (33 F.Adhes user)
     (34 B.Paste user)
@@ -37,7 +37,7 @@
   )
 
   (setup
-    (last_trace_width 1)
+    (last_trace_width 0.25)
     (user_trace_width 0.25)
     (user_trace_width 0.5)
     (user_trace_width 0.75)
@@ -69,8 +69,8 @@
     (aux_axis_origin 0 0)
     (visible_elements FFFFFF7F)
     (pcbplotparams
-      (layerselection 0x00030_80000001)
-      (usegerberextensions false)
+      (layerselection 0x010f0_80000001)
+      (usegerberextensions true)
       (excludeedgelayer true)
       (linewidth 0.100000)
       (plotframeref false)
@@ -90,9 +90,9 @@
       (subtractmaskfromsilk false)
       (outputformat 1)
       (mirror false)
-      (drillshape 1)
+      (drillshape 0)
       (scaleselection 1)
-      (outputdirectory ""))
+      (outputdirectory ../../../Downloads/kicad_plot/tank_lora/))
   )
 
   (net 0 "")
@@ -139,6 +139,7 @@
   (net 41 D10)
   (net 42 V_POWER)
   (net 43 BATT)
+  (net 44 "Net-(U4-Pad4)")
 
   (net_class Default "This is the default net class."
     (clearance 0.2)
@@ -181,6 +182,7 @@
     (add_net "Net-(U2-Pad3)")
     (add_net "Net-(U2-Pad30)")
     (add_net "Net-(U2-Pad9)")
+    (add_net "Net-(U4-Pad4)")
     (add_net "Net-(U5-Pad2)")
     (add_net "Net-(U5-Pad5)")
     (add_net Reset)
@@ -600,7 +602,7 @@
     (pad 5 thru_hole circle (at -7.62 -1.27 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
     (pad 6 thru_hole circle (at -7.62 1.27 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
     (pad 4 thru_hole circle (at -7.62 3.81 90) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask)
-      (net 3 GND))
+      (net 44 "Net-(U4-Pad4)"))
   )
 
   (module TO_SOT_Packages_SMD:TSOT-6-MK06A_Handsoldering (layer F.Cu) (tedit 54E9291B) (tstamp 596A0457)
@@ -1016,7 +1018,7 @@
     (fp_text reference S2 (at 21.497 13.869 180) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (fp_text value JSN-SR40T (at 0 -2.54 180) (layer F.Fab)
+    (fp_text value "JSN-SR40T v2" (at 0 -2.54 180) (layer F.Fab)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_line (start -22.86 15.24) (end -22.86 -5.08) (layer F.SilkS) (width 0.15))

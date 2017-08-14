@@ -3,16 +3,10 @@
 #define POWER 3
 void setup(){
   Serial.begin(9600);
-  //pinMode(ECHOPIN, INPUT);
   pinMode(TRIGPIN, OUTPUT);
-<<<<<<< HEAD
-  digitalWrite(ECHOPIN, HIGH);
   pinMode(POWER, OUTPUT);
   digitalWrite(POWER, LOW);
-=======
-  //digitalWrite(ECHOPIN, HIGH);
   pinMode(ECHOPIN, INPUT_PULLUP);
->>>>>>> fddaa0e6566ac439f7dfb29618c20f0326fd9783
 }
 void loop(){
   //power up mosfet
@@ -31,5 +25,5 @@ void loop(){
   //power down mosfet
   //delay(500);
   digitalWrite(POWER, LOW);                   
-  delay(1000);// Wait 50mS before next ranging
+  delay(2000);// Wait 50mS before next ranging
 }

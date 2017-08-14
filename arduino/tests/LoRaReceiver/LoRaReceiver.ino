@@ -6,7 +6,7 @@ void setup() {
   while (!Serial);
 
   Serial.println("LoRa Receiver");
-  LoRa.setPins(8, 4, 7);
+  LoRa.setPins(1, 4, 7);
   
 
   if (!LoRa.begin(433E6)) {
