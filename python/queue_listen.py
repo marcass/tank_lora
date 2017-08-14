@@ -61,10 +61,15 @@ def pub_msg():
             else:
                 break
             print data
-            water = int(data[1])
+            #check to see if it's a relay (and insert null water value if it is)
+            if data[1] == 'R':
+                water = None
+            else:
+                water = int(data[1])
             batt = data[2]
             vol = tank.volume(water)
             #add to db
+            
             add_measurement(in_node,vol,batt)
             #publish to thingspeak
             r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})

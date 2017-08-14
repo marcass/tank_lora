@@ -22,6 +22,8 @@ class Tanks:
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
     
+tz = 'Pacific/Auckland'
+    
 #t = Tanks("top",   "1", 250, 214, 40, 200, '#EA644A')
 #n = Tanks("noels", "2", 200, 100, 30, 150, '#54EC48')
 #s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')

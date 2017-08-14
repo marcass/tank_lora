@@ -1,6 +1,5 @@
 import matplotlib
 matplotlib.use('Agg')
-matplotlib.rcParams['timezone'] = 'Pacific/Auckland'
 import pytz
 import sys
 import paho.mqtt.client as mqtt
@@ -24,6 +23,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import datetime
 import sqlite3
+matplotlib.rcParams['timezone'] = tanks.tz
 
 
 #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )

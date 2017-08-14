@@ -1,7 +1,5 @@
 #include <SPI.h>
 #include <LoRa.h>
-//Sonar stuff
-//sleep stuff http://www.engblaze.com/hush-little-microprocessor-avr-and-arduino-sleep-mode-basics/
 #include <avr/interrupt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
@@ -10,31 +8,20 @@
 //debug
 #define debug
 
-int counter = 0;
-/*Assign node numbers
- * 1. Top tank
- * 2. Noels break
- * 2. Sal's bush
- */
-const int NODE_ID = 1;
 //allowed to forward for sals - more verstile than using syncword
 const byte ALLOWED = 0xFF;
 bool wake_resp;
 const int DONE_T = 1;
-int dist;
 
 #define SS 1                 //NSS pin def for lora lib (set to 8 for new modules
 #define V_PIN  0             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
-#define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
 #define V_POWER 5            //pull down p-channel mosfet to measure voltage
 #define DIO  7               //DIO 0  for lora lib
 #define DONE  9              //Done pulse goes here
-#define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-
+const int NODE_ID = 1; //SET THIS FOR NODE 
 float voltage;
 unsigned long send_timer;
 const unsigned long SEND_THRESH = 1500000; //25min
@@ -47,13 +34,8 @@ void setup() {
   send_timer = millis();
   pinMode(DONE, OUTPUT);
   digitalWrite(DONE, LOW);
-  pinMode(POWER, OUTPUT);
-  digitalWrite(POWER, LOW);
   pinMode(V_POWER, OUTPUT);
   digitalWrite(V_POWER, HIGH);
-  //ultrasonic pins
-  pinMode(ECHOPIN, INPUT_PULLUP);
-  pinMode(TRIGPIN, OUTPUT);
  
   #ifdef debug
     Serial.begin(9600);
@@ -87,23 +69,6 @@ void batteryMeasure() {
   digitalWrite(V_POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
   voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
-}
-
-//measrue distance to water
-void distMeasure(){
-  digitalWrite(POWER, HIGH);
-  delay(350); //measured as nneding to be above 280ms for saturation of boost converter
-  digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
-  delayMicroseconds(2);
-  digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
-  delayMicroseconds(10);
-  digitalWrite(TRIGPIN, LOW); // Send pin low again
-  dist = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
-  dist = dist/58;
-  #ifdef debug
-    Serial.print(dist);
-    Serial.println("   cm");                    
-  #endif
 }
 
 void onReceive(int packetSize) {
@@ -144,13 +109,13 @@ void onReceive(int packetSize) {
 
 void send_local_data(){
   batteryMeasure();
-  distMeasure();
   //send packet
   LoRa.beginPacket();
   LoRa.print("PY:");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");
-  LoRa.print(dist);
+  //null value for relay
+  LoRa.print("R");
   LoRa.print(";");
   LoRa.print(voltage);
   LoRa.print(";");
