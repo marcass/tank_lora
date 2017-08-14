@@ -168,7 +168,7 @@ void loop() {
   #ifdef forwarded
     LoRa.write(destination);
   #endif
-  LoRa.print("PY:");//tag for serial listner
+  LoRa.print("PY;");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");
   LoRa.print(dist);
