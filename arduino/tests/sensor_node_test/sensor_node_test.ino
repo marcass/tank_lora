@@ -28,7 +28,7 @@ int counter = 0;
 const int NODE_ID = 1;
 
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
-#define V_PIN  0             //measure voltage off this pin
+#define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
@@ -38,6 +38,7 @@ const int NODE_ID = 1;
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
+int val;
 int dist;
 byte DONE_T = 1;
 bool intitialisePins;
@@ -48,7 +49,6 @@ float voltage;
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
 
 void setup() {
-  
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -63,7 +63,7 @@ void setup() {
  
   #ifdef debug
     Serial.begin(9600);
-    while (!Serial); //uncomment to require serial connection to work
+    //while (!Serial); //uncomment to require serial connection to work
     Serial.println("LoRa Sender");
   #endif
   
@@ -88,12 +88,14 @@ void batteryMeasure() {
   digitalWrite(V_POWER, LOW);//close mosfet to measure
   delayMicroseconds(20); //wait for cap to discharge before reading
   //Serial.print("Value of measure pin is: ");
-  int val = analogRead(V_PIN); //measure analog val for conversion
+  val = analogRead(V_PIN); //measure analog val for conversion
   //Serial.println(val);
   digitalWrite(V_POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
   voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
   #ifdef debug
+    Serial.print("Analog read = ");
+    Serial.println(val);
     Serial.print("Voltage = ");
     Serial.println(voltage);
   #endif
@@ -158,7 +160,7 @@ void loop() {
   
     delay(5000);
   #endif
-  
+  //delay(3000);
   batteryMeasure();
   distMeasure();
   //send packet
