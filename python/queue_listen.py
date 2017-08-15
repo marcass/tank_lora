@@ -69,7 +69,6 @@ def pub_msg():
             batt = data[2]
             vol = tank.volume(water)
             #add to db
-            
             add_measurement(in_node,vol,batt)
             #publish to thingspeak
             r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})
@@ -82,12 +81,24 @@ def pub_msg():
             print('Published ' +str(batt) +' for nodeID ' + str(tank.nodeID) + ' to ' +tank.batTop)
             time.sleep(15)
 
+#Serial port function opening fucntion
+def port_check(in_port):
+    try:
+        port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
+        print s_port+' found'
+        return port
+    except:
+        return None
+    
 #instatiate queue
 q = Q()
 #setup database
 setup_db()
 
-port = serial.Serial(s_port, baudrate=9600, timeout=3.0)
+while (port_check(s_port) is None):
+    print s_port+' not found'
+    sleep(10)
+
 
 fetch_process = P(target=readlineCR, args=(port,))
 broadcast_process = P(target=pub_msg, args=())
