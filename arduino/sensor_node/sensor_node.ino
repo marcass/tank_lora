@@ -1,7 +1,3 @@
-/* TODO
- * 
- */  
-
 #include <SPI.h>
 #include <LoRa.h>
 //Sonar stuff
@@ -12,7 +8,7 @@
 #include <avr/io.h>
 
 //debug
-#define debug
+//#define debug
 //#define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
@@ -175,7 +171,7 @@ void loop() {
   #ifdef forwarded
     LoRa.write(destination);
   #endif
-  LoRa.print("PY:");//tag for serial listner
+  LoRa.print("PY;");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");
   LoRa.print(dist);

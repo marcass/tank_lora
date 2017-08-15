@@ -12,7 +12,7 @@ import sqlite3
 import creds
 import tanks
 
-s_port = '/dev/ttyUSB0'
+s_port = '/dev/LORA'
 
 #thingspeak
 water_APIKey = creds.water_APIKey #channel api key
