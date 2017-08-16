@@ -66,11 +66,13 @@ def pub_msg():
             print data
             #check to see if it's a relay (and insert null water value if it is)
             if data[1] == 'R':
-                water = None
+                vol = None
             else:
-                water = int(data[1])
-            batt = data[2]
-            vol = tank.volume(water)
+                vol = tank.volume(int(data[1]))
+            if float(data[2]) > 4.8:
+                batt = None
+            else:
+                batt = data[2]
             #add to db
             add_measurement(in_node,vol,batt)
             #publish to thingspeak
