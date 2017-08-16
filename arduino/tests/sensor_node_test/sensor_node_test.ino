@@ -1,7 +1,3 @@
-/* TODO
- * 
- */  
-
 #include <SPI.h>
 #include <LoRa.h>
 //Sonar stuff
@@ -49,6 +45,9 @@ float voltage;
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
 
 void setup() {
+  //.setup analog ref for battery testing
+  analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
+  delay(5); //allow voltage to settle
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -74,9 +73,6 @@ void setup() {
     #endif
     while (1);
   }
-  //.setup analog ref for battery testing
-  analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
-
 }
 
 //battery testing function
@@ -160,7 +156,7 @@ void loop() {
   
     delay(5000);
   #endif
-  //delay(3000);
+  delay(3000);
   batteryMeasure();
   distMeasure();
   //send packet
@@ -176,11 +172,11 @@ void loop() {
   LoRa.print(voltage);
   LoRa.print(";");
   LoRa.endPacket();
-  sleepNow();
+  //sleepNow();
   //Send successful wake pulse to external watchdog
-  digitalWrite(DONE, HIGH);
-  delayMicroseconds(DONE_T);
-  digitalWrite(DONE, LOW);
+//  digitalWrite(DONE, HIGH);
+//  delayMicroseconds(DONE_T);
+//  digitalWrite(DONE, LOW);
   //start loop again
 }
 

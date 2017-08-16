@@ -44,7 +44,9 @@ float voltage;
 //LoRa.setTxPower(txPower); //Supported values are between 2 and 17 for PA_OUTPUT_PA_BOOST_PIN, 0 and 14 for PA_OUTPUT_RFO_PIN.
 
 void setup() {
-  
+  //.setup analog ref for battery testing
+  analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
+  delay(5); //allow voltage to settle
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -70,9 +72,6 @@ void setup() {
     #endif
     while (1);
   }
-  //.setup analog ref for battery testing
-  analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
-
 }
 
 //battery testing function
