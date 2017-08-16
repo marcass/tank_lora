@@ -98,7 +98,7 @@ b = Keyboard('build')
 def localtime_from_response(resp):
     ts = datetime.datetime.strptime(resp, "%Y-%m-%d %H:%M:%S.%f")
     ts = ts.replace(tzinfo=pytz.UTC)
-    return ts.astimezone(pytz.timezone('Pacific/Auckland'))
+    return ts.astimezone(pytz.timezone(tanks.tz))
     
 def query_via_tankid(tank_id, days_str):
     days = int(days_str)
@@ -194,11 +194,11 @@ def on_chat_message(msg):
                 status_mess('all', chat_id)
         elif ('/URL' in text) or ('/url' in text):
             message = bot.sendMessage(chat_id, tanks.t.url, reply_markup=h.format_keys())
-        elif ('/build' in text) or ('/Build' in text) or ('/batt' in text):
-            if '/batt' in text:
-                vers = 'batt'
-            else:
-                vers = 'water'
+        elif ('/build' in text) or ('/Build' in text):# or ('/batt' in text):
+            #if '/batt' in text:
+                #vers = 'batt'
+            #else:
+            vers = 'water'
             in_msg = text.split(' ')
             msg_error = 0
             if len(in_msg) == 2:
@@ -213,22 +213,23 @@ def on_chat_message(msg):
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/build [number]', eg /build 2")
         elif '/batt' in text:
+            vers = 'batt'
             in_msg = text.split(' ')
-            msg_error = 0
+            batt_error = 0
             if len(in_msg) == 2:
 	        days = in_msg[1]
                 #print 'days = '+days
                 if days.isdigit():
-                    message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=v.format_keys(tanks.tank_list))
+                    message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
                 else:
-                    msg_error = 1
+                    batt_error = 1
             else:
-                msg_error = 1
-            if msg_error:
+                batt_error = 1
+            if batt_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt [number]', eg /batt 2")
         elif '/volt_vol' in text:
             in_msg = text.split(' ')
-            msg_error = 0
+            volt_error = 0
             if len(in_msg) == 3:
                 if any(k in text for k in tanks.tanks_by_name):
                     in_tank = tanks.tanks_by_name[text.split(' ')[-1]]                
@@ -237,13 +238,13 @@ def on_chat_message(msg):
                     if days.isdigit():
                         plot_tank(in_tank, days, 'bi_plot', chat_id)
                     else:
-                        msg_error = 1
+                        volt_error = 1
                 else:
-                    msg_error = 1
+                    volt_error = 1
             else:
-                msg_error = 1
-            if msg_error:
-                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/volt_vol [days] [tank name]', eg /batt_tank 1 top")
+                volt_error = 1
+            if volt_error:
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/volt_vol [days] [tank name]', eg /volt_vol 1 top")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
