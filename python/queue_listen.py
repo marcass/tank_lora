@@ -1,6 +1,7 @@
 from multiprocessing import Queue as Q
 from multiprocessing import Process as P
 import time
+import sys
 import numpy as np
 import paho.mqtt.publish as publish
 import serial
@@ -13,6 +14,8 @@ import creds
 import tanks
 
 s_port = '/dev/LORA'
+#initialise global port
+port = None
 
 #thingspeak
 water_APIKey = creds.water_APIKey #channel api key
@@ -82,23 +85,33 @@ def pub_msg():
             time.sleep(15)
 
 #Serial port function opening fucntion
+count = 0
 def port_check(in_port):
+    global port
     try:
         port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
         print s_port+' found'
+        count = 0
         return port
     except:
-        return None
+        port = None
+        return port
+
+
+#handle exceptions for absent port (and keep retrying for a while)
+while (port_check(s_port) is None) and (count < 100):
+    count = count + 1
+    print s_port+' not found '+str(count)+' times'
+    time.sleep(10)
+    
+if count == 100:
+    print 'Exited because serial port not found'
+    sys.exit()
     
 #instatiate queue
 q = Q()
 #setup database
 setup_db()
-
-while (port_check(s_port) is None):
-    print s_port+' not found'
-    sleep(10)
-
 
 fetch_process = P(target=readlineCR, args=(port,))
 broadcast_process = P(target=pub_msg, args=())
