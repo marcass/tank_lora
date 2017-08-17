@@ -69,22 +69,22 @@ def pub_msg():
                 vol = None
             else:
                 vol = tank.volume(int(data[1]))
-            if float(data[2]) > 4.8:
+            if float(data[2]) > 4.5:
                 batt = None
             else:
                 batt = data[2]
             #add to db
             add_measurement(in_node,vol,batt)
             #publish to thingspeak
-            r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})
+            #r = requests.post(thingURL, data = {'api_key':water_APIKey, 'field' +tank.nodeID: vol})
             publish.single(tank.waterTop, vol , auth=auth, hostname=broker, retain=True)        
             print('Published ' +str(vol) +' for nodeID ' + str(tank.nodeID) + ' to ' +tank.waterTop)
             #publish to thingspeak
-            time.sleep(15)
-            r = requests.post(thingURL, data = {'api_key':batt_APIKey, 'field' +tank.nodeID: batt})
+            #time.sleep(15)
+            #r = requests.post(thingURL, data = {'api_key':batt_APIKey, 'field' +tank.nodeID: batt})
             publish.single(tank.batTop, batt , auth=auth, hostname=broker, retain=True)        
             print('Published ' +str(batt) +' for nodeID ' + str(tank.nodeID) + ' to ' +tank.batTop)
-            time.sleep(15)
+            #time.sleep(15)
 
 #Serial port function opening fucntion
 count = 0
