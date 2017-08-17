@@ -182,7 +182,7 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/build [days] to build a graph with custom tank volumes in it over [days] eg, /build 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/volt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /volt_vol 1 top\n/url to get thingspeak link for data"
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/build [days] to build a graph with custom tank volumes in it over [days] eg, /build 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/volt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /volt_vol 1 top"#\n/url to get thingspeak link for data"
         if ('/help' in text) or ('/Help' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
@@ -192,8 +192,8 @@ def on_chat_message(msg):
                 status_mess(in_tank, chat_id)
             else:
                 status_mess('all', chat_id)
-        elif ('/URL' in text) or ('/url' in text):
-            message = bot.sendMessage(chat_id, tanks.t.url, reply_markup=h.format_keys())
+        #elif ('/URL' in text) or ('/url' in text):
+        #    message = bot.sendMessage(chat_id, tanks.t.url, reply_markup=h.format_keys())
         elif ('/build' in text) or ('/Build' in text):# or ('/batt' in text):
             #if '/batt' in text:
                 #vers = 'batt'
