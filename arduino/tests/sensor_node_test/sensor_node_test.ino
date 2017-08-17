@@ -10,7 +10,7 @@
 #include <avr/io.h>
 
 //debug
-//#define debug
+#define debug
 //#define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
@@ -124,10 +124,34 @@ void distMeasure(){
 }
 
 //void distMeasure(){
+//  unsigned long pulse_start;
+//  unsigned long pulse;
+//  unsigned long pulse_inc;
 //  digitalWrite(POWER, HIGH);
 //  delay(350); //measured as needing to be above 280ms for saturation of boost converter
-//  dist = sonar.ping_cm();
+//  digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS for clean pulse
+//  delayMicroseconds(2);
+//  digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
+//  delayMicroseconds(10);
+//  digitalWrite(TRIGPIN, LOW); // Send pin low again
+//  //no longer high so start counter
+//  pulse_start = micros();
+//  while(digitalRead(ECHOPIN) == LOW){
+//    //do nothing
+//  }
+//  //no longer high so start counter
+//  //pulse_start = micros();
+//  while(digitalRead(ECHOPIN) == HIGH){
+//    //increment counter
+//    pulse_inc = micros();
+//  }
+//  //echo pin no longer high so reading finished
+//  pulse = pulse_inc - pulse_start;
+//  dist = pulse/58;
 //  #ifdef debug
+//    Serial.print("pulse = ");
+//    Serial.print(pulse);
+//    Serial.print(", dist = ");
 //    Serial.print(dist);
 //    Serial.println("   cm"); 
 //  #endif
