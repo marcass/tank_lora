@@ -1,12 +1,6 @@
 # tank_lora
 Meaure water tank levels with and send signal with LoRa radio on on private network with alerts
 
-## Need to procure:
-* Better logic level P-channel mosfet, try NDP6020P
-* MCP112-300 (for 3v cutoff)
-* MCP112-315 and 5 more mosfets for cutting power to arduino when VIN<3.1V
-* 10.54k ohm resistor for voltage dividor (or slightly larger) (or MF1/4DCT52R1132F that is 11.3k)
-
 ## Hardware overview
 Using an ATMega brain, a lora radio implemented by AI Thinker, an ultrasonic distance measuring device and powering with solar we will send signal from remote locations to a hub and publish water levels to a web accessable platform
 * 6-2.7V power rail to supply
@@ -56,12 +50,16 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 
 ### Libraries
 * NewPing http://playground.arduino.cc/Code/NewPing
+   * Can also use measure echo pin pulse using a while loop or PulseIn builtin
 * LoRa http://www.arduinolibraries.info/libraries/lo-ra
 
 ### Starting services
+
+* Starting services
+ On raspberry pi: sudo systemctl start[stop][status][restart] <service name>
 * Seial listener: `sudo systemctl start serial-attach.service`
-* RRD populater: `sudo systemctl start mqtt2rrd.service`
 * Bot: `sudo systemctl start telegram-bot.service`
+
 
 ## Testing
 
@@ -70,7 +68,7 @@ LoRa32u4 module has connection:
 
 Radio module | ATMega32u4 arduino pin
 --- | ---
-NSS |   1
+NSS |   1 or 8
 RST |   4
 DIO0 | 7 (PE6) https://www.arduino.cc/en/Hacking/PinMapping32u4  
 
@@ -87,7 +85,5 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
 
 NOTE: TPL 5010 with ~90k Ohm resistor gives 26min between wakes
 
-* Starting services
- On raspberry pi: sudo systemctl start[stop][status][restart] <service name>
 
 
