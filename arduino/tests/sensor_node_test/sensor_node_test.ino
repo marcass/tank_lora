@@ -1,3 +1,5 @@
+#include <NewPing.h>
+
 #include <SPI.h>
 #include <LoRa.h>
 //Sonar stuff
@@ -34,6 +36,8 @@ const int NODE_ID = 1;
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
+NewPing sonar(TRIGPIN, ECHOPIN, 250);
+
 int val;
 int dist;
 byte DONE_T = 1;
@@ -47,7 +51,7 @@ float voltage;
 void setup() {
   //.setup analog ref for battery testing
   analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
-  delay(5); //allow voltage to settle
+  delay(50); //allow voltage to settle
   //disable sleep bit:
   sleep_disable();
   pinMode(DONE, OUTPUT);
@@ -59,6 +63,7 @@ void setup() {
   //ultrasonic pins
   pinMode(ECHOPIN, INPUT_PULLUP);
   pinMode(TRIGPIN, OUTPUT);
+  digitalWrite(TRIGPIN, LOW);
  
   #ifdef debug
     Serial.begin(9600);
@@ -100,21 +105,35 @@ void batteryMeasure() {
 void distMeasure(){
   digitalWrite(POWER, HIGH);
   delay(350); //measured as needing to be above 280ms for saturation of boost converter
-  digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
+  digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS for clean pulse
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
   delayMicroseconds(10);
   digitalWrite(TRIGPIN, LOW); // Send pin low again
-  dist = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
-  dist= dist/58;
+  unsigned long pulse = pulseIn(ECHOPIN, HIGH,26000); // Read in times pulse
+  dist = pulse/58;
   #ifdef debug
+    Serial.print("pulse = ");
+    Serial.print(pulse);
+    Serial.print(", dist = ");
     Serial.print(dist);
-    Serial.println("   cm"); 
+    Serial.println("cm"); 
   #endif
   //power down mosfet
   digitalWrite(POWER, LOW);                   
 }
 
+//void distMeasure(){
+//  digitalWrite(POWER, HIGH);
+//  delay(350); //measured as needing to be above 280ms for saturation of boost converter
+//  dist = sonar.ping_cm();
+//  #ifdef debug
+//    Serial.print(dist);
+//    Serial.println("   cm"); 
+//  #endif
+//  //power down mosfet
+//  digitalWrite(POWER, LOW);                   
+//}
 void wake (){
   // cancel sleep as a precaution
   sleep_disable();
@@ -154,9 +173,9 @@ void loop() {
     Serial.println(counter);
     counter++;
   
-    delay(5000);
+    //delay(5000);
   #endif
-  delay(3000);
+  
   batteryMeasure();
   distMeasure();
   //send packet
@@ -177,6 +196,8 @@ void loop() {
 //  digitalWrite(DONE, HIGH);
 //  delayMicroseconds(DONE_T);
 //  digitalWrite(DONE, LOW);
+  LoRa.sleep();
+  delay(20000);
   //start loop again
 }
 
