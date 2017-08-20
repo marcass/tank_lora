@@ -10,8 +10,10 @@
 #include <avr/io.h>
 
 //debug
-#define debug
+//#define debug
 //#define forwarded  //uncomment if node needs to be forwarded
+//#define rapid
+#define sleeping
 
 #ifdef forwarded
   byte destination = 0xFF;
@@ -104,7 +106,7 @@ void batteryMeasure() {
 
 void distMeasure(){
   digitalWrite(POWER, HIGH);
-  delay(350); //measured as needing to be above 280ms for saturation of boost converter
+  delay(10); //measured as needing to be above 280ms for saturation of boost converter
   digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS for clean pulse
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
@@ -215,13 +217,19 @@ void loop() {
   LoRa.print(voltage);
   LoRa.print(";");
   LoRa.endPacket();
-  //sleepNow();
-  //Send successful wake pulse to external watchdog
-//  digitalWrite(DONE, HIGH);
-//  delayMicroseconds(DONE_T);
-//  digitalWrite(DONE, LOW);
-  LoRa.sleep();
-  delay(20000);
+  #ifdef sleeping
+    //Send successful wake pulse to external watchdog
+    //pause for wake pulse calming (needs 20ms and measuring may not take that long)
+    delay(20);
+    digitalWrite(DONE, HIGH);
+    delayMicroseconds(DONE_T);
+    digitalWrite(DONE, LOW);
+    sleepNow();
+  #endif
+  #ifdef rapid
+    //LoRa.sleep();
+    delay(3000);
+  #endif
   //start loop again
 }
 

@@ -3,7 +3,7 @@
 
 //#define debug
 
-#define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
+#define SS 8                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 #define DIO  7               //DIO 0  for lora lib
 #define RESET  4             //RESET pin for lora radio
 #define LED 13               //led for blinking on message receipt

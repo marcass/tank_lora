@@ -5,14 +5,15 @@ void setup(){
   Serial.begin(9600);
   pinMode(TRIGPIN, OUTPUT);
   pinMode(POWER, OUTPUT);
-  digitalWrite(POWER, LOW);
+  digitalWrite(POWER, HIGH);
+  //digitalWrite(POWER, LOW);
   pinMode(ECHOPIN, INPUT_PULLUP);
 }
 void loop(){
   //power up mosfet
-  digitalWrite(POWER, HIGH);
+  //digitalWrite(POWER, HIGH);
   //delay for saturation
-  delay(350);
+  //delay(350);
   digitalWrite(TRIGPIN, LOW); // Set the trigger pin to low for 2uS
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH); // Send a 10uS high to trigger ranging
@@ -24,6 +25,6 @@ void loop(){
   Serial.println("   cm"); 
   //power down mosfet
   //delay(500);
-  digitalWrite(POWER, LOW);                   
-  delay(2000);// Wait 50mS before next ranging
+  //digitalWrite(POWER, LOW);                   
+  delay(1000);// Wait 50mS before next ranging
 }

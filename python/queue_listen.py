@@ -31,6 +31,9 @@ def setup_db():
     conn, c = tanks.get_db()
     c.execute('''CREATE TABLE IF NOT EXISTS measurements
                     (timestamp TIMESTAMP, tank_id INTEGER, water_volume REAL, voltage REAL)''')
+    conn.commit() # Save (commit) the changes
+
+    
 
 def add_measurement(tank_id,water_volume,voltage):
     # Insert a row of data
