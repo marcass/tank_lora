@@ -20,12 +20,17 @@
 #endif
 
 int counter = 0;
+
+//*****************Change the following 2 variables ************
 /*Assign node numbers
  * 1. Top tank
  * 2. Noels break
- * 2. Sal's bush
+ * 3. Sal's bush
+ * Main?
+ * Bay?
  */
 const int NODE_ID = 1;
+const int V_CAL = 442;  //calibration analogRead(V_POWER) for individual prcessor
 
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 #define V_PIN  3             //measure voltage off this pin
@@ -95,7 +100,7 @@ void batteryMeasure() {
   //Serial.println(val);
   digitalWrite(V_POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
-  voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
+  voltage = (((float)val / V_CAL) * 1.1) / (1.1 / 4.2);
   #ifdef debug
     Serial.print("Analog read = ");
     Serial.println(val);
