@@ -1,0 +1,18 @@
+[Unit]
+Description=Keeps a tunnel to 'remote.example.com' open
+After=network-online.target
+
+[Service]
+#Inser user below
+User=[local user]
+# -p [PORT]
+# -l [user]
+# -M 0 --> no monitoring
+# -N Just open the connection and do nothing (not interactive)
+# LOCALPORT:IP_ON_EXAMPLE_COM:PORT_ON_EXAMPLE_COM
+# usage once ssh'ed into middleman machine: ssh -p [reverse tunnel port] [dest user]@127.0.0.1
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/bin/autossh -M 0 -N -q -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -R [reverse tunnel port]:127.0.0.1:22 -i [path to id_rsa] [middleman user]@[middleman ip/url] -p 22
+
+[Install]
+WantedBy=multi-user.target
