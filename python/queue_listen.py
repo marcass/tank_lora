@@ -65,14 +65,23 @@ def pub_msg():
                 break
             print data
             #check to see if it's a relay (and insert null water value if it is)
-            if data[1] == 'R':
+            dist = data[1]
+            batt = data[2]
+            try:
+                dist = int(dist)
+                #check to see if in acceptable value range
+                if (dist < tank.invalid_min) or (dist > tank.max_payload):
+                    vol = None
+                else:
+                    vol = tank.volume(dist)
+            except:
                 vol = None
-            else:
-                vol = tank.volume(int(data[1]))
-            if float(data[2]) > 4.5:
+            try:
+                batt = float(batt)
+                if batt > 5.5:
+                    batt = None
+            except:
                 batt = None
-            else:
-                batt = data[2]
             #add to db
             add_measurement(in_node,vol,batt)
             #publish to thingspeak

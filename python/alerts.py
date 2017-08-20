@@ -346,11 +346,15 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print(msg.topic+' '+msg.payload)
-    vol = float(msg.payload)
     in_tank = tanks.tanks_by_topic[msg.topic]
     if 'water' in msg.topic:
         #print in_tank.name
-        print in_tank.name +' tank message incoming ' + 'minimum vol = ' +str(in_tank.min_vol) +' actual volume = ' +str(vol)
+        print in_tank.name +' tank message incoming ' + 'minimum distance = ' +str(in_tank.min_vol) +' actual volume = ' +msg.payload
+        try:
+            vol = float(msg.payload)
+        except:
+            vol = None
+            return
         if vol < in_tank.min_vol:
             print in_tank.name +' under thresh'
             if in_tank.statusFlag == 'OK':
@@ -364,9 +368,13 @@ def on_message(client, userdata, msg):
         else:
             print 'level fine, doing nothing'
     elif 'battery' in msg.topic:
-        val = float(msg.payload)
-        print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual volume = ' +str(val)
-        if val < 2.9:
+        print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual voltage = ' +msg.payload
+        try:
+            val = float(msg.payload)
+        except:
+            val = None
+            return
+        if val < 3.2:
             plot_tank(in_tank, '1', 'batt',creds.group_ID)
 
 #subscribe to broker and test for messages below alert values
