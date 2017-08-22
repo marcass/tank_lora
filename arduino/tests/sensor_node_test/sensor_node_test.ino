@@ -29,10 +29,10 @@ int counter = 0;
  * Main?
  * Bay?
  */
-const int NODE_ID = 1;
+const int NODE_ID = 2;
 const int V_CAL = 442;  //calibration analogRead(V_POWER) for individual prcessor
 
-#define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
+#define SS 8                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 #define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
@@ -202,11 +202,11 @@ void loop() {
   #ifdef debug
     Serial.print("Sending packet: ");
     Serial.println(counter);
-    counter++;
+    
   
     //delay(5000);
   #endif
-  
+  counter++;
   batteryMeasure();
   distMeasure();
   //send packet
@@ -220,6 +220,8 @@ void loop() {
   LoRa.print(dist);
   LoRa.print(";");
   LoRa.print(voltage);
+  LoRa.print(";");
+  LoRa.print(counter);
   LoRa.print(";");
   LoRa.endPacket();
   #ifdef sleeping
