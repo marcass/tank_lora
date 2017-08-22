@@ -1,10 +1,10 @@
 [Unit]
-Description=Python serial port listener for incoming data
+Description=Python serial port listener for incoming tank data
  
 [Service]
 Type=simple
 User=pi
-ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/queue_listen.py
+ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/tank_monitor.py
 
 [Install]
 WantedBy=multi-user.target

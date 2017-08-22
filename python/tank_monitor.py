@@ -1,5 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')
+import tanks
 import pytz
 import sys
 import time
@@ -24,7 +25,7 @@ import serial
 import datetime
 import sqlite3
 import creds
-import tanks
+
 
 s_port = '/dev/LORA'
 #initialise global port
@@ -142,14 +143,14 @@ def localtime_from_response(resp):
     ts = ts.replace(tzinfo=pytz.UTC)
     return ts.astimezone(pytz.timezone(tanks.tz))
     
-def query_via_tankid(tank_id, days_str, q_range=0):
-    days = int(days_str)
-    if q_range == 0:
-        length = 'days'
+def query_via_tankid(tank_id, days_str, q_range):
+    time_range = int(days_str)
+    plot_range = days_str+' '+q_range
+    print 'plot range = '+plot_range
     conn, c = tanks.get_db()
     #if days is not None:
     #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i days') AND datetime('now','localtime')" % (days), (tank_id,))
-    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i %s') AND datetime('now','localtime')" % (days), % (length), (tank_id,))
+    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i %s') AND datetime('now','localtime')" % (time_range, q_range), (tank_id,))
     #else:
         #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
     ret = c.fetchall()
@@ -160,7 +161,7 @@ def query_via_tankid(tank_id, days_str, q_range=0):
     #print ret_dict 
     return ret_dict
 
-def plot_tank(tank, period, vers, target_id, q_range=0):
+def plot_tank(tank, period, vers, target_id, q_range):
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -174,13 +175,13 @@ def plot_tank(tank, period, vers, target_id, q_range=0):
     if type(tank) is list:
         title_name = ''
         for i in tank:
-            d = query_via_tankid(i.nodeID, period)
+            d = query_via_tankid(i.nodeID, period, q_range)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
     else:
-        d = query_via_tankid(tank.nodeID, period, q_range=0)
+        d = query_via_tankid(tank.nodeID, period, q_range)
         if vers == 'bi_plot':
             title_name = 'Water Level and Voltage for '+tank.name+' Tank'
             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
@@ -274,7 +275,8 @@ def on_chat_message(msg):
                     print 'in_tank = '+in_tank.name
                     days = text.split(' ')[1]
                     if days.isdigit():
-                        plot_tank(in_tank, days, 'bi_plot', chat_id)
+                        q_length = 'days'
+                        plot_tank(in_tank, days, 'bi_plot', chat_id, q_length)
                     else:
                         msg_error = 1
                 else:
@@ -339,14 +341,14 @@ def on_callback_query(msg):
         else: #'water' in query_data:
             vers = 'water'
         #print 'days in build = '+days
-        plot_tank(build_list, str(days), vers, target_id)
+        q_length = 'days'
+        plot_tank(build_list, str(days), vers, target_id, q_length)
         build_list = [] # finished build, so empty list
         return
     else: #catch all else
         if query_data == 'status':
             status_mess('all', target_id)
         elif query_data == '1' or '3' or '7' or '1h' or '3h' or '7h':
-            #print query_data
             if 'h' in query_data:
                 conv = list(query_data)[0]
                 q_range = 'hours'
@@ -354,14 +356,12 @@ def on_callback_query(msg):
                 conv = str(query_data)
                 q_range = 'days'
             in_tank_name = msg['message']['text'].split(' ')[0]
-            print 'tank is '+in_tank_name
             if tanks.tanks_by_name.has_key(in_tank_name):
                 graph_tank = tanks.tanks_by_name[in_tank_name]
-                print 'tank is '+graph_tank.name
                 plot_tank(graph_tank, conv, 'water', target_id, q_range)
                 return
             else:
-                plot_tank(tanks.tank_list, conv, 'water', target_id)
+                plot_tank(tanks.tank_list, conv, 'water', target_id, q_range)
                 #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
                 return
 
@@ -397,7 +397,7 @@ def sort_data():
                         print tank.name +' under thresh'
                         if tank.statusFlag == 'OK':
                             tank.statusFlag = 'bad'
-                            plot_tank(tank, '1', 'water', creds.group_ID)
+                            plot_tank(tank, '1', 'water', creds.group_ID, 'days')
                             send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
                         elif tank.statusFlag == 'bad':
                             print 'ignoring low level'
@@ -412,7 +412,7 @@ def sort_data():
                 if batt > 5.5:
                     batt = None
                 if batt < 3.2:
-                    plot_tank(tank, '1', 'batt',creds.group_ID)
+                    plot_tank(tank, '1', 'batt',creds.group_ID, 'days')
             except:
                 batt = None
             #add to db
