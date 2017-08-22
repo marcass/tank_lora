@@ -228,7 +228,7 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/vol [days] to build a graph with custom tank volumes in it over [days] eg, /vol 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/batt_vol [days] [tank] will plot voltage data and volume data for the specified tank, eg /batt_vol 1 top"
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/vol [days] to build a graph with custom tank volumes in it over [days] eg, /vol 10 will give you last 10 daysof data from selected tanks\n/batt [days] will similarly give you the voltage of batteries over [days] for selected tanks\n/vl [days] [tank] will plot voltage data and volume data for the specified tank, eg /vl 1 top"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
@@ -266,7 +266,7 @@ def on_chat_message(msg):
                 msg_error = 1
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt [number]', eg /batt 2")
-        elif '/volt_vol' in text:
+        elif '/vl' in text:
             in_msg = text.split(' ')
             msg_error = 0
             if len(in_msg) == 3:
@@ -284,7 +284,7 @@ def on_chat_message(msg):
             else:
                 msg_error = 1
             if msg_error:
-                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/batt_vol [days] [tank name]', eg /batt_vol 1 top")
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/vl [days] [tank name]', eg /vl 1 top")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
