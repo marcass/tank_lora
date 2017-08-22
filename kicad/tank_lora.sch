@@ -80,7 +80,7 @@ L R R1
 U 1 1 59477B2B
 P 8150 2850
 F 0 "R1" V 8230 2850 50  0000 C CNN
-F 1 "91k" V 8150 2850 50  0000 C CNN
+F 1 "47k" V 8150 2850 50  0000 C CNN
 F 2 "Resistor_mw:Resistor_SMD+THTuniversal_0805to1206_RM10_HandSoldering" V 8080 2850 50  0001 C CNN
 F 3 "" H 8150 2850 50  0000 C CNN
 	1    8150 2850
@@ -109,7 +109,7 @@ F 3 "" H 8150 1800 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text Label 8300 2850 0    60   ~ 0
-1hour
+6min
 $Comp
 L +3.3V #PWR03
 U 1 1 59489424
