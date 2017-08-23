@@ -9,11 +9,7 @@
 
 //debug
 //#define debug
-#define forwarded  //uncomment if node needs to be forwarded
 
-#ifdef forwarded
-  byte destination = 0xFF;
-#endif
 
 int counter = 0;
 //*****************Change the following 2 variables ************
@@ -24,7 +20,7 @@ int counter = 0;
  * Main?
  * Bay?
  */
-const int NODE_ID = 4;
+const int NODE_ID = 5;
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
@@ -39,10 +35,16 @@ const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual p
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
+//allowed to forward for sals - more verstile than using syncword
+const byte ALLOWED = 0xFF;
+bool wake_resp;
 int dist;
 byte DONE_T = 1;
 bool intitialisePins;
 float voltage;
+unsigned long send_timer;
+unsigned long wake_delay;
+const unsigned long SEND_THRESH = 360000; //6min
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
@@ -77,6 +79,9 @@ void setup() {
     #endif
     while (1);
   }
+  //set up for external watchdog patting
+  attachInterrupt(digitalPinToInterrupt(WAKE_PIN), wake, RISING);
+  wake_resp = false;
 }
 
 //battery testing function
@@ -123,64 +128,52 @@ void distMeasure(){
 }
 
 void wake (){
-  // cancel sleep as a precaution
-  sleep_disable();
-  // precautionary while we do other stuff
-  detachInterrupt(digitalPinToInterrupt(WAKE_PIN));
+  wake_resp = true;
+  wake_delay = millis();
 }  // end of wake
 
-void sleepNow(){ //see https://www.gammon.com.au/forum/?id=11497
+void onReceive(int packetSize) {
+  if (packetSize == 0) return;          // if there's no packet, return
 
-  //sleep lora radio
-  LoRa.sleep();
-  
-  // Choose our preferred sleep mode:
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  
-  //power_all_disable();//disables power to all modules careful here as not sure how to wake up
-  // Set sleep enable (SE) bit:
-  sleep_enable();
-  
-  // Do not interrupt before we go to sleep, or the
-  // ISR will detach interrupts and we won't wake.
-  noInterrupts();           // timed sequence follows
-  
-  // will be called when pin D2 goes high  
-  attachInterrupt(digitalPinToInterrupt(WAKE_PIN), wake, RISING);
-  
-  // We are guaranteed that the sleep_cpu call will be done
-  // as the processor executes the next instruction after
-  // interrupts are turned on.
-  interrupts();  // one cycle
-  sleep_cpu();   // one cycle
+  // read packet header bytes:
+  byte sender = LoRa.read();            // sender address
+
+  // if the recipient isn't this device or broadcast,
+  if (sender != ALLOWED) {
+    #ifdef debug
+      Serial.println("This message is not for me.");
+    #endif
+    return;                             // skip rest of function
+  }
+
+  //otherwise build the string
+  String incoming = "";
+
+  while (LoRa.available()) {
+    incoming += (char)LoRa.read();
+  }
+
+  //forward the packet
+  LoRa.beginPacket();
+  LoRa.print(incoming);
+  LoRa.endPacket();
+
+  #ifdef debug
+    // if message is for this device, or broadcast, print details:
+    Serial.println("Received from: 0x" + String(sender, HEX));
+    Serial.println("Message: " + incoming);
+    Serial.println("RSSI: " + String(LoRa.packetRssi()));
+    Serial.println("Snr: " + String(LoRa.packetSnr()));
+    Serial.println();
+  #endif
 }
 
-void loop() {
-  #ifdef debug
-    Serial.print("Sending packet: ");
-    Serial.println(counter);
-  
-    // send packet
-    LoRa.beginPacket();
-    LoRa.print("NodeID ");
-    LoRa.print(NODE_ID);
-    LoRa.print("count ");
-    LoRa.print(counter);
-    LoRa.endPacket();
-  
-    counter++;
-  
-    delay(5000);
-  #endif
-  
+void send_local_data(){
   batteryMeasure();
   distMeasure();
   //send packet
   LoRa.beginPacket();
-  #ifdef forwarded
-    LoRa.write(destination);
-  #endif
-  LoRa.print("PY;");//tag for serial listner
+  LoRa.print("PY:");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");
   LoRa.print(dist);
@@ -188,14 +181,26 @@ void loop() {
   LoRa.print(voltage);
   LoRa.print(";");
   LoRa.endPacket();
-  //Send successful wake pulse to external watchdog
-  //pause for wake pulse calming (needs 20ms and measuring may not take that long)
-  delay(20);
-  digitalWrite(DONE, HIGH);
-  delayMicroseconds(DONE_T);
-  digitalWrite(DONE, LOW);
-  sleepNow();
-  //start loop again
+}
+void loop() {
+//send local data now and then
+  if (millis() - send_timer > SEND_THRESH) {
+    send_local_data();
+    send_timer = millis();
+  }
+  if (wake_resp){
+    //TPL5010 sends a 20ms high pulse. It expexts a response to 'DONE' pin sometime after 20ms
+    if (millis() - wake_delay > 30){
+      //Send successful wake pulse to external watchdog
+      digitalWrite(DONE, HIGH);
+      delayMicroseconds(DONE_T);
+      digitalWrite(DONE, LOW);
+      wake_resp = false;
+    }
+  }
+
+  // parse for a packet, and call onReceive with the result:
+  onReceive(LoRa.parsePacket());
 }
 
 
