@@ -222,7 +222,7 @@ def on_chat_message(msg):
                     print 'in_tank = '+in_tank.name
                     days = text.split(' ')[-2]
                     if days.isdigit():
-                        plot_tank(in_tank, days, 'bi_plot', chat_id)
+                        plot_tank(in_tank, days, 'bi_plot', chat_id, 'days')
                     else:
                         volt_error = 1
                 else:
@@ -284,7 +284,7 @@ def on_callback_query(msg):
         return
     if 'add tank build' in query_data:
         print 'period in build = '+str(dur)+' '+sql_span
-        plot_tank(build_list, str(dur), vers, target_id)
+        plot_tank(build_list, str(dur), vers, target_id, sql_span)
         #clear variables
         build_list = [] # finished build, so empty list
         dur = None
@@ -309,10 +309,10 @@ def on_callback_query(msg):
             if tanks.tanks_by_name.has_key(in_tank_name):
                 graph_tank = tanks.tanks_by_name[in_tank_name]
                 print 'tank is '+graph_tank.name
-                plot_tank(graph_tank, conv, 'water', target_id)
+                plot_tank(graph_tank, conv, 'water', target_id, 'days')
                 return
             else:
-                plot_tank(tanks.tank_list, conv, 'water', target_id)
+                plot_tank(tanks.tank_list, conv, 'water', target_id, 'days')
                 #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
                 return
 
