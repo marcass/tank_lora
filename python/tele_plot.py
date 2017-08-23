@@ -96,7 +96,7 @@ h = Keyboard('helpMe')
 st = Keyboard('status')
 a = Keyboard('alert')
 #g = Keyboard('graphs')
-dur = Keyboard('plot')
+d = Keyboard('plot')
 
 #v = Keyboard('batt')
 
@@ -105,11 +105,11 @@ def localtime_from_response(resp):
     ts = ts.replace(tzinfo=pytz.UTC)
     return ts.astimezone(pytz.timezone(tanks.tz))
     
-def query_via_tankid(tank_id, days_str):
-    days = int(days_str)
+def query_via_tankid(tank_id, period_str, q_type):
+    period = int(period_str)
     conn, c = tanks.get_db()
     #if days is not None:
-    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i days') AND datetime('now','localtime')" % (days), (tank_id,))
+    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i %s') AND datetime('now','localtime')" % (period, q_type), (tank_id,))
     #else:
         #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
     ret = c.fetchall()
@@ -120,7 +120,7 @@ def query_via_tankid(tank_id, days_str):
     #print ret_dict 
     return ret_dict
 
-def plot_tank(tank, period, vers, target_id):
+def plot_tank(tank, period, vers, target_id, q_type):
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -134,7 +134,7 @@ def plot_tank(tank, period, vers, target_id):
     if type(tank) is list:
         title_name = ''
         for i in tank:
-            d = query_via_tankid(i.nodeID, period)
+            d = query_via_tankid(i.nodeID, period, q_type)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
@@ -202,8 +202,9 @@ def on_chat_message(msg):
             msg_error = 0
             if len(in_msg) == 2:
 	        dur = in_msg[1]
-                if days.isdigit():
-                    message = bot.sendMessage(chat_id, 'Please select buttons that apply.\nClick Volume or Battery to plot either and set the plot for '+dur' Hours or Days to display the data you require.\n Then click the tank(s) you require.\nFinally click the build button to produce the graph', reply_markup=dur.format_keys(tanks.tank_list))
+                if dur.isdigit():
+                    message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))    
+                    #message = bot.sendMessage(chat_id, 'Please select buttons that apply.\nClick Volume or Battery to plot either and set the plot for ' +dur' Hours or Days to display the data you require.\n Then click the tank(s) you require.\nFinally click the build button to produce the graph', reply_markup=dur.format_keys(tanks.tank_list))
                     #message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
                 else:
                     msg_error = 1
@@ -321,63 +322,6 @@ botID = creds.bot_ID
 bot = telepot.Bot(TOKEN)
 MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 print('Listening ...')
-
-#mqtt callbacks
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    sub_list = []
-    for var in tanks.tank_list:
-        sub_list.append((var.waterTop, 0))
-        sub_list.append((var.batTop, 0))
-    #print sub_list
-    client.subscribe(sub_list)
-    #client.subscribe([(tanks.t.waterTop, 0), (tanks.n.waterTop, 0), (tanks.s.waterTop, 0)])
-
-# The callback for when a PUBLISH message is received from the server.
-def on_message(client, userdata, msg):
-    print(msg.topic+' '+msg.payload)
-    in_tank = tanks.tanks_by_topic[msg.topic]
-    if 'water' in msg.topic:
-        #print in_tank.name
-        print in_tank.name +' tank message incoming ' + 'minimum distance = ' +str(in_tank.min_vol) +' actual volume = ' +msg.payload
-        try:
-            vol = float(msg.payload)
-        except:
-            vol = None
-            return
-        if vol < in_tank.min_vol:
-            print in_tank.name +' under thresh'
-            if in_tank.statusFlag == 'OK':
-                in_tank.statusFlag = 'bad'
-                plot_tank(in_tank, '1', 'water', creds.group_ID)
-                send = bot.sendMessage(creds.group_ID, in_tank.name +' tank is low', reply_markup=a.format_keys(in_tank))
-            elif in_tank.statusFlag == 'bad':
-                print 'ignoring low level'
-            else:
-                print 'status flag error'        
-        else:
-            print 'level fine, doing nothing'
-    elif 'battery' in msg.topic:
-        print in_tank.name +' tank battery message incoming ' + 'minimum voltage = 3.2 actual voltage = ' +msg.payload
-        try:
-            val = float(msg.payload)
-        except:
-            val = None
-            return
-        if val < 3.2:
-            plot_tank(in_tank, '1', 'batt',creds.group_ID)
-
-#subscribe to broker and test for messages below alert values
-client = mqtt.Client()
-client.username_pw_set(username=creds.mosq_auth['username'], password=creds.mosq_auth['password'])
-client.on_connect = on_connect
-client.on_message = on_message
-client.connect(creds.mosq_auth['broker'], 1883, 60)
-client.loop_start()
-
 
 while 1:
     time.sleep(5)
