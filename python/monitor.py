@@ -141,6 +141,9 @@ def plot_tank(tank, period, target_id, q_range):
         label = 'Battery Voltage'
     if type(tank) is list:
         title_name = ''
+        print 'building a list of tanks'
+        for x in tank:
+            print x.name +' tank in list'
         for i in tank:
             d = sql.query_via_tankid(i.nodeID, period, q_range)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
