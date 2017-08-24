@@ -11,10 +11,11 @@
 
 
 float voltage;
-#define V_measurePin 0
+#define V_measurePin 3
 unsigned long timer;
 unsigned long print_timer;
 unsigned long PRINT_THRESH = 1000; //60000;
+int val;
 
 //power pin mosfet
 #define POWER 5
@@ -44,10 +45,11 @@ void setup() {
 
 void batteryMeasure() {
   digitalWrite(POWER, LOW);//close mosfet to measure
+  delay(1000);
   delayMicroseconds(20); //wait for cap to discharge before reading
-  //Serial.print("Value of measure pin is: ");
-  int val = analogRead(V_measurePin); //measure analog val for conversion
-  //Serial.println(val);
+  Serial.print("Value of measure pin is: ");
+  val = analogRead(V_measurePin); //measure analog val for conversion
+  Serial.println(val);
   digitalWrite(POWER, HIGH);//open mosfet to conserve power
   //convert. Returns actual voltage, ie 3.768 = 3.768V
   voltage = (((float)val / 442) * 1.1) / (1.1 / 4.2);
@@ -58,12 +60,15 @@ void loop() {
 
   if (millis() - print_timer > PRINT_THRESH){
     batteryMeasure();
-    Serial.print("battery voltage is ");
-    Serial.print(voltage);
-    Serial.println("V");
+//    Serial.print("battery voltage is ");
+//    Serial.print(voltage);
+//    Serial.println("V");
     LoRa.beginPacket();
-    LoRa.write("V = ");
+    LoRa.print("PY;");
+    LoRa.print("5;0;");
     LoRa.print(voltage);
+    LoRa.print(";");
+    LoRa.print(val);
     LoRa.endPacket();
     print_timer = millis();
   }

@@ -25,7 +25,7 @@ const int NODE_ID = 5;
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
 
-#define V_PIN  0             //measure voltage off this pin
+#define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
@@ -40,8 +40,8 @@ const byte ALLOWED = 0xFF;
 bool wake_resp;
 int dist;
 byte DONE_T = 1;
-bool intitialisePins;
 float voltage;
+int val;
 unsigned long send_timer;
 unsigned long wake_delay;
 const unsigned long SEND_THRESH = 360000; //6min
@@ -53,8 +53,6 @@ const unsigned long SEND_THRESH = 360000; //6min
 void setup() {
   //.setup analog ref for battery testing
   analogReference(INTERNAL); //measures at 1.1V ref to give a value for flaoting voltage form batt
-  //disable sleep bit:
-  sleep_disable();
   pinMode(DONE, OUTPUT);
   digitalWrite(DONE, LOW);
   pinMode(POWER, OUTPUT);
@@ -130,6 +128,7 @@ void distMeasure(){
 void wake (){
   wake_resp = true;
   wake_delay = millis();
+  detachInterrupt(digitalPinToInterrupt(WAKE_PIN));
 }  // end of wake
 
 void onReceive(int packetSize) {
@@ -179,7 +178,6 @@ void send_local_data(){
   LoRa.print(dist);
   LoRa.print(";");
   LoRa.print(voltage);
-  LoRa.print(";");
   LoRa.endPacket();
 }
 void loop() {
@@ -196,6 +194,7 @@ void loop() {
       delayMicroseconds(DONE_T);
       digitalWrite(DONE, LOW);
       wake_resp = false;
+      attachInterrupt(digitalPinToInterrupt(WAKE_PIN), wake, RISING);
     }
   }
 

@@ -24,12 +24,12 @@ int counter = 0;
  * Main?
  * Bay?
  */
-const int NODE_ID = 4;
+const int NODE_ID = 1;
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
 
-#define V_PIN  0             //measure voltage off this pin
+#define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
