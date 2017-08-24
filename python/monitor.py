@@ -1,31 +1,28 @@
 import matplotlib
 matplotlib.use('Agg')
+import tanks
 import pytz
 import sys
 import time
+from threading import Timer
 import telepot
 import telepot.helper
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id)
-import creds
-import os.path
-import tanks
 import telepot.api
 import matplotlib.pyplot as plt
 #from matplotlib.dates import DayLocator, HourLocator, DateFormatter, drange
 import matplotlib.dates as md
-import datetime
-import sqlite3
 matplotlib.rcParams['timezone'] = tanks.tz
-
-
-#fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
-def always_use_new(req, **user_kw):
-    return None
-
-telepot.api._which_pool = always_use_new
+from multiprocessing import Queue as Q
+from multiprocessing import Process as P
+import time
+import sys
+import serial
+import creds
+import sql
 
 #global variables
 build_list = []
@@ -33,6 +30,29 @@ build_list = []
 dur = None
 sql_span = None
 vers = None
+s_port = '/dev/LORA'
+#initialise global port
+port = None
+
+def readlineCR(port):
+    rv = ''
+    while True:
+        ch = port.read()
+        rv += ch
+        if ch=='\n':# or ch=='':
+            if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
+                print rv
+                rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
+                print rec_split
+                q.put(rec_split[1:4])           #put data in queue for processing at rate 
+                rv = ''
+
+########### Alert stuff ########################
+#fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
+def always_use_new(req, **user_kw):
+    return None
+
+telepot.api._which_pool = always_use_new
 
 class Keyboard:
     def __init__(self, version):
@@ -104,29 +124,7 @@ a = Keyboard('alert')
 g = Keyboard('graphs')
 d = Keyboard('plot')
 
-#v = Keyboard('batt')
-
-def localtime_from_response(resp):
-    ts = datetime.datetime.strptime(resp, "%Y-%m-%d %H:%M:%S.%f")
-    ts = ts.replace(tzinfo=pytz.UTC)
-    return ts.astimezone(pytz.timezone(tanks.tz))
-    
-def query_via_tankid(tank_id, period_str, q_type):
-    period = int(period_str)
-    conn, c = tanks.get_db()
-    #if days is not None:
-    c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i %s') AND datetime('now','localtime')" % (period, q_type), (tank_id,))
-    #else:
-        #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-1 days') AND datetime('now','localtime')", (tank_id,))
-    ret = c.fetchall()
-    timestamp = [localtime_from_response(i[0]) for i in ret]
-    volume = [i[2] for i in ret]
-    voltage = [i[3] for i in ret]
-    ret_dict = {'timestamp':timestamp, 'tank_id':tank_id, 'water_volume':volume, 'voltage':voltage }
-    #print ret_dict 
-    return ret_dict
-
-def plot_tank(tank, period, target_id, q_type):
+def plot_tank(tank, period, target_id, q_range):
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -140,13 +138,13 @@ def plot_tank(tank, period, target_id, q_type):
     if type(tank) is list:
         title_name = ''
         for i in tank:
-            d = query_via_tankid(i.nodeID, period, q_type)
+            d = sql.query_via_tankid(i.nodeID, period, q_range)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
     else:
-        d = query_via_tankid(tank.nodeID, period, q_type)
+        d = sql.query_via_tankid(tank.nodeID, period, q_range)
         if vers == 'bi_plot':
             title_name = 'Water Level and Voltage for '+tank.name+' Tank'
             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
@@ -187,7 +185,7 @@ def status_mess(tag, chat_id):
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
         message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
-
+        
 def on_chat_message(msg):
     global dur
     content_type, chat_type, chat_id = telepot.glance(msg)
@@ -335,11 +333,90 @@ def on_callback_query(msg):
             vers = None
             return
 
+
 TOKEN = creds.botAPIKey
 botID = creds.bot_ID
 bot = telepot.Bot(TOKEN)
 MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 print('Listening ...')
 
-while 1:
-    time.sleep(5)
+
+def sort_data():
+    while True:
+        while (q.empty() == False):
+            data = q.get()
+            in_node = data[0]
+            if tanks.tanks_by_nodeID.has_key(in_node):
+                tank = tanks.tanks_by_nodeID[in_node]
+            else:
+                break
+            print data
+            #check to see if it's a relay (and insert null water value if it is)
+            dist = data[1]
+            batt = data[2]
+            try:
+                dist = int(dist)
+                #check to see if in acceptable value range
+                if (dist < tank.invalid_min) or (dist > tank.max_payload):
+                    vol = None
+                else:
+                    vol = tank.volume(dist)
+                    if vol < tank.min_vol:
+                        print tank.name +' under thresh'
+                        if tank.statusFlag == 'OK':
+                            tank.statusFlag = 'bad'
+                            plot_tank(tank, '1', 'water', creds.group_ID, 'days')
+                            send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
+                        elif tank.statusFlag == 'bad':
+                            print 'ignoring low level'
+                        else:
+                            print 'status flag error'        
+                    else:
+                        print 'level fine, doing nothing'
+            except:
+                vol = None
+            try:
+                batt = float(batt)
+                if (batt == 0) or (batt > 5.5):
+                    batt = None
+                elif batt < 3.2:
+                    plot_tank(tank, '1', 'batt',creds.group_ID, 'days')
+            except:
+                batt = None
+            #add to db
+            sql.add_measurement(in_node,vol,batt)
+
+#Serial port function opening fucntion
+count = 0
+def port_check(in_port):
+    global port
+    try:
+        port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
+        print s_port+' found'
+        count = 0
+        return port
+    except:
+        port = None
+        return port
+
+
+#handle exceptions for absent port (and keep retrying for a while)
+while (port_check(s_port) is None) and (count < 100):
+    count = count + 1
+    print s_port+' not found '+str(count)+' times'
+    time.sleep(10)
+    
+if count == 100:
+    print 'Exited because serial port not found'
+    sys.exit()
+    
+#instatiate queue
+q = Q()
+#setup database
+setup_db()
+
+fetch_process = P(target=readlineCR, args=(port,))
+broadcast_process = P(target=sort_data, args=())
+
+broadcast_process.start()
+fetch_process.start()
