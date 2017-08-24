@@ -125,6 +125,10 @@ g = Keyboard('graphs')
 d = Keyboard('plot')
 
 def plot_tank(tank, period, target_id, q_range):
+    global vers
+    global dur
+    print vers
+    #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -146,6 +150,7 @@ def plot_tank(tank, period, target_id, q_range):
     else:
         d = sql.query_via_tankid(tank.nodeID, period, q_range)
         if vers == 'bi_plot':
+            print 'bi_plot found'
             title_name = 'Water Level and Voltage for '+tank.name+' Tank'
             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
             ax.set_xlabel('Time')
@@ -157,6 +162,7 @@ def plot_tank(tank, period, target_id, q_range):
             ax2.set_ylabel('Voltage', color='r')
             ax2.tick_params('y', colors='r')
         else:
+            print 'kncoking on through'
             title_name = tank.name+' plot'
             ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
             ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+label)
@@ -188,6 +194,7 @@ def status_mess(tag, chat_id):
         
 def on_chat_message(msg):
     global dur
+    global vers
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
@@ -202,6 +209,10 @@ def on_chat_message(msg):
             else:
                 status_mess('all', chat_id)
         elif ('/Plot' in text) or ('/plot' in text):# or ('/batt' in text):
+            #reset variables
+            dur = None
+            sql_span = None
+            vers = None
             in_msg = text.split(' ')
             msg_error = 0
             if len(in_msg) == 2:
@@ -220,14 +231,18 @@ def on_chat_message(msg):
         elif '/vl' in text:
             in_msg = text.split(' ')
             volt_error = 0
+            print in_msg
             if len(in_msg) == 3:
                 if any(k in text for k in tanks.tanks_by_name):
                     in_tank = tanks.tanks_by_name[text.split(' ')[2]]                
                     print 'in_tank = '+in_tank.name
                     days = text.split(' ')[1]
+                    print days
                     if days.isdigit():
                         vers = 'bi_plot'
+                        print 'version b4 plot '+vers
                         plot_tank(in_tank, days, chat_id, 'days')
+                        print 'version afer plot '+vers
                         vers = None
                         return
                     else:
@@ -297,9 +312,6 @@ def on_callback_query(msg):
         plot_tank(build_list, dur, target_id, sql_span)
         #clear variables
         build_list = [] # finished build, so empty list
-        dur = None
-        sql_span = None
-        vers = None
         return
     if 'hours' in query_data:
         print 'added ' +query_data +' to options'
@@ -413,7 +425,7 @@ if count == 100:
 #instatiate queue
 q = Q()
 #setup database
-setup_db()
+sql.setup_db()
 
 fetch_process = P(target=readlineCR, args=(port,))
 broadcast_process = P(target=sort_data, args=())
