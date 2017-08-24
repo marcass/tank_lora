@@ -32,6 +32,7 @@ build_list = []
 #days = '1'
 dur = None
 sql_span = None
+vers = None
 
 class Keyboard:
     def __init__(self, version):
@@ -50,10 +51,15 @@ class Keyboard:
                 #the following makes a row of buttons (hard to read when lots of alerts)
                 #keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                if tank.statusFlag == 'bad':
+                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name+' reset alert'),
                             InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
                             ]])
+                else:
+                   keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
+                             ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Get composite graph of all tanks', callback_data='meta graph'),
@@ -63,12 +69,12 @@ class Keyboard:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name +' reset alert'),
                         ]])
-        #elif self.version == 'graphs':
-            #keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        #InlineKeyboardButton(text='1 day', callback_data='1'),
-                        #InlineKeyboardButton(text='3 days', callback_data='3'),
-                        #InlineKeyboardButton(text='7 days', callback_data='7'),
-                        #]])
+        elif self.version == 'graphs':
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text='1 day', callback_data='1'),
+                        InlineKeyboardButton(text='3 days', callback_data='3'),
+                        InlineKeyboardButton(text='7 days', callback_data='7'),
+                        ]])
        
         elif self.version == 'plot':
             keyb_list = []
@@ -95,7 +101,7 @@ class Keyboard:
 h = Keyboard('helpMe')
 st = Keyboard('status')
 a = Keyboard('alert')
-#g = Keyboard('graphs')
+g = Keyboard('graphs')
 d = Keyboard('plot')
 
 #v = Keyboard('batt')
@@ -120,7 +126,7 @@ def query_via_tankid(tank_id, period_str, q_type):
     #print ret_dict 
     return ret_dict
 
-def plot_tank(tank, period, vers, target_id, q_type):
+def plot_tank(tank, period, target_id, q_type):
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -140,7 +146,7 @@ def plot_tank(tank, period, vers, target_id, q_type):
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
     else:
-        d = query_via_tankid(tank.nodeID, period)
+        d = query_via_tankid(tank.nodeID, period, q_type)
         if vers == 'bi_plot':
             title_name = 'Water Level and Voltage for '+tank.name+' Tank'
             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
@@ -218,11 +224,13 @@ def on_chat_message(msg):
             volt_error = 0
             if len(in_msg) == 3:
                 if any(k in text for k in tanks.tanks_by_name):
-                    in_tank = tanks.tanks_by_name[text.split(' ')[-1]]                
+                    in_tank = tanks.tanks_by_name[text.split(' ')[2]]                
                     print 'in_tank = '+in_tank.name
-                    days = text.split(' ')[-2]
+                    days = text.split(' ')[1]
                     if days.isdigit():
-                        plot_tank(in_tank, days, 'bi_plot', chat_id, 'days')
+                        vers = 'bi_plot'
+                        plot_tank(in_tank, days, chat_id, 'days')
+                        vers = None
                     else:
                         volt_error = 1
                 else:
@@ -240,6 +248,7 @@ def on_callback_query(msg):
     global dur
     global sql_span
     global build_list
+    global vers
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     #print('Callback Query:', query_id, from_id, query_data)
     #print msg
@@ -273,9 +282,9 @@ def on_callback_query(msg):
             bot.answerCallbackQuery(query_id, text='Alert now reset')
             bot.sendMessage(target_id, query_tank.name +' reset to ' +query_tank.statusFlag)
             return
-        #if 'fetch graph' in query_data:
-            #bot.sendMessage(target_id, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
-            #return
+        if 'fetch graph' in query_data:
+            bot.sendMessage(target_id, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
+            return
         elif query_data == 'status':
             status_mess(query_tank, target_id)
             return
@@ -284,38 +293,44 @@ def on_callback_query(msg):
         return
     if 'add tank build' in query_data:
         print 'period in build = '+str(dur)+' '+sql_span
-        plot_tank(build_list, str(dur), vers, target_id, sql_span)
+        plot_tank(build_list, dur, target_id, sql_span)
         #clear variables
         build_list = [] # finished build, so empty list
         dur = None
         sql_span = None
+        vers = None
         return
     if 'hours' in query_data:
+        print 'added ' +query_data +' to options'
         sql_span = 'hours'
+        return
     if 'days' in query_data:
+        print 'added ' +query_data +' to options'
         sql_span = 'days'
+        return
     if 'voltage' in query_data:
+        print 'added ' +query_data +' to options'
         vers = 'batt'
+        return
     if 'volume' in query_data:
+        print 'added ' +query_data +' to options'
         vers = 'water'
-    else: #catch all else
-        if query_data == 'status':
-            status_mess('all', target_id)
-        elif query_data == '1' or '3' or '7':
-            #print query_data
-            conv = str(query_data)
-            in_tank_name = msg['message']['text'].split(' ')[0]
-            print 'tanks is '+in_tank_name
-            if tanks.tanks_by_name.has_key(in_tank_name):
-                graph_tank = tanks.tanks_by_name[in_tank_name]
-                print 'tank is '+graph_tank.name
-                plot_tank(graph_tank, conv, 'water', target_id, 'days')
-                return
-            else:
-                plot_tank(tanks.tank_list, conv, 'water', target_id, 'days')
-                #bot.sendMessage(creds.group_ID, 'There you go', reply_markup=h.format_keys())
-                return
-
+        return
+    if query_data == 'status': 
+        status_mess('all', target_id)
+        return
+    if query_data == '1' or '3' or '7':
+        #print query_data
+        conv = str(query_data)
+        in_tank_name = msg['message']['text'].split(' ')[0]
+        #print 'tank is '+in_tank_name
+        if tanks.tanks_by_name.has_key(in_tank_name):
+            graph_tank = tanks.tanks_by_name[in_tank_name]
+            #print 'tank is '+graph_tank.name
+            vers = 'water'
+            plot_tank(graph_tank, query_data, target_id, 'days')
+            vers = None
+            return
 
 TOKEN = creds.botAPIKey
 botID = creds.bot_ID
