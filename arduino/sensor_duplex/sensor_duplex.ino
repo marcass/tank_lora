@@ -44,7 +44,7 @@ float voltage;
 int val;
 unsigned long send_timer;
 unsigned long wake_delay;
-const unsigned long SEND_THRESH = 360000; //6min
+const unsigned long SEND_THRESH = 36000; //6min
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
