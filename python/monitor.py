@@ -221,8 +221,8 @@ def on_chat_message(msg):
             if len(in_msg) == 2:
 	        dur = in_msg[1]
                 if dur.isdigit():
-                    message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))    
-                    #message = bot.sendMessage(chat_id, 'Please select buttons that apply.\nClick Volume or Battery to plot either and set the plot for ' +dur' Hours or Days to display the data you require.\n Then click the tank(s) you require.\nFinally click the build button to produce the graph', reply_markup=dur.format_keys(tanks.tank_list))
+                    #message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))    
+                    message = bot.sendMessage(chat_id, 'Please select buttons that apply.\nClick "Plot tank volume" or "Plot battery voltage" to plot either and set the plot for ' +str(dur)' "Days" or "Hours" to display the data you require.\nThen click the tank(s) you require.\nFinally click the "Build" button to produce the graph', reply_markup=d.format_keys(tanks.tank_list))
                     #message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
                 else:
                     msg_error = 1
@@ -310,7 +310,7 @@ def on_callback_query(msg):
         return
     if 'add tank build' in query_data:
         if vers == None:
-            bot.sendMessage(target_id, 'Please select a dadta type to plot (Voltage or volume) by clicking the approriate button above')
+            bot.sendMessage(target_id, 'Please select a data type to plot (Voltage or Volume) by clicking the approriate button above')
         print 'period in build = '+str(dur)+' '+sql_span
         plot_tank(build_list, dur, target_id, sql_span)
         #clear variables
