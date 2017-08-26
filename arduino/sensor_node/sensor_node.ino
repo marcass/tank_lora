@@ -9,7 +9,7 @@
 
 //debug
 //#define debug
-#define forwarded  //uncomment if node needs to be forwarded
+//#define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
   byte destination = 0xFF;
