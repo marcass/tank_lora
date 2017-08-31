@@ -29,7 +29,7 @@ tz = 'Pacific/Auckland'
 #s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
 
 #test data
-t = Tanks("top",   "1", 370, 270, 45, 12000, 'b')
+t = Tanks("top",   "1", 370, 300, 45, 12000, 'b')
 n = Tanks("noels", "2", 100, 100, 20, 150, 'g')
 s = Tanks("sals",  "3", 100, 100, 20, 150, 'r')
 m = Tanks("main",  "4",  370, 300, 45, 12000, 'm')
