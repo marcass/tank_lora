@@ -372,6 +372,7 @@ def sort_data():
             batt = data[2]
             try:
                 dist = int(dist)
+                global tank.statusFlag
                 #check to see if in acceptable value range
                 if (dist < tank.invalid_min) or (dist > tank.max_payload):
                     vol = None
