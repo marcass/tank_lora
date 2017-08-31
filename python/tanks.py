@@ -34,6 +34,7 @@ n = Tanks("noels", "2", 100, 100, 30, 150, 'g')
 s = Tanks("sals",  "3", 100, 100, 30, 150, 'r')
 m = Tanks("bay",  "4",  370, 270, 45, 12000, 'm')
 b = Tanks("main",  "5", 370, 270, 45, 12000, 'k')
+f = Tanks("relay", "6", 370, 270, 45, 12000, 'c')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s,m,b]
