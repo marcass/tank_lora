@@ -178,6 +178,7 @@ void send_local_data(){
   LoRa.print(dist);
   LoRa.print(";");
   LoRa.print(voltage);
+  LoRa.print(";");
   LoRa.endPacket();
 }
 void loop() {

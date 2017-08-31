@@ -9,7 +9,7 @@
 
 //debug
 //#define debug
-//#define forwarded  //uncomment if node needs to be forwarded
+#define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
   byte destination = 0xFF;
@@ -24,7 +24,7 @@ int counter = 0;
  * Main?
  * Bay?
  */
-const int NODE_ID = 4;
+const int NODE_ID = 1;
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor

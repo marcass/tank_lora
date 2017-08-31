@@ -16,7 +16,7 @@ unsigned long send_timer;
 const unsigned long SEND_THRESH = 360000; //6min
 
 #define SS 8                //NSS pin def for lora lib (set to 8 for new modules
-#define V_PIN  0             //measure voltage off this pin
+#define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define RESET  4             //RESET pin for lora radio
 #define V_POWER 5            //pull down p-channel mosfet to measure voltage
@@ -75,7 +75,7 @@ void onReceive(int packetSize) {
   if (packetSize == 0) return;          // if there's no packet, return
 
   // read packet header bytes:
-  byte sender = LoRa.read();            // sender address
+  //byte sender = LoRa.read();            // sender address
 
 //  // if the recipient isn't this device or broadcast,
 //  if (sender != ALLOWED) {
