@@ -379,7 +379,7 @@ def sort_data():
                     vol = tank.volume(dist)
                     if vol < tank.min_vol:
                         print tank.name +' under thresh'
-                        print tank.name+' status is '+tank.statusFlag
+                        print tank.name+' status prechange is '+tank.statusFlag
                         if tank.statusFlag != 'bad':
                             print 'dropping throudh and changing status'
                             tank.statusFlag = 'bad'
@@ -390,7 +390,7 @@ def sort_data():
                             send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
                             print 'sent'
                         elif tank.statusFlag == 'bad':
-                            print 'ignoring low level'
+                            print 'ignoring low level as status flag is '+tank.statusFlag
                         else:
                             print 'status flag error'        
                     else:
