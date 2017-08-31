@@ -364,15 +364,22 @@ def sort_data():
             in_node = data[0]
             if tanks.tanks_by_nodeID.has_key(in_node):
                 tank = tanks.tanks_by_nodeID[in_node]
+                print 'found tank is '+tank.name
             else:
                 break
             print data
+            for tank in tanks.tank_list:
+                print tank.name +' is ' +tank.statusFlag
             #check to see if it's a relay (and insert null water value if it is)
             dist = data[1]
             batt = data[2]
             try:
                 dist = int(dist)
-                global tank.statusFlag
+                print 'distance for '+tank.name +' is:'
+                print dist
+                print 'invalid_min - max_payload is:'
+                print tank.invalid_min
+                print tank.max_payload
                 #check to see if in acceptable value range
                 if (dist < tank.invalid_min) or (dist > tank.max_payload):
                     vol = None
@@ -408,6 +415,7 @@ def sort_data():
             except:
                 batt = None
             #add to db
+            print 'writing value voltage ' +str(batt) +' and volume ' +str(vol) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
             sql.add_measurement(in_node,vol,batt)
 
 #Serial port function opening fucntion

@@ -12,9 +12,6 @@ class Tanks:
         self.line_colour = line_colour
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
         self.statusFlag = 'OK'
-        self.url = 'https://thingspeak.com/channels/300940'
-        self.waterTop = 'tank/water/' +name
-        self.batTop = "tank/battery/" +name
         self.pngpath = '/home/pi/git/tank_lora/python/'
         
     def volume(self, payload):
@@ -30,7 +27,7 @@ tz = 'Pacific/Auckland'
 
 #test data
 t = Tanks("top",   "1", 370, 300, 45, 12000, 'b')
-n = Tanks("noels", "2", 100, 100, 20, 150, 'g')
+n = Tanks("noels", "2", 200, 100, 20, 150, 'g')
 s = Tanks("sals",  "3", 100, 100, 20, 150, 'r')
 m = Tanks("main",  "4",  370, 300, 45, 12000, 'm')
 b = Tanks("bay",  "5", 370, 270, 45, 12000, 'k')
@@ -39,9 +36,7 @@ f = Tanks("relay", "6", 370, 270, 45, 12000, 'c')
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s,m,b,f]
 #tank_list = [t,n,s]
-tanks_by_wtopic = {tank.waterTop : tank for tank in tank_list}
-tanks_by_btopic = {tank.batTop : tank for tank in tank_list}
-tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
+#tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 
