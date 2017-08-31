@@ -29,11 +29,11 @@ tz = 'Pacific/Auckland'
 #s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
 
 #test data
-t = Tanks("top",   "1", 100, 230, 30, 200, 'b')
+t = Tanks("top",   "1", 370, 270, 45, 12000, 'b')
 n = Tanks("noels", "2", 100, 100, 30, 150, 'g')
 s = Tanks("sals",  "3", 100, 100, 30, 150, 'r')
-m = Tanks("bay",  "4",  100, 100, 30, 150, 'm')
-b = Tanks("main",  "5", 100, 100, 30, 150, 'k')
+m = Tanks("bay",  "4",  370, 270, 45, 12000, 'm')
+b = Tanks("main",  "5", 370, 270, 45, 12000, 'k')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s,m,b]
@@ -44,10 +44,3 @@ tanks_by_topic = dict(tanks_by_wtopic.items() + tanks_by_btopic.items())
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 
-#sqlite stuff
-tanks_db = '/home/pi/git/tank_lora/python/tank_database.db'
-
-def get_db():
-    conn = sqlite3.connect(tanks_db)
-    c = conn.cursor()
-    return conn, c
