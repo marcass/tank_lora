@@ -378,14 +378,15 @@ def sort_data():
                     vol = tank.volume(dist)
                     if vol < tank.min_vol:
                         print tank.name +' under thresh'
-                        if tank.statusFlag == 'OK':
-                            print 'current status is ' +tank.statusFlag
+                        print tank.name+' status is '+tank.statusFlag
+                        if tank.statusFlag != 'bad':
+                            print 'dropping throudh and changing status'
                             tank.statusFlag = 'bad'
                             print 'new status is '+tank.statusFlag
                             plot_tank(tank, '1', 'water', creds.group_ID, 'days')
-                            print 'graph plotted'
+                            print 'plotted'
                             send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
-                            print 'mesage sent'
+                            print 'sent'
                         elif tank.statusFlag == 'bad':
                             print 'ignoring low level'
                         else:
