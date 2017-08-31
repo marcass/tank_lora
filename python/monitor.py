@@ -357,6 +357,7 @@ print('Listening ...')
 
 
 def sort_data():
+    global vers
     while True:
         while (q.empty() == False):
             data = q.get()
@@ -383,7 +384,8 @@ def sort_data():
                             print 'dropping throudh and changing status'
                             tank.statusFlag = 'bad'
                             print 'new status is '+tank.statusFlag
-                            plot_tank(tank, '1', 'water', creds.group_ID, 'days')
+                            vers = 'water'
+                            plot_tank(tank, '1', creds.group_ID, 'days')
                             print 'plotted'
                             send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
                             print 'sent'
@@ -400,7 +402,8 @@ def sort_data():
                 if (batt == 0) or (batt > 5.5):
                     batt = None
                 elif batt < 3.2:
-                    plot_tank(tank, '1', 'batt',creds.group_ID, 'days')
+                    vers = 'batt'
+                    plot_tank(tank, '1',creds.group_ID, 'days')
             except:
                 batt = None
             #add to db
