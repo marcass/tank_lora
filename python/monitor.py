@@ -182,13 +182,16 @@ def plot_tank(tank, period, target_id, q_range):
     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
     
 def status_mess(tag, chat_id):
+    print 'status message follows!:'
+    for k in tanks.tank_list:
+        print k.name +' is ' +k.statusFlag
     if tag == 'all':
         data = 'Tank status:\n'
         bad = []
-        for tank in tanks.tank_list:
-            data = data +tank.name +' is ' +tank.statusFlag +'\n'
-            if tank.statusFlag == 'bad':
-                bad.append(tank)
+        for x in tanks.tank_list:
+            data = data +x.name +' is ' +x.statusFlag +'\n'
+            if x.statusFlag == 'bad':
+                bad.append(x)
             #message = bot.sendMessage(creds.group_ID, 
             #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
@@ -368,8 +371,8 @@ def sort_data():
             else:
                 break
             print data
-            for tank in tanks.tank_list:
-                print tank.name +' is ' +tank.statusFlag
+            for x in tanks.tank_list:
+                print x.name +' is ' +x.statusFlag
             #check to see if it's a relay (and insert null water value if it is)
             dist = data[1]
             batt = data[2]
