@@ -1,7 +1,7 @@
 import creds
 
 class Tanks:
-    def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour):
+    def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag):
         self.name = name
         self.nodeID = nodeID
         self.diam = diam                 #diameter of tank in cm
@@ -10,7 +10,7 @@ class Tanks:
         self.min_vol = min_vol 
         self.line_colour = line_colour
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
-        self.statusFlag = 'OK'
+        self.statusFlag = statusFlag
         self.pngpath = '/home/pi/git/tank_lora/python/'
         self.min_percent = min_percent
         self.pot_dist = self.max_payload - self.invalid_min
@@ -19,6 +19,21 @@ class Tanks:
         #litres (measurements in cm)
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
+    
+    def set_status(self, status):
+        if status != self.statusFlag:
+            self.statusFlag = status
+            print 'status changed via method'
+        else:
+            print 'status unchanged via method'
+            
+    def get_status(self):
+        if self.statusFlag == 'bad':
+            print 'it should be bad'
+        elif self.statusFlag == 'OK':
+            print 'it should be OK'
+        return self.statusFlag
+            
 
 tz = 'Pacific/Auckland'
     
@@ -27,11 +42,11 @@ tz = 'Pacific/Auckland'
 #s = Tanks("sals",  "3", 170,  73, 30, 150, '#7648EC')
 
 #test data
-t = Tanks("top",   "1", 370, 300, 45, 12000, 5.0, 'b')
-n = Tanks("noels", "2", 200, 100, 20, 4000, 10.0, 'g')
-s = Tanks("sals",  "3", 140, 110, 27, 400, 10.0, 'r')
-m = Tanks("main",  "4",  370, 300, 45, 12000, 50.0, 'm')
-b = Tanks("bay",  "5", 370, 270, 45, 12000, 10.0, 'k')
+t = Tanks("top",   "1", 370, 300, 45, 12000, 20.0, 'b', 'OK')
+n = Tanks("noels", "2", 200, 100, 20, 4000, 10.0, 'g', 'OK')
+s = Tanks("sals",  "3", 140, 110, 27, 400, 10.0, 'r', 'OK')
+m = Tanks("main",  "4",  370, 300, 45, 12000, 50.0, 'm', 'OK')
+b = Tanks("bay",  "5", 370, 270, 45, 12000, 10.0, 'k', 'OK')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tank_list = [t,n,s,m,b]

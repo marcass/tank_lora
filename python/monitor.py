@@ -48,7 +48,8 @@ def readlineCR(port):
                 print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                 print rec_split
-                q.put(rec_split[1:4])           #put data in queue for processing at rate 
+                sort_data(rec_split[1:4])
+                #q.put(rec_split[1:4])           #put data in queue for processing at rate 
                 rv = ''
 
 ########### Alert stuff ########################
@@ -63,11 +64,11 @@ class Keyboard:
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
         
-    def format_keys(self, tank=0):
+    def format_keys(self, key_tank=0):
         if self.version == 'status':
-            if type(tank) is list:
+            if type(key_tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
-                for x in tank:
+                for x in key_tank:
                             key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset alert'))
                             #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
@@ -75,23 +76,22 @@ class Keyboard:
                 #the following makes a row of buttons (hard to read when lots of alerts)
                 #keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
-                if tank.statusFlag == 'bad':
+                if key_tank.statusFlag == 'bad':
                     keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name+' reset alert'),
-                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
+                        InlineKeyboardButton(text=key_tank.name+' reset', callback_data=key_tank.name+' reset alert'),
+                            InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
                             ]])
                 else:
                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                            InlineKeyboardButton(text='Get ' +tank.name +' graph', callback_data=tank.name+' fetch graph'),
+                            InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
                              ]])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text='Get composite graph of all tanks', callback_data='meta graph'),
                         InlineKeyboardButton(text='Status', callback_data='status'),
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text=tank.name+' reset', callback_data=tank.name +' reset alert'),
+                        InlineKeyboardButton(text=key_tank.name+' reset', callback_data=key_tank.name +' reset alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -102,7 +102,7 @@ class Keyboard:
        
         elif self.version == 'plot':
             keyb_list = []
-            for x in tank:
+            for x in key_tank:
                 keyb_list.append(InlineKeyboardButton(text=x.name+' ', callback_data=x.name+' add tank'))
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Plot tank volume', callback_data='volume'),
@@ -128,7 +128,7 @@ a = Keyboard('alert')
 g = Keyboard('graphs')
 d = Keyboard('plot')
 
-def plot_tank(tank, period, target_id, q_range):
+def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
     print vers
@@ -143,22 +143,22 @@ def plot_tank(tank, period, target_id, q_range):
     if vers == 'batt':
         data = 'voltage'
         label = 'Battery Voltage'
-    if type(tank) is list:
+    if type(key_tank) is list:
         title_name = ''
         print 'building a list of tanks'
-        for x in tank:
+        for x in key_tank:
             print x.name +' tank in list'
-        for i in tank:
+        for i in key_tank:
             d = sql.query_via_tankid(i.nodeID, period, q_range)
             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
     else:
-        d = sql.query_via_tankid(tank.nodeID, period, q_range)
+        d = sql.query_via_tankid(key_tank.nodeID, period, q_range)
         if vers == 'bi_plot':
             print 'bi_plot found'
-            title_name = 'Water Level and Voltage for '+tank.name+' Tank'
+            title_name = 'Water Level and Voltage for '+key_tank.name+' Tank'
             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
             ax.set_xlabel('Time')
             # Make the y-axis label, ticks and tick labels match the line color.
@@ -170,9 +170,9 @@ def plot_tank(tank, period, target_id, q_range):
             ax2.tick_params('y', colors='r')
         else:
             print 'kncoking on through'
-            title_name = tank.name+' plot'
-            ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
-            ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+label)
+            title_name = key_tank.name+' plot'
+            ax.plot_date(d['timestamp'],d[data], key_tank.line_colour, label=key_tank.name, marker='o', markersize='5')
+            ax.set(xlabel='Datetime', ylabel=label, title=key_tank.name+' '+label)
             plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
@@ -185,23 +185,7 @@ def plot_tank(tank, period, target_id, q_range):
     #send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name)
     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
     
-def status_mess(tag, chat_id):
-    print 'status message follows!:'
-    for k in tanks.tank_list:
-        print k.name +' is ' +k.statusFlag
-    if tag == 'all':
-        data = 'Tank status:\n'
-        bad = []
-        for x in tanks.tank_list:
-            data = data +x.name +' is ' +x.statusFlag +'\n'
-            if x.statusFlag == 'bad':
-                bad.append(x)
-            #message = bot.sendMessage(creds.group_ID, 
-            #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
-        message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
-    else:
-        message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
-        
+       
 def on_chat_message(msg):
     global dur
     global vers
@@ -278,13 +262,10 @@ def on_callback_query(msg):
     #print msg
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
-        for tank in tanks.tank_list:
-            tank.statusFlag = 'OK'
+        print 'resetting all on callback'
+        for x in tanks.tank_list:
+            x.set_status('OK')
         bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
-        return
-    #sort multi graph callback here
-    if query_data == 'meta graph':
-        bot.sendMessage(target_id, '@FarmTankbot would like to send you some graphs. Which would you like?', reply_markup=g.format_keys())
         return
     query_tank_name = query_data.split(' ')[0]
     #print 'query tank name = '+query_tank_name
@@ -301,6 +282,7 @@ def on_callback_query(msg):
             return
         if 'reset alert' in query_data:
             #print tank.name +' ' +tank.statusFlag
+            print 'resetting all on callback individually'
             query_tank.statusFlag = 'OK'
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
@@ -362,70 +344,97 @@ bot = telepot.Bot(TOKEN)
 MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 print('Listening ...')
 
-def capacity(tank, payload):
-     percentage = 1/((payload - tank.invalid_min)/(tank.max_payload - tank.invalid_min)) * 100
-     print tank.name +' is at '+str(percentage)+' percentage'
-     return percentage
+#def capacity(tank, payload):
+     #percentage = 1/((payload - tank.invalid_min)/(tank.max_payload - tank.invalid_min)) * 100
+     #print tank.name +' is at '+str(percentage)+' percentage'
+     #return percentage
 
 
-def sort_data():
+def sort_data(data):
     global vers
-    while True:
-        while (q.empty() == False):
-            data = q.get()
-            in_node = data[0]
-            if tanks.tanks_by_nodeID.has_key(in_node):
-                tank = tanks.tanks_by_nodeID[in_node]
-                print 'found tank is '+tank.name
-            else:
-                break
-            print data
-            print 'Status as seen in sort_data'
-            for x in tanks.tank_list:
-                print x.name +' is ' +x.statusFlag
-            #check to see if it's a relay (and insert null water value if it is)
-            dist = data[1]
-            batt = data[2]
-            try:
-                dist = int(dist)
-                if (dist < tank.invalid_min) or (dist > tank.max_payload):
-                    level = None
+    #while True:
+        #while (q.empty() == False):
+    #data = q.get()
+    in_node = data[0]
+    if tanks.tanks_by_nodeID.has_key(in_node):
+        rec_tank = tanks.tanks_by_nodeID[in_node]
+        print 'found tank is '+rec_tank.name
+        print 'following in the instance statusFlags:'
+        for y in tanks.tank_list:
+            print 'status for ' +y.name+' is '+y.get_status()
+    else:
+        print 'tank not found'
+        return
+    print data
+    #print 'Status as seen in sort_data'
+    #for x in tanks.tank_list:
+        #print x.name +' is ' +x.statusFlag
+    dist = data[1]
+    batt = data[2]
+    try:
+        dist = int(dist)
+        if (dist < rec_tank.invalid_min) or (dist > rec_tank.max_payload):
+            print 'Payload out of range'
+            level = None
+        else:
+            print 'payload in range'
+            dist = dist - rec_tank.invalid_min
+            level = float(rec_tank.pot_dist - dist)/float(rec_tank.pot_dist) * 100.0
+            if level < rec_tank.min_percent:
+                print rec_tank.name +' under thresh'
+                print rec_tank.name+' status prechange is '+rec_tank.statusFlag
+                if rec_tank.statusFlag != 'bad':
+                    print 'dropping through and changing status'
+                    rec_tank.set_status('bad')
+                    print rec_tank
+                    print 'new status is '+rec_tank.statusFlag
+                    vers = 'water'
+                    plot_tank(rec_tank, '1', creds.group_ID, 'days')
+                    print 'plotted'
+                    send = bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
+                    print 'sent'
+                elif rec_tank.statusFlag == 'bad':
+                    print 'ignoring low level as status flag is '+rec_tank.statusFlag
                 else:
-                    dist = dist - tank.invalid_min
-                    level = float(tank.pot_dist - dist)/float(tank.pot_dist) * 100.0
-                    if level < tank.min_percent:
-                        print tank.name +' under thresh'
-                        print tank.name+' status prechange is '+tank.statusFlag
-                        if tank.statusFlag != 'bad':
-                            print 'dropping through and changing status'
-                            tank.statusFlag = 'bad'
-                            print 'new status is '+tank.statusFlag
-                            vers = 'water'
-                            plot_tank(tank, '1', creds.group_ID, 'days')
-                            print 'plotted'
-                            send = bot.sendMessage(creds.group_ID, tank.name +' tank is low', reply_markup=a.format_keys(tank))
-                            print 'sent'
-                        elif tank.statusFlag == 'bad':
-                            print 'ignoring low level as status flag is '+tank.statusFlag
-                        else:
-                            print 'status flag error'        
-                    else:
-                        print 'level fine, doing nothing'
-            except:
-                print 'exception for some reason'
-                level = None
-            try:
-                batt = float(batt)
-                if (batt == 0) or (batt > 5.5):
-                    batt = None
-                elif batt < 3.2:
-                    vers = 'batt'
-                    plot_tank(tank, '1',creds.group_ID, 'days')
-            except:
-                batt = None
-            #add to db
-            print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
-            sql.add_measurement(in_node,level,batt)
+                    print 'status flag error'        
+            else:
+                print 'level fine, doing nothing'
+    except:
+        print 'exception for some reason'
+        level = None
+    try:
+        batt = float(batt)
+        if (batt == 0) or (batt > 5.5):
+            batt = None
+        elif batt < 3.2:
+            vers = 'batt'
+            plot_tank(rec_tank, '1',creds.group_ID, 'days')
+    except:
+        batt = None
+    #add to db
+    print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
+    sql.add_measurement(in_node,level,batt)
+            
+            
+def status_mess(tag, chat_id):
+    print 'status message follows!:'
+    #for y in tanks.tank_list:
+        #print 'status for ' +y.name+' is '+y.statusFlag
+    for y in tanks.tank_list:
+        print y
+        print 'status for '+y.name+' is  '+y.get_status()
+    if tag == 'all':
+        data = 'Tank status:\n'
+        bad = []
+        for x in tanks.tank_list:
+            data = data +x.name +' is ' +x.statusFlag +'\n'
+            if x.statusFlag == 'bad':
+                bad.append(x)
+            #message = bot.sendMessage(creds.group_ID, 
+            #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
+        message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
+    else:
+        message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
 
 #Serial port function opening fucntion
 count = 0
@@ -452,12 +461,16 @@ if count == 100:
     sys.exit()
     
 #instatiate queue
-q = Q()
+#q = Q()
 #setup database
 sql.setup_db()
 
-fetch_process = P(target=readlineCR, args=(port,))
-broadcast_process = P(target=sort_data, args=())
+#fetch_process = P(target=readlineCR, args=(port,))
+#broadcast_process = P(target=sort_data, args=())
 
-broadcast_process.start()
-fetch_process.start()
+#broadcast_process.start()
+#fetch_process.start()
+
+while True:
+    #for debugging enable printing of serial port data
+    rcv = readlineCR(port)
