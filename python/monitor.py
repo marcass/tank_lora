@@ -23,6 +23,7 @@ import sys
 import serial
 import creds
 import sql
+import numpy
 
 #global variables
 build_list = []
@@ -41,6 +42,9 @@ def readlineCR(port):
         rv += ch
         if ch=='\n':# or ch=='':
             if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
+                print 'Printing status flags stuff on receive'
+                for x in tanks.tank_list:
+                    print x.name +' is ' +x.statusFlag
                 print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                 print rec_split
@@ -169,7 +173,7 @@ def plot_tank(tank, period, target_id, q_range):
             title_name = tank.name+' plot'
             ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
             ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+label)
-            plt.axhspan(tank.min_vol, tank.calced_vol, facecolor='#2ca02c', alpha=0.3)
+            plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)       
@@ -258,7 +262,7 @@ def on_chat_message(msg):
             else:
                 volt_error = 1
             if volt_error:
-                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/volt_vol [days] [tank name]', eg /volt_vol 1 top")
+                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/vl [days] [tank name]', eg /vl 1 top")
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
@@ -358,6 +362,11 @@ bot = telepot.Bot(TOKEN)
 MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 print('Listening ...')
 
+def capacity(tank, payload):
+     percentage = 1/((payload - tank.invalid_min)/(tank.max_payload - tank.invalid_min)) * 100
+     print tank.name +' is at '+str(percentage)+' percentage'
+     return percentage
+
 
 def sort_data():
     global vers
@@ -371,6 +380,7 @@ def sort_data():
             else:
                 break
             print data
+            print 'Status as seen in sort_data'
             for x in tanks.tank_list:
                 print x.name +' is ' +x.statusFlag
             #check to see if it's a relay (and insert null water value if it is)
@@ -378,21 +388,16 @@ def sort_data():
             batt = data[2]
             try:
                 dist = int(dist)
-                print 'distance for '+tank.name +' is:'
-                print dist
-                print 'invalid_min - max_payload is:'
-                print tank.invalid_min
-                print tank.max_payload
-                #check to see if in acceptable value range
                 if (dist < tank.invalid_min) or (dist > tank.max_payload):
-                    vol = None
+                    level = None
                 else:
-                    vol = tank.volume(dist)
-                    if vol < tank.min_vol:
+                    dist = dist - tank.invalid_min
+                    level = float(tank.pot_dist - dist)/float(tank.pot_dist) * 100.0
+                    if level < tank.min_percent:
                         print tank.name +' under thresh'
                         print tank.name+' status prechange is '+tank.statusFlag
                         if tank.statusFlag != 'bad':
-                            print 'dropping throudh and changing status'
+                            print 'dropping through and changing status'
                             tank.statusFlag = 'bad'
                             print 'new status is '+tank.statusFlag
                             vers = 'water'
@@ -407,7 +412,8 @@ def sort_data():
                     else:
                         print 'level fine, doing nothing'
             except:
-                vol = None
+                print 'exception for some reason'
+                level = None
             try:
                 batt = float(batt)
                 if (batt == 0) or (batt > 5.5):
@@ -418,8 +424,8 @@ def sort_data():
             except:
                 batt = None
             #add to db
-            print 'writing value voltage ' +str(batt) +' and volume ' +str(vol) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
-            sql.add_measurement(in_node,vol,batt)
+            print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
+            sql.add_measurement(in_node,level,batt)
 
 #Serial port function opening fucntion
 count = 0
