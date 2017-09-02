@@ -25,6 +25,7 @@ const unsigned long SEND_THRESH = 360000; //6min
 
 const int NODE_ID = 6; //SET THIS FOR NODE 
 float voltage;
+byte tag = 0xAA;
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
@@ -94,6 +95,7 @@ void onReceive(int packetSize) {
 
   //forward the packet
   LoRa.beginPacket();
+  LoRa.write(tag);
   LoRa.print(incoming);
   LoRa.endPacket();
 
@@ -111,7 +113,7 @@ void send_local_data(){
   batteryMeasure();
   //send packet
   LoRa.beginPacket();
-  LoRa.print("PY:");//tag for serial listner
+  LoRa.print("PY;");//tag for serial listner
   LoRa.print(NODE_ID);
   LoRa.print(";");
   //null value for relay
