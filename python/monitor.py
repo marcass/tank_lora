@@ -27,30 +27,12 @@ import numpy
 
 #global variables
 build_list = []
-#days = '1'
 dur = None
 sql_span = None
 vers = None
 s_port = '/dev/LORA'
 #initialise global port
 port = None
-
-def readlineCR(port):
-    rv = ''
-    while True:
-        ch = port.read()
-        rv += ch
-        if ch=='\n':# or ch=='':
-            if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
-                print 'Printing status flags stuff on receive'
-                for x in tanks.tank_list:
-                    print x.name +' is ' +x.statusFlag
-                print rv
-                rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
-                print rec_split
-                sort_data(rec_split[1:4])
-                #q.put(rec_split[1:4])           #put data in queue for processing at rate 
-                rv = ''
 
 ########### Alert stuff ########################
 #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
@@ -262,7 +244,7 @@ def on_callback_query(msg):
     #print msg
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
-        print 'resetting all on callback'
+        #print 'resetting all on callback'
         for x in tanks.tank_list:
             x.set_status('OK')
         bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
@@ -275,14 +257,14 @@ def on_callback_query(msg):
         if 'add tank' in query_data:
             #print 'found "add tank" in query data'
             if (query_tank not in build_list):
-                print 'appending '+query_tank.name
+                #print 'appending '+query_tank.name
                 build_list.append(query_tank)
             else:
                 print query_tank.name+' already added'
             return
         if 'reset alert' in query_data:
             #print tank.name +' ' +tank.statusFlag
-            print 'resetting all on callback individually'
+            #print 'resetting all on callback individually'
             query_tank.statusFlag = 'OK'
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
@@ -300,25 +282,25 @@ def on_callback_query(msg):
     if 'add tank build' in query_data:
         if vers == None:
             bot.sendMessage(target_id, 'Please select a data type to plot (Voltage or Volume) by clicking the approriate button above')
-        print 'period in build = '+str(dur)+' '+sql_span
+        #print 'period in build = '+str(dur)+' '+sql_span
         plot_tank(build_list, dur, target_id, sql_span)
         #clear variables
         build_list = [] # finished build, so empty list
         return
     if 'hours' in query_data:
-        print 'added ' +query_data +' to options'
+        #print 'added ' +query_data +' to options'
         sql_span = 'hours'
         return
     if 'days' in query_data:
-        print 'added ' +query_data +' to options'
+        #print 'added ' +query_data +' to options'
         sql_span = 'days'
         return
     if 'voltage' in query_data:
-        print 'added ' +query_data +' to options'
+        #print 'added ' +query_data +' to options'
         vers = 'batt'
         return
     if 'volume' in query_data:
-        print 'added ' +query_data +' to options'
+        #print 'added ' +query_data +' to options'
         vers = 'water'
         return
     if query_data == 'status': 
@@ -355,74 +337,77 @@ def sort_data(data):
     #while True:
         #while (q.empty() == False):
     #data = q.get()
-    in_node = data[0]
-    if tanks.tanks_by_nodeID.has_key(in_node):
-        rec_tank = tanks.tanks_by_nodeID[in_node]
-        print 'found tank is '+rec_tank.name
-        print 'following in the instance statusFlags:'
-        for y in tanks.tank_list:
-            print 'status for ' +y.name+' is '+y.get_status()
-    else:
-        print 'tank not found'
-        return
-    print data
-    #print 'Status as seen in sort_data'
-    #for x in tanks.tank_list:
-        #print x.name +' is ' +x.statusFlag
-    dist = data[1]
-    batt = data[2]
     try:
-        dist = int(dist)
-        if (dist < rec_tank.invalid_min) or (dist > rec_tank.max_payload):
-            print 'Payload out of range'
-            level = None
+        in_node = data[0]
+        if tanks.tanks_by_nodeID.has_key(in_node):
+            rec_tank = tanks.tanks_by_nodeID[in_node]
+            print 'found tank is '+rec_tank.name
+            #print 'following in the instance statusFlags:'
+            #for y in tanks.tank_list:
+                #print 'status for ' +y.name+' is '+y.get_status()
         else:
-            print 'payload in range'
-            dist = dist - rec_tank.invalid_min
-            level = float(rec_tank.pot_dist - dist)/float(rec_tank.pot_dist) * 100.0
-            if level < rec_tank.min_percent:
-                print rec_tank.name +' under thresh'
-                print rec_tank.name+' status prechange is '+rec_tank.statusFlag
-                if rec_tank.statusFlag != 'bad':
-                    print 'dropping through and changing status'
-                    rec_tank.set_status('bad')
-                    print rec_tank
-                    print 'new status is '+rec_tank.statusFlag
-                    vers = 'water'
-                    plot_tank(rec_tank, '1', creds.group_ID, 'days')
-                    print 'plotted'
-                    send = bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
-                    print 'sent'
-                elif rec_tank.statusFlag == 'bad':
-                    print 'ignoring low level as status flag is '+rec_tank.statusFlag
-                else:
-                    print 'status flag error'        
+            print 'tank not found'
+            return
+        print data
+        #print 'Status as seen in sort_data'
+        #for x in tanks.tank_list:
+            #print x.name +' is ' +x.statusFlag
+        dist = data[1]
+        batt = data[2]
+        try:
+            dist = int(dist)
+            if (dist < rec_tank.invalid_min) or (dist > rec_tank.max_payload):
+                print 'Payload out of range'
+                level = None
             else:
-                print 'level fine, doing nothing'
-    except:
-        print 'exception for some reason'
-        level = None
-    try:
-        batt = float(batt)
-        if (batt == 0) or (batt > 5.5):
+                print 'payload in range'
+                dist = dist - rec_tank.invalid_min
+                level = float(rec_tank.pot_dist - dist)/float(rec_tank.pot_dist) * 100.0
+                if level < rec_tank.min_percent:
+                    #print rec_tank.name +' under thresh'
+                    #print rec_tank.name+' status prechange is '+rec_tank.statusFlag
+                    if rec_tank.statusFlag != 'bad':
+                        #print 'dropping through and changing status'
+                        rec_tank.set_status('bad')
+                        #print rec_tank
+                        #print 'new status is '+rec_tank.statusFlag
+                        vers = 'water'
+                        plot_tank(rec_tank, '1', creds.group_ID, 'days')
+                        #print 'plotted'
+                        send = bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
+                        #print 'sent'
+                    elif rec_tank.statusFlag == 'bad':
+                        print 'ignoring low level as status flag is '+rec_tank.statusFlag
+                    else:
+                        print 'status flag error'        
+                else:
+                    print 'level fine, doing nothing'
+        except:
+            print 'exception for some reason'
+            level = None
+        try:
+            batt = float(batt)
+            if (batt == 0) or (batt > 5.5):
+                batt = None
+            elif batt < 3.2:
+                vers = 'batt'
+                plot_tank(rec_tank, '1',creds.group_ID, 'days')
+        except:
             batt = None
-        elif batt < 3.2:
-            vers = 'batt'
-            plot_tank(rec_tank, '1',creds.group_ID, 'days')
+        #add to db
+        print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
+        sql.add_measurement(in_node,level,batt)
     except:
-        batt = None
-    #add to db
-    print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +tanks.tanks_by_nodeID[in_node].name
-    sql.add_measurement(in_node,level,batt)
+        print 'malformed string'
             
             
 def status_mess(tag, chat_id):
-    print 'status message follows!:'
+    #print 'status message follows!:'
+    ##for y in tanks.tank_list:
+        ##print 'status for ' +y.name+' is '+y.statusFlag
     #for y in tanks.tank_list:
-        #print 'status for ' +y.name+' is '+y.statusFlag
-    for y in tanks.tank_list:
-        print y
-        print 'status for '+y.name+' is  '+y.get_status()
+        #print y
+        #print 'status for '+y.name+' is  '+y.get_status()
     if tag == 'all':
         data = 'Tank status:\n'
         bad = []
@@ -435,42 +420,58 @@ def status_mess(tag, chat_id):
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
         message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
+        
+def readlineCR(port):
+    try:
+        rv = ''
+        while True:
+            ch = port.read()
+            rv += ch
+            if ch=='\n':# or ch=='':
+                if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
+                    #print 'Printing status flags stuff on receive'
+                    #for x in tanks.tank_list:
+                        #print x.name +' is ' +x.statusFlag
+                    print rv
+                    rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
+                    print rec_split
+                    sort_data(rec_split[1:4])
+                    #q.put(rec_split[1:4])           #put data in queue for processing at rate 
+                    rv = ''
+    except (KeyboardInterrupt, SystemExit):
+        print "Interrupted"
+        sys.exit()
+    except:
+        print 'failed on port read'
+        port_start()
 
 #Serial port function opening fucntion
-count = 0
 def port_check(in_port):
     global port
     try:
         port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
         print s_port+' found'
-        count = 0
         return port
     except:
         port = None
         return port
 
+def port_start():
+    count = 0
+    #handle exceptions for absent port (and keep retrying for a while)
+    while (port_check(s_port) is None) and (count < 100):
+        count = count + 1
+        print s_port+' not found '+str(count)+' times'
+        time.sleep(10)        
+        if count == 100:
+            print 'Exited because serial port not found'
+            sys.exit()
+    while True:
+        rcv = readlineCR(port)
 
-#handle exceptions for absent port (and keep retrying for a while)
-while (port_check(s_port) is None) and (count < 100):
-    count = count + 1
-    print s_port+' not found '+str(count)+' times'
-    time.sleep(10)
-    
-if count == 100:
-    print 'Exited because serial port not found'
-    sys.exit()
-    
-#instatiate queue
-#q = Q()
 #setup database
 sql.setup_db()
 
-#fetch_process = P(target=readlineCR, args=(port,))
-#broadcast_process = P(target=sort_data, args=())
+#setup port and start loop
+port_start()
 
-#broadcast_process.start()
-#fetch_process.start()
-
-while True:
-    #for debugging enable printing of serial port data
-    rcv = readlineCR(port)
