@@ -4,6 +4,7 @@ import ast
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour):
         global status_dict_out
+        global status_dict_in
         self.name = name
         self.nodeID = nodeID
         self.diam = diam                 #diameter of tank in cm
@@ -34,6 +35,7 @@ class Tanks:
         #f.close()  # you can omit in most cases as the destructor will call it
         if status != self.statusFlag:
             self.statusFlag = status
+            status_dict_in = {tank.name : tank.statusFlag for tank in tank_list}
             pers_status_dict = open(status_file, 'w')
             pers_status_dict.write(str(status_dict_in))
             pers_status_dict.close()
