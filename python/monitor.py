@@ -389,9 +389,9 @@ def sort_data(data):
             batt = float(batt)
             if (batt == 0) or (batt > 5.5):
                 batt = None
-            elif batt < 3.2:
-                vers = 'batt'
-                plot_tank(rec_tank, '1',creds.group_ID, 'days')
+            #elif batt < 3.2:
+                #vers = 'batt'
+                #plot_tank(rec_tank, '1',creds.group_ID, 'days')
         except:
             batt = None
         #add to db
