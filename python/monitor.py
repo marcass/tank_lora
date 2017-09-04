@@ -185,7 +185,7 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Tank names are "+print for i in tanks.tank_list i.name"\n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours] \n'/special stuff' to get other functions"
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them\n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours] \n'/special stuff' to get other functions"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
@@ -242,7 +242,7 @@ def on_chat_message(msg):
             if volt_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/vl [days] [tank name]', eg /vl 1 top")
         elif "/battstatus" in text:
-            status_mess(chat_id, 'batt')
+            battstatus_mess(chat_id)
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
@@ -436,7 +436,7 @@ def status_mess(tag, chat_id):
         #print y
         #print 'status for '+y.name+' is  '+y.get_status()
     if tag == 'all':
-        data = 'Tank status:\n'
+        data = 'Tank water status:\n'
         bad = []
         for x in tanks.tank_list:
             data = data +x.name +' is ' +x.statusFlag +'\n'
@@ -449,11 +449,11 @@ def status_mess(tag, chat_id):
         message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
         
 def battstatus_mess(chat_id):
-    data = 'Tank status:\n'
+    data = 'Tank battery status:\n'
     bad = []
     for x in tanks.tank_list:
-        data = data +x.name +' is ' +x.statusFlag +'\n'
-        if x.statusFlag == 'low':
+        data = data +x.name +' is ' +x.battstatusFlag +'\n'
+        if x.battstatusFlag == 'low':
             bad.append(x)
         #message = bot.sendMessage(creds.group_ID, 
         #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
