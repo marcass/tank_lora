@@ -389,9 +389,16 @@ def sort_data(data):
             batt = float(batt)
             if (batt == 0) or (batt > 5.5):
                 batt = None
-            #elif batt < 3.2:
-                #vers = 'batt'
-                #plot_tank(rec_tank, '1',creds.group_ID, 'days')
+            elif batt < 3.2:
+                if rec_tank.battstatusFlag != 'low':
+                    rec_tank.set_battstatus('low')
+                    vers = 'batt'
+                    plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
+                elif rec_tank.battstatusFlag == 'low':
+                        print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
+                    else:
+                        print 'status flag error'
+                    
         except:
             batt = None
         #add to db
