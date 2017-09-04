@@ -6,4 +6,4 @@ rrd*
 *-swp
 *.db
 *.png
-status.txt
+*status.txt

@@ -95,7 +95,7 @@ def ret_status():
 def ret_battstatus():
     global battstatus_dict_out
     try:
-        battstatus_dict = open(status_file, 'r')
+        battstatus_dict = open(battstatus_file, 'r')
         battstatus_dict_out = ast.literal_eval(battstatus_dict.read())
         battstatus_dict.close()
         return battstatus_dict_out
@@ -127,7 +127,8 @@ tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 #write statusFlag file:
 battstatus_dict_in = {tank.name : tank.battstatusFlag for tank in tank_list}
 status_dict_in = {tank.name : tank.statusFlag for tank in tank_list}
-print status_dict_in +battstatus_dict_in
+print status_dict_in
+print battstatus_dict_in
 print 'writing status dict'
 pers_status_dict = open(status_file, 'w')
 pers_status_dict.write(str(status_dict_in))

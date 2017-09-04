@@ -390,7 +390,7 @@ def sort_data(data):
             level = None
         try:
             batt = float(batt)
-            if (batt == 0) or (batt > 5.5):
+            if (batt == 0) or (batt > 4.5):
                 batt = None
             elif batt < 3.2:
                 if rec_tank.battstatusFlag != 'low':
@@ -398,9 +398,9 @@ def sort_data(data):
                     vers = 'batt'
                     plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
                 elif rec_tank.battstatusFlag == 'low':
-                        print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
-                    else:
-                        print 'status flag error'
+                    print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
+                else:
+                    print 'status flag error'
                     
         except:
             batt = None
