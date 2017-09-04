@@ -121,7 +121,7 @@ def plot_tank(key_tank, period, target_id, q_range):
     fig, ax = plt.subplots()
     if vers == 'water':
         data = 'water_volume'
-        label = 'Volume (l)'
+        label = 'Volume (%)'
     if vers == 'batt':
         data = 'voltage'
         label = 'Battery Voltage'
@@ -155,7 +155,10 @@ def plot_tank(key_tank, period, target_id, q_range):
             title_name = key_tank.name+' plot'
             ax.plot_date(d['timestamp'],d[data], key_tank.line_colour, label=key_tank.name, marker='o', markersize='5')
             ax.set(xlabel='Datetime', ylabel=label, title=key_tank.name+' '+label)
-            plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
+    if vers == 'water':
+        plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
+    if vers == 'batt':
+        plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)       
