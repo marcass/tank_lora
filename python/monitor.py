@@ -67,6 +67,13 @@ class Keyboard:
                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                             InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
                              ]])
+        elif self.version == 'battstatus':
+            key_list = [InlineKeyboardButton(text='Reset all', callback_data='batt reset')]
+            for x in key_tank:
+                        key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset batt'))
+                        #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
+            #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
         elif self.version == 'helpMe':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Status', callback_data='status'),
@@ -109,6 +116,7 @@ st = Keyboard('status')
 a = Keyboard('alert')
 g = Keyboard('graphs')
 d = Keyboard('plot')
+battst = Keyboard('battstatus')
 
 def plot_tank(key_tank, period, target_id, q_range):
     global vers
@@ -177,7 +185,7 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send prefixed with a '/' will be replied to by the bot. Sending the following will give you a result:\n/status or /status [tank] (or click the status button) to get tank status(es)\n/plot [number] to build a graph with custom tank volumes in it over [days/hours] \n/vl [days] [tank] will plot voltage data and volume data for the specified tank, eg /vl 1 top"#\n/url to get thingspeak link for data"
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Tank names are "+print for i in tanks.tank_list i.name"\n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours] \n'/special stuff' to get other functions"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
@@ -206,7 +214,8 @@ def on_chat_message(msg):
                 msg_error = 1
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/plot [number]', eg /plot 2")
-        
+        elif '/special stuff' in text:
+            message = bot.sendMessage(chat_id, '"/vl [days] [tank]" will plot voltage data and volume data for the specified tank, eg /vl 1 top\n"/battstatus" will give battery status')
         elif '/vl' in text:
             in_msg = text.split(' ')
             volt_error = 0
@@ -232,6 +241,8 @@ def on_chat_message(msg):
                 volt_error = 1
             if volt_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/vl [days] [tank name]', eg /vl 1 top")
+        elif "/battstatus" in text:
+            status_mess(chat_id, 'batt')
         else:
             message = bot.sendMessage(chat_id, "I'm sorry, I don't recongnise that request (=bugger off, that does nothing). " +help_text, reply_markup=h.format_keys())
     except KeyError:
@@ -253,6 +264,10 @@ def on_callback_query(msg):
         bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     query_tank_name = query_data.split(' ')[0]
+    if query_data == 'batt reset':
+        for x in tanks.tank_list:
+            x.set_battstatus('OK')
+        bot.sendMessage(target_id, "All tank's battery status now reset to OK", reply_markup=h.format_keys())
     #print 'query tank name = '+query_tank_name
     if tanks.tanks_by_name.has_key(query_tank_name):
         query_tank = tanks.tanks_by_name[query_tank_name]
@@ -265,10 +280,12 @@ def on_callback_query(msg):
             else:
                 print query_tank.name+' already added'
             return
+        if 'reset batt' in query_data:
+            query_tank.set_battstatus('OK')
         if 'reset alert' in query_data:
             #print tank.name +' ' +tank.statusFlag
             #print 'resetting all on callback individually'
-            query_tank.statusFlag = 'OK'
+            query_tank.set_status('OK')
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
             bot.sendMessage(target_id, query_tank.name +' reset to ' +query_tank.statusFlag)
@@ -430,6 +447,17 @@ def status_mess(tag, chat_id):
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
         message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
+        
+def battstatus_mess(chat_id):
+    data = 'Tank status:\n'
+    bad = []
+    for x in tanks.tank_list:
+        data = data +x.name +' is ' +x.statusFlag +'\n'
+        if x.statusFlag == 'low':
+            bad.append(x)
+        #message = bot.sendMessage(creds.group_ID, 
+        #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
+    message = bot.sendMessage(chat_id, data, reply_markup=battst.format_keys(bad))
         
 def readlineCR(port):
     try:
