@@ -140,7 +140,8 @@ def plot_tank(key_tank, period, target_id, q_range):
             print x.name +' tank in list'
         for i in key_tank:
             d = sql.query_via_tankid(i.nodeID, period, q_range)
-            ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
+            #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
+	    ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
@@ -149,7 +150,8 @@ def plot_tank(key_tank, period, target_id, q_range):
         if vers == 'bi_plot':
             print 'bi_plot found'
             title_name = 'Water Level and Voltage for '+key_tank.name+' Tank'
-            ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
+	    ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)')
+            #ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
             ax.set_xlabel('Time')
             # Make the y-axis label, ticks and tick labels match the line color.
             ax.set_ylabel('Water Volume', color='b')

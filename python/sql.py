@@ -39,7 +39,10 @@ def localtime_from_response(resp):
     return ts.astimezone(pytz.timezone(tanks.tz))
     
 def query_via_tankid(tank_id, days_str, q_range):
-    time_range = int(days_str)
+    try:
+        time_range = int(days_str)
+    except:
+        time_range = 1
     plot_range = days_str+' '+q_range
     print 'plot range = '+plot_range
     conn, c = get_db()
