@@ -78,16 +78,42 @@ def detect_outlier_position_by_fft(signal, threshold_freq=.1, frequency_amplitud
     outlier = np.max(signal) if abs(np.max(signal)) > abs(np.min(signal)) else np.min(signal)
     if np.any(np.abs(fft_of_signal[threshold_freq:]) > frequency_amplitude):
         index_of_outlier = np.where(signal == outlier)
-        return index_of_outlier[0]
-    else:
         return None
+    else:
+        return signal
 
-outlier_positions = []
-for ii in range(10, y_with_outlier.size, 5):
-    outlier_position = detect_outlier_position_by_fft(y_with_outlier[ii-5:ii+5])
-    if outlier_position is not None:
-        outlier_positions.append(ii + outlier_position[0] - 5)
-outlier_positions = list(set(outlier_positions))
+def clean_data(data):
+    #std deviation for range is
+    a = np.array(data)
+    print a.ndim
+    print a.size
+    std = np.std(a)
+    print std
+    
+    for i in range(len(data)):
+        c = np.array(data[i-5:i+5])
+        d = np.mean(c)
+        print d
+        if (abs(data[i] - d) > std):
+            data[i] = None
+    return data
+#outlier_positions = list(set(outlier_positions))
+
+#def detect_outlier_position_by_fft(signal, threshold_freq=.1, frequency_amplitude=.01):
+    #fft_of_signal = np.fft.fft(signal)
+    #outlier = np.max(signal) if abs(np.max(signal)) > abs(np.min(signal)) else np.min(signal)
+    #if np.any(np.abs(fft_of_signal[threshold_freq:]) > frequency_amplitude):
+        #index_of_outlier = np.where(signal == outlier)
+        #return index_of_outlier[0]
+    #else:
+        #return None
+
+#outlier_positions = []
+#for ii in range(10, y_with_outlier.size, 5):
+    #outlier_position = detect_outlier_position_by_fft(y_with_outlier[ii-5:ii+5])
+    #if outlier_position is not None:
+        #outlier_positions.append(ii + outlier_position[0] - 5)
+#outlier_positions = list(set(outlier_positions))
 
 #plt.figure(figsize=(12, 6));
 #plt.scatter(range(y_with_outlier.size), y_with_outlier, c=COLOR_PALETTE[0], label='Original Signal');
@@ -113,7 +139,9 @@ def plot_tank(key_tank, period, q_range):
         print x.name +' tank in list'
     for i in key_tank:
         d = query_via_tankid(i.nodeID, period, q_range)
-        ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
+        cleaned_data = clean_data(d[data])
+        #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
+        ax.plot_date(d['timestamp'],cleaned_data, i.line_colour, label=i.name, marker='o', markersize='5')
         title_name += ' '+i.name
         ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
     title_name += ' plot'
