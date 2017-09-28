@@ -23,7 +23,7 @@ import sys
 import serial
 import creds
 import sql
-import numpy
+import numpy as np
 
 #global variables
 build_list = []
@@ -118,6 +118,34 @@ g = Keyboard('graphs')
 d = Keyboard('plot')
 battst = Keyboard('battstatus')
 
+def clean_data(data):
+    #std deviation for range is
+    a = np.array(data, dtype=np.float32)
+    #print data
+    #print a.dtype
+    b = np.nanstd(a)
+    print b
+    members = len(data)
+    for i in range(members):
+        if i < 5:
+            c = np.array(data[i:i+10])
+        elif i > (members - 5):
+            c = np.array(data[i:i-10])
+        else:
+            c = np.array(data[i-5:i+5], dtype=np.float32)
+            #print c
+        try:
+            d = np.nanmean(c)
+            #print d
+            if data[i] != None:
+                if ((abs(data[i] - d)) > (b/4)):
+                    data[i] = None
+        except:
+            pass
+    return data
+
+
+
 def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
@@ -141,7 +169,9 @@ def plot_tank(key_tank, period, target_id, q_range):
         for i in key_tank:
             d = sql.query_via_tankid(i.nodeID, period, q_range)
             #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
-	    ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
+            cleaned_data = clean_data(d[data])
+	    #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
+            ax.plot_date(d['timestamp'],cleaned_data, i.line_colour, label=i.name)
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
