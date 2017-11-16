@@ -144,8 +144,28 @@ def clean_data(data):
             pass
     return data
 
-
-
+def median_data(data):
+    members = len(data)
+    #print 'this is the raw data'
+    #print data
+    for i in range(members):
+        if i < 3:
+            a = np.array(data[i:i+5], dtype=np.float32)
+        elif i > (members - 2):
+            a = np.array(data[i:i-5], dtype=np.float32)
+        else:
+            a = np.array(data[i-3:i+2], dtype=np.float32)
+        #print a
+        try:
+            res = np.nanmedian(a)
+            #print res
+            data[i] = res
+        except:
+            pass
+    #print 'this is the changed data'
+    #print data
+    return data          
+  
 def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
@@ -169,9 +189,11 @@ def plot_tank(key_tank, period, target_id, q_range):
         for i in key_tank:
             d = sql.query_via_tankid(i.nodeID, period, q_range)
             #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
-            cleaned_data = clean_data(d[data])
+            #cleaned_data = clean_data(d[data])
+            medians = median_data(d[data])
 	    #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
-            ax.plot_date(d['timestamp'],cleaned_data, i.line_colour, label=i.name)
+            #ax.plot_date(d['timestamp'],cleaned_data, i.line_colour, label=i.name)
+            ax.plot_date(d['timestamp'],medians, i.line_colour, label=i.name)
             title_name += ' '+i.name
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
@@ -440,7 +462,7 @@ def sort_data(data):
             level = None
         try:
             batt = float(batt)
-            if (batt == 0) or (batt > 4.5):
+            if (batt == 0) or (batt > 10.0):
                 batt = None
             elif batt < 3.2:
                 if rec_tank.battstatusFlag != 'low':
