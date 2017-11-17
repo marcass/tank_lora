@@ -130,7 +130,7 @@ def clean_data(data):
         if i < 5:
             c = np.array(data[i:i+10])
         elif i > (members - 5):
-            c = np.array(data[i:i-10])
+            c = np.array(data[i-10:i])
         else:
             c = np.array(data[i-5:i+5], dtype=np.float32)
             #print c
@@ -145,27 +145,20 @@ def clean_data(data):
     return data
 
 def median_data(data):
-    members = len(data)
-    #print 'this is the raw data'
-    #print data
-    for i in range(members):
-        if i < 3:
-            a = np.array(data[i:i+5], dtype=np.float32)
-        elif i > (members - 2):
-            a = np.array(data[i:i-5], dtype=np.float32)
-        else:
-            a = np.array(data[i-3:i+2], dtype=np.float32)
-        #print a
-        try:
-            res = np.nanmedian(a)
-            #print res
-            data[i] = res
-        except:
-            pass
-    #print 'this is the changed data'
-    #print data
-    return data          
-  
+     members = len(data)
+     res = data
+     for i in range(members):
+         start = i
+         stop = i+5
+         a = data[start:stop]
+         try:
+             med = np.nanmedian(a)
+             res[i] = med
+         except:
+             pass
+     return res
+
+ 
 def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
