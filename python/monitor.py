@@ -45,7 +45,7 @@ class Keyboard:
     def __init__(self, version):
         #disp = single alert, multi alert, graph request, help etc
         self.version = version
-        
+
     def format_keys(self, key_tank=0):
         if self.version == 'status':
             if type(key_tank) is list:
@@ -88,7 +88,7 @@ class Keyboard:
                         InlineKeyboardButton(text='3 days', callback_data='3'),
                         InlineKeyboardButton(text='7 days', callback_data='7'),
                         ]])
-       
+
         elif self.version == 'plot':
             keyb_list = []
             for x in key_tank:
@@ -98,19 +98,19 @@ class Keyboard:
                         InlineKeyboardButton(text='Plot battery voltage', callback_data='voltage'),
                         ],[
                            InlineKeyboardButton(text='Days', callback_data='days'),
-                           InlineKeyboardButton(text='Hours', callback_data='hours'), 
+                           InlineKeyboardButton(text='Hours', callback_data='hours'),
                            ],
                                keyb_list,
-                               [InlineKeyboardButton(text='Build', callback_data='add tank build')]   
+                               [InlineKeyboardButton(text='Build', callback_data='add tank build')]
                             ])
-            
+
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Help', callback_data='help'),
                         InlineKeyboardButton(text='Status', callback_data='status'),
                         ]])
         return keyboard
-    
+
 h = Keyboard('helpMe')
 st = Keyboard('status')
 a = Keyboard('alert')
@@ -158,7 +158,7 @@ def median_data(data):
              pass
      return res
 
- 
+
 def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
@@ -183,8 +183,8 @@ def plot_tank(key_tank, period, target_id, q_range):
             try:
                 d = sql.query_via_tankid(i.nodeID, period, q_range)
             except:
-                #message = bot.sendMessage(chat_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
-                pass
+                message = bot.sendMessage(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
+                #pass
             #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
             #cleaned_data = clean_data(d[data])
             medians = median_data(d[data])
@@ -220,7 +220,7 @@ def plot_tank(key_tank, period, target_id, q_range):
         plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
     ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
-    #plt.setp(times, rotation=30)       
+    #plt.setp(times, rotation=30)
     plt.legend()
     ax.grid()
     plt.tight_layout()
@@ -228,8 +228,8 @@ def plot_tank(key_tank, period, target_id, q_range):
     plt.close()
     #send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name)
     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
-    
-       
+
+
 def on_chat_message(msg):
     global dur
     global vers
@@ -257,7 +257,7 @@ def on_chat_message(msg):
             if len(in_msg) == 2:
 	        dur = in_msg[1]
                 if dur.isdigit():
-                    #message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))    
+                    #message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))
                     message = bot.sendMessage(chat_id, "Please select the button(s) that apply in each row of buttons, then click the 'Build' button to produce the graph", reply_markup=d.format_keys(tanks.tank_list))
                     #message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
                 else:
@@ -274,7 +274,7 @@ def on_chat_message(msg):
             print in_msg
             if len(in_msg) == 3:
                 if any(k in text for k in tanks.tanks_by_name):
-                    in_tank = tanks.tanks_by_name[text.split(' ')[2]]                
+                    in_tank = tanks.tanks_by_name[text.split(' ')[2]]
                     print 'in_tank = '+in_tank.name
                     days = text.split(' ')[1]
                     print days
@@ -375,7 +375,7 @@ def on_callback_query(msg):
         #print 'added ' +query_data +' to options'
         vers = 'water'
         return
-    if query_data == 'status': 
+    if query_data == 'status':
         status_mess('all', target_id)
         return
     if query_data == '1' or '3' or '7':
@@ -451,7 +451,7 @@ def sort_data(data):
                     elif rec_tank.statusFlag == 'bad':
                         print 'ignoring low level as status flag is '+rec_tank.statusFlag
                     else:
-                        print 'status flag error'        
+                        print 'status flag error'
                 else:
                     print 'level fine, doing nothing'
         except:
@@ -470,7 +470,7 @@ def sort_data(data):
                     print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
                 else:
                     print 'status flag error'
-                    
+
         except:
             batt = None
         #add to db
@@ -478,8 +478,8 @@ def sort_data(data):
         sql.add_measurement(in_node,level,batt)
     except:
         print 'malformed string'
-            
-            
+
+
 def status_mess(tag, chat_id):
     #print 'status message follows!:'
     ##for y in tanks.tank_list:
@@ -494,12 +494,12 @@ def status_mess(tag, chat_id):
             data = data +x.name +' is ' +x.statusFlag +'\n'
             if x.statusFlag == 'bad':
                 bad.append(x)
-            #message = bot.sendMessage(creds.group_ID, 
+            #message = bot.sendMessage(creds.group_ID,
             #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
         message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
-        
+
 def battstatus_mess(chat_id):
     data = 'Tank battery status:\n'
     bad = []
@@ -507,10 +507,10 @@ def battstatus_mess(chat_id):
         data = data +x.name +' is ' +x.battstatusFlag +'\n'
         if x.battstatusFlag == 'low':
             bad.append(x)
-        #message = bot.sendMessage(creds.group_ID, 
+        #message = bot.sendMessage(creds.group_ID,
         #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
     message = bot.sendMessage(chat_id, data, reply_markup=battst.format_keys(bad))
-        
+
 def readlineCR(port):
     try:
         rv = ''
@@ -526,7 +526,7 @@ def readlineCR(port):
                     rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                     print rec_split
                     sort_data(rec_split[1:4])
-                    #q.put(rec_split[1:4])           #put data in queue for processing at rate 
+                    #q.put(rec_split[1:4])           #put data in queue for processing at rate
                     rv = ''
     except (KeyboardInterrupt, SystemExit):
         print "Interrupted"
@@ -552,7 +552,7 @@ def port_start():
     while (port_check(s_port) is None) and (count < 100):
         count = count + 1
         print s_port+' not found '+str(count)+' times'
-        time.sleep(10)        
+        time.sleep(10)
         if count == 100:
             print 'Exited because serial port not found'
             sys.exit()
@@ -564,4 +564,3 @@ sql.setup_db()
 
 #setup port and start loop
 port_start()
-

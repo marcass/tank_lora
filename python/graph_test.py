@@ -84,18 +84,33 @@ def detect_outlier_position_by_fft(signal, threshold_freq=.1, frequency_amplitud
 
 def clean_data(data):
     #std deviation for range is
-    a = np.array(data)
-    print a.ndim
-    print a.size
-    std = np.std(a)
-    print std
-    
-    for i in range(len(data)):
-        c = np.array(data[i-5:i+5])
-        d = np.mean(c)
-        print d
-        if (abs(data[i] - d) > std):
-            data[i] = None
+    a = np.array(data, dtype=np.float32)
+    #print data
+    #print a.dtype
+    b = np.nanstd(a)
+    print b
+    members = len(data)
+    for i in range(members):
+        if i < 5:
+            c = np.array(data[i:i+10])
+        elif i > (members - 5):
+            c = np.array(data[i:i-10])
+        else:
+            c = np.array(data[i-5:i+5], dtype=np.float32)
+            #print c
+        try:
+            d = np.nanmean(c)
+            #print d
+            if data[i] == None:
+                print 'None found, doing nothing'
+            else:
+                if ((abs(data[i] - d)) > (b/4)):
+                    data[i] = None
+                    print 'DUMPED'
+                else:
+                    print 'data unchanged'
+        except:
+            pass
     return data
 #outlier_positions = list(set(outlier_positions))
 
