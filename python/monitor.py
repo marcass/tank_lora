@@ -182,17 +182,14 @@ def plot_tank(key_tank, period, target_id, q_range):
         for i in key_tank:
             try:
                 d = sql.query_via_tankid(i.nodeID, period, q_range)
+                medians = median_data(d[data])
+                ax.plot_date(d['timestamp'],medians, i.line_colour, label=i.name)
+                title_name += ' '+i.name
+                ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
             except:
                 message = bot.sendMessage(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
                 #pass
             #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
-            #cleaned_data = clean_data(d[data])
-            medians = median_data(d[data])
-	    #ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name)
-            #ax.plot_date(d['timestamp'],cleaned_data, i.line_colour, label=i.name)
-            ax.plot_date(d['timestamp'],medians, i.line_colour, label=i.name)
-            title_name += ' '+i.name
-            ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         title_name += ' plot'
     else:
         d = sql.query_via_tankid(key_tank.nodeID, period, q_range)
