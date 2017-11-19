@@ -455,7 +455,7 @@ def sort_data(data):
             level = None
         try:
             batt = float(batt)
-            if (batt == 0) or (batt > 10.0):
+            if (batt == 0) or (batt > 5.0):
                 batt = None
             elif batt < 3.2:
                 if rec_tank.battstatusFlag != 'low':
