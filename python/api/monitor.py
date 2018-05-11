@@ -2,8 +2,9 @@
 # - Separate functions into:
 #     - Data input
 #     - Data retreival
-#     - alerts
+#     - alerts (telegram.py)
 #     - web front end
+#     - serial listener (seriallistener.py)
 
 import matplotlib
 matplotlib.use('Agg')
