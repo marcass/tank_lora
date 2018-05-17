@@ -1,3 +1,8 @@
+# Tasks of flask application:
+# - form api for data retreival via display option (SPA/telegram)
+# - Authentication management
+# - User management
+
 # USAGE:
 # INSTALL: sudo pip install flask flask-cors pyopenssl
 # START REST API with:
@@ -62,44 +67,28 @@ from flask import Flask, request, jsonify
 # from flask_cors import CORS
 # from flask_jwt_extended import JWTManager
 import json
-import mqtt
-import middleman
-import views_auth
+# import views_auth
 from init import app, jwt
-from flask_jwt_extended import jwt_required, \
-    create_access_token, jwt_refresh_token_required, \
-    create_refresh_token, get_jwt_identity
-
-
-def get_access_log(days):
-    d = sql.get_doorlog(days)
-    return d
-
-def keycode_validation(keycode):
-    # keycodes = sql.get_doorUser_col('keycode')
-    # if keycode in keycodes:
-    #     return False
-    if (len(keycode) > 3) and (len(keycode) < 11) and (re.match("^[A-D0-9]+$", keycode)):
-        return True
-    else:
-        return False
+# from flask_jwt_extended import jwt_required, \
+#     create_access_token, jwt_refresh_token_required, \
+#     create_refresh_token, get_jwt_identity
 
 @app.route("/")
 def hello():
     return "Hello World!"
 
 @app.route("/listallowed", methods=['GET',])
-@jwt_required
-def list_allowed_keys():
+# @jwt_required
+def list_allowed_users():
     '''
-    List doors with allowed users
-    ["topgarage":["max", "mw", "etc"], "bottomgarage":[...]]
+    List allowed users
+    ["admin":["max", "mw", "etc"], "user":[...]]
     '''
     return jsonify(sql.get_allowed()), 200
 
 
 @app.route("/usekey", methods=['POST',])
-@jwt_required
+# @jwt_required
 def usekey():
     try:
         content = request.get_json(silent=False)
@@ -188,110 +177,34 @@ def get_user():
     return jsonify(sql.fetch_user_data(content['username'])), 200
 
 @app.route("/user", methods=['PUT',])
-@jwt_required
+# @jwt_required
 def update_user():
     '''
     Select Username and update in user doorUsers table. Json must contain old username
-    #{"old_username":"pell", "old_keycode":"1234", "username":pell", "keycode":"00003", "timeStart":"blah", "endTime":"blah", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
+    #{"old_username":"pell", "username":pell", "role":"admin"}
 
-    curl -X PUT -H "Content-Type: application/json" -d '{"username":"max","keycode":"234A","enabled":"0","doorlist":["frontdoor", "bottomgarage"], "timeStart":"2017-09-11T03:03:27.860Z", "timeEnd":"2037-09-11T03:03:27.860Z"}' http://127.0.0.1:5000/user
+    curl -X PUT -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)"}' http://127.0.0.1:5000/user
     '''
     content = request.get_json(silent=False)
     # print content
-    timeStart = None
-    timeEnd = None
-    doorlist = None
-    if content.has_key('timeStart'):
-        # print 'has time start'
-        timeStart = content['timeStart'] # parse this to datetime
-    else:
-        content.update({'timeStart':0})
-    if content.has_key('timeEnd'):
-        timeEnd = content['timeEnd'] # parse this to datetime
-    else:
-        content.update({'timeEnd':0})
-    if not keycode_validation(content['keycode']):
-        return jsonify({'status':'keycode failure'}), 200
     return jsonify(sql.write_userdata(content)), 200
 
-@app.route("/user/keycode", methods=['PUT',])
-@jwt_required
-def update_user_keycode():
-    '''
-    Select Username and update in user doorUsers table
-    {"username":pell", "keycode":"00003"}
-    '''
-    content = request.get_json(silent=False)
-    # print content
-    if not keycode_validation(content['keycode']):
-        return jsonify({'status':'keycode failure'}), 200
-    else:
-        sql.update_doorUsers(content['username'], 'keycode', content['keycode'])
-        resp = {}
-        return jsonify(resp), 200
-
-@app.route("/user/enabled", methods=['PUT',])
-@jwt_required
-def update_user_enabled():
-    '''
-    Select Username and update in user doorUsers table
-    {"username":pell", "enabled":"1"}
-    '''
-    content = request.get_json(silent=False)
-    sql.update_doorUsers(content['username'], 'enabled', int(content['enabled']))
-    resp = {}
-    return jsonify(resp), 200
-
-@app.route("/user/timeStart", methods=['PUT',])
-@jwt_required
-def update_user_timestart():
-    '''
-    Select Username and update in user doorUsers table
-    '''
-    content = request.get_json(silent=False)
-    sql.update_doorUsers(content['username'], 'timeStart', content['timeStart'])
-    resp = {}
-    return jsonify(resp), 200
-
-@app.route("/user/timeEnd", methods=['PUT',])
-@jwt_required
-def update_user_timeend():
-    '''
-    Select Username and update in user doorUsers table
-    '''
-    content = request.get_json(silent=False)
-    sql.update_doorUsers(content['username'], 'timeEnd', content['timeEnd'])
-    resp = {}
-    return jsonify(resp), 200
-
-@app.route("/user/doors", methods=['PUT',])
-@jwt_required
-def update_user_doors():
-    '''
-    Select Username and update canOpen table
-    '''
-    content = request.get_json(silent=False)
-    sql.update_canOpen(content['username'], content['doorlist'])
-    resp = {}
-    return jsonify(resp), 200
-
 @app.route("/users", methods=['GET',])
-@jwt_required
-@jwt_required
+# @jwt_required
 def get_users():
     '''
-    Returns [{'username':, 'keycode':, enabled:'', timeStart:, timeEnd, doors: [...]}, {...}, ...]
+    Returns [{'username':[blah, blah], }]
     '''
     return jsonify(sql.get_all_users()), 200
 
-@app.route("/doors", methods=['GET',])
-@jwt_required
-def get_doors():
+@app.route("/tanks", methods=['GET',])
+# @jwt_required
+def get_tanks():
     '''
-    Returns all possible door names in db as a list['door1','door2',...]
+    Returns all possible tank names in db [{'name':[tank1','tank2',...], 'id':[1,2...]}]
     '''
     content = request.get_json(silent=False)
-    return jsonify(sql.get_all_doors()), 200
+    return jsonify(sql.get_all_tanks()), 200
 
 @app.route("/door/status", methods=['GET',])
 @jwt_required

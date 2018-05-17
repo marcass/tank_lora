@@ -1,7 +1,7 @@
 # ToDo
 # - Separate functions into:
-#     - Data input
-#     - Data retreival
+#     - Data management (input and retreival via sql)
+#     - Plots
 #     - alerts (telegram.py)
 #     - web front end
 #     - serial listener (seriallistener.py)
@@ -166,8 +166,10 @@ def median_data(data):
              pass
      return res
 
+def send_graph():
+     bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
 
-def plot_tank(key_tank, period, target_id, q_range):
+# def plot_tank(key_tank, period, target_id, q_range):
     global vers
     global dur
     print vers
@@ -286,7 +288,10 @@ def on_chat_message(msg):
                     if days.isdigit():
                         vers = 'bi_plot'
                         print 'version b4 plot '+vers
-                        plot_tank(in_tank, days, chat_id, 'days')
+                        #plot the tank
+                        plot.plot_tank(in_tank, days, chat_id, 'days')
+                        #send the plot
+                        send_graph()
                         print 'version afer plot '+vers
                         vers = None
                         return
@@ -360,7 +365,8 @@ def on_callback_query(msg):
         if vers == None:
             bot.sendMessage(target_id, 'Please select a data type to plot (Voltage or Volume) by clicking the approriate button above')
         #print 'period in build = '+str(dur)+' '+sql_span
-        plot_tank(build_list, dur, target_id, sql_span)
+        plot.plot_tank(build_list, dur, target_id, sql_span)
+        send_graph()
         #clear variables
         build_list = [] # finished build, so empty list
         return
@@ -392,7 +398,8 @@ def on_callback_query(msg):
             graph_tank = tanks.tanks_by_name[in_tank_name]
             #print 'tank is '+graph_tank.name
             vers = 'water'
-            plot_tank(graph_tank, query_data, target_id, 'days')
+            plot.plot_tank(graph_tank, query_data, target_id, 'days')
+            send_graph()
             vers = None
             return
 
@@ -449,7 +456,8 @@ def sort_data(data):
                         #print rec_tank
                         #print 'new status is '+rec_tank.statusFlag
                         vers = 'water'
-                        plot_tank(rec_tank, '1', creds.group_ID, 'days')
+                        plot.plot_tank(rec_tank, '1', creds.group_ID, 'days')
+                        send_graph()
                         #print 'plotted'
                         send = bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
                         #print 'sent'
@@ -470,7 +478,8 @@ def sort_data(data):
                 if rec_tank.battstatusFlag != 'low':
                     rec_tank.set_battstatus('low')
                     vers = 'batt'
-                    plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
+                    plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
+                    send_graph()
                 elif rec_tank.battstatusFlag == 'low':
                     print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
                 else:
@@ -563,9 +572,6 @@ def port_start():
             sys.exit()
     while True:
         rcv = readlineCR(port)
-
-#setup database
-sql.setup_db()
 
 #setup port and start loop
 port_start()
