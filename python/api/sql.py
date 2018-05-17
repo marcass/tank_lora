@@ -52,7 +52,7 @@ def setup_db():
     # Create table
     conn, c = get_db()
         c.execute('''CREATE TABLE IF NOT EXISTS tanks
-                    (tank TEXT UNIQUE, id INTEGER)''')
+                    (tank TEXT UNIQUE, id INTEGER UNIQUE, daim INTEGER, max_dist INTEGER, min_dist INTEGER, min_vol INTEGER, min_percent INTEGER, line_colour TEXT, tank_status TEXT, batt_status TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS measurements
                     (timestamp TIMESTAMP, FOREIGN KEY(tank_id) REFERENCES tanks(id), water_volume REAL, voltage REAL)''')
     c.execute('''CREATE TABLE IF NOT EXISTS userAuth
@@ -76,8 +76,10 @@ def add_measurement(tank_id,water_volume,voltage):
     tanks = get_all_tanks()[0]["id"]
     if tank_id not in tanks:
         try:
-            c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
-            conn.commit
+            # send a message to telegram requesting setup of tank
+
+            # c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
+            # conn.commit
         except:
             print "Cannot add tank"
     c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
@@ -129,7 +131,14 @@ def get_all_tanks():
     c.execute("SELECT * FROM tanks ")
     tank_name =  [i[0] for i in c.fetchall()]
     tank_id = [i[1] for i in c.fetchall()]
-    return [{"name":tank_name, "id":tank_id}]
+    tank_diam = [i[2] for i in c.fetchall()]
+    tank_max_dist = [i[3] for i in c.fetchall()]
+    tank_min_dis = [i[4] for i in c.fetchall()]
+    tank_min_vol = [i[5] for i in c.fetchall()]
+    tank_min_percent = [i[6] for i in c.fetchall()]
+    tank_colour = [i[7] for i in c.fetchall()]
+    tank_status = [i[8] for i in c.fetchall()]
+    return [{"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "status":tank_status }]
 
 ############  Write data ########################
 # Not sure what the role thing in here is for
@@ -138,6 +147,15 @@ def setup_user(user_in, passw, role=0):
     try:
         pw_hash = pbkdf2_sha256.hash(passw)
         c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user_in, pw_hash, role))
+        conn.commit()
+        return True
+    except:
+        return False
+
+def setup_tank(name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status):
+    conn, c = get_db()
+    try:
+        c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status))
         conn.commit()
         return True
     except:

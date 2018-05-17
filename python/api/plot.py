@@ -4,6 +4,8 @@ import numpy as np
 import sql
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+import tanks
+matplotlib.rcParams['timezone'] = tanks.tz
 
 # From sql.py
 # def plot_tank(tank, period, vers, target_id, q_range):
@@ -53,6 +55,46 @@ import matplotlib.dates as md
     plt.close()
     #send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name)
     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
+
+def clean_data(data):
+    #std deviation for range is
+    a = np.array(data, dtype=np.float32)
+    #print data
+    #print a.dtype
+    b = np.nanstd(a)
+    print b
+    members = len(data)
+    for i in range(members):
+        if i < 5:
+            c = np.array(data[i:i+10])
+        elif i > (members - 5):
+            c = np.array(data[i-10:i])
+        else:
+            c = np.array(data[i-5:i+5], dtype=np.float32)
+            #print c
+        try:
+            d = np.nanmean(c)
+            #print d
+            if data[i] != None:
+                if ((abs(data[i] - d)) > (b/4)):
+                    data[i] = None
+        except:
+            pass
+    return data
+
+def median_data(data):
+     members = len(data)
+     res = data
+     for i in range(members):
+         start = i
+         stop = i+5
+         a = data[start:stop]
+         try:
+             med = np.nanmedian(a)
+             res[i] = med
+         except:
+             pass
+     return res
 
 #From monitor.py
 # Need to do something like: https://stackoverflow.com/questions/41459657/how-to-create-dynamic-plots-to-display-on-flask

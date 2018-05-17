@@ -201,16 +201,16 @@ def get_users():
 # @jwt_required
 def get_tanks():
     '''
-    Returns all possible tank names in db [{'name':[tank1','tank2',...], 'id':[1,2...]}]
+    Returns all possible tank names in db [{'name':[tank1','tank2',...], 'id':[1,2...], diam":[], "max":[], "min":[], "min_vol":[], "min_percent":[], "line_colour":[], "status":[]}]
     '''
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
 
-@app.route("/door/status", methods=['GET',])
+@app.route("/tank/status", methods=['GET',])
 @jwt_required
 def getStatus():
     content = request.get_json(silent=False)
-    return jsonify(sql.get_doorstatus()), 200
+    return jsonify(sql.get_tank_status()), 200
 
 @app.route("/door/status/<door>", methods=['GET',])
 @jwt_required
