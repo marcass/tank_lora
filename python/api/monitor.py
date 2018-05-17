@@ -8,7 +8,6 @@
 
 import matplotlib
 matplotlib.use('Agg')
-import tanks
 import pytz
 import sys
 import time
@@ -22,6 +21,7 @@ import creds
 import sql
 import numpy as np
 import telegram
+import tank_views
 
 #global variables
 build_list = []
@@ -154,8 +154,5 @@ def port_start():
     while True:
         rcv = readlineCR(port)
 
-#start the message bot
-telegram.MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
-print('Listening ...')
 #setup port and start loop
 port_start()

@@ -4,7 +4,6 @@ import numpy as np
 import sql
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-import tanks
 matplotlib.rcParams['timezone'] = tanks.tz
 
 # From sql.py
