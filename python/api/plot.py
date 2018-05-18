@@ -5,6 +5,8 @@ import sql
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 matplotlib.rcParams['timezone'] = tanks.tz
+import StringIO
+import base64
 
 # From sql.py
 # def plot_tank(tank, period, vers, target_id, q_range):
@@ -159,5 +161,13 @@ def plot_tank(key_tank, period, target_id, q_range):
     plt.legend()
     ax.grid()
     plt.tight_layout()
-    fig.savefig(tanks.tank_list[0].pngpath+'net.png')
+    # fig.savefig(tanks.tank_list[0].pngpath+'net.png')
+    # https://stackoverflow.com/questions/34492197/how-to-render-and-return-plot-to-view-in-flask
+    fig.savefig(img, format='png')
+    img.seek(0)
     plt.close()
+    plot_url = base64.b64encode(img.getvalue())
+    return render_template('test.html', plot_url=plot_url)
+
+    # In your Html put:
+    # <img src="data:image/png;base64, {{ plot_url }}">
