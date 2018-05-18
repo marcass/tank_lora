@@ -1,4 +1,3 @@
-import tanks
 import pytz
 import sys
 import time
@@ -9,6 +8,24 @@ from datetime import timedelta
 from dateutil import parser
 import creds
 import ast
+
+# defs for funcitons in Tank class
+def get_db():
+    conn = sqlite3.connect(tanks_db)
+    c = conn.cursor()
+    return conn, c
+
+
+def setup_db():
+    # Create table
+    conn, c = get_db()
+    c.execute('''CREATE TABLE IF NOT EXISTS tanks
+                    (tank TEXT UNIQUE, id TEXT UNIQUE, daim INTEGER, max_dist INTEGER, min_dist INTEGER, min_vol INTEGER, min_percent REAL, line_colour TEXT, tank_status TEXT, batt_status TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS measurements
+                    (timestamp TIMESTAMP, FOREIGN KEY(id) REFERENCES tanks(id), water_volume REAL, voltage REAL)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS userAuth
+                    (username TEXT UNIQUE, password TEXT, role TEXT)''')
+    conn.commit() # Save (commit) the changes
 
 class Tanks:
     def __init__(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour):
@@ -25,19 +42,29 @@ class Tanks:
         self.pngpath = '/home/pi/git/tank_lora/python/'
         self.min_percent = min_percent
         self.pot_dist = self.max_payload - self.invalid_min
+        #populate db table if not already populated
+        self.setup_tank(self.name, self.nodeID, self.diam, self.max_payload, self.invalid_min, self.min_vol, self.min_percent, self.line_colour, self.statusFlag, self.battstatusFlag)
         #append instance to tank_list
         tank_list.append(self)
+
 
     def volume(self, payload):
         #litres (measurements in cm)
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
 
-    #populate db table if not already populated
-    setup_tank(self.name, self.nodeID, self.diam, self.max_payload, self.invalid_min, self.min_vol, self.min_percent, self.line_colour, self.statusFlag, self.battstatusFlag)
+    def setup_tank(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag):
+        conn, c = get_db()
+        try:
+            c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status))
+            conn.commit()
+            return True
+        except:
+            return False
+
 
 #Variable stuff
-tanks_db = '/home/pi/git/tank_lora/python/tank_database.db'
+tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
 #intitiate tank list so it can be accessed when instances are set up
 tank_list = []
@@ -84,23 +111,6 @@ def utc_from_string(payload):
     utc_dt = local_dt.astimezone(pytz.utc)
     return utc_dt
 
-def get_db():
-    conn = sqlite3.connect(tanks_db)
-    c = conn.cursor()
-    return conn, c
-
-
-def setup_db():
-    # Create table
-    conn, c = get_db()
-        c.execute('''CREATE TABLE IF NOT EXISTS tanks
-                    (tank TEXT UNIQUE, id TEXT UNIQUE, daim INTEGER, max_dist INTEGER, min_dist INTEGER, min_vol INTEGER, min_percent REAL, line_colour TEXT, tank_status TEXT, batt_status TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS measurements
-                    (timestamp TIMESTAMP, FOREIGN KEY(tank_id) REFERENCES tanks(id), water_volume REAL, voltage REAL)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS userAuth
-                    (username TEXT UNIQUE, password TEXT, role TEXT)''')
-    conn.commit() # Save (commit) the changes
-
 #setup admin user on first run
 def setup_admin_user(user, passw):
     conn, c = get_db()
@@ -119,7 +129,7 @@ def add_measurement(tank_id,water_volume,voltage):
     if tank_id not in tanks:
         try:
             # send a message to telegram requesting setup of tank
-
+            print "Need to add tank"
             # c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
             # conn.commit
         except:
@@ -194,15 +204,6 @@ def setup_user(user_in, passw, role=0):
     except:
         return False
 
-def setup_tank(name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status):
-    conn, c = get_db()
-    try:
-        c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status))
-        conn.commit()
-        return True
-    except:
-        return False
-
 def write_userdata(resp):
     conn, c = get_db()
     users_in = get_users('username')
@@ -218,7 +219,7 @@ def write_userdata(resp):
             return {'status':'Failed as non-unique new user'}
     else:
         # may want to validate password or setup a system for chaning it?
-        c.execute("UPDATE userAuth SET password=?, role=? WHERE user=?", (pbkdf2_sha256.hash(resp['password'], resp['role'], resp['username']))
+        c.execute("UPDATE userAuth SET password=?, role=? WHERE user=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
         conn.commit()
     return {'status':'Success'}
 
@@ -276,4 +277,4 @@ def delete_user(user):
 #     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
 
 #setup database
-sql.setup_db()
+setup_db()

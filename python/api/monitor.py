@@ -12,16 +12,14 @@ import pytz
 import sys
 import time
 from threading import Timer
-from multiprocessing import Queue as Q
-from multiprocessing import Process as P
-import time
-import sys
+# from multiprocessing import Queue as Q
+# from multiprocessing import Process as P
 import serial
 import creds
 import sql
 import numpy as np
-import telegram
-import tank_views
+# import telegram
+# import tank_views
 
 #global variables
 build_list = []
