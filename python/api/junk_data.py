@@ -8,9 +8,13 @@ import serial
 #create virtaul port for testing (comment following block for production)
 master, slave = pty.openpty()
 s_name = os.ttyname(slave)
-ser = serial.Serial(s_name)
+ser = serial.Serial(s_name, baudrate=9600, timeout=3.0)
 
 tank_fake_id = 1
+
+def junk_timer(seconds):
+    sleep(seconds)
+    generate_shit()
 
 def generate_shit():
     global tank_fake_id
@@ -27,20 +31,9 @@ def generate_shit():
         tank_fake_id += 1
     else:
         tank_fake_id = 1
-
-def junk_timer(seconds):
-    sleep(seconds)
-    generate_shit()
+    myThread = Thread(target=junk_timer, args=(3,))
+    myThread.start()
 
 # start thread for testing
 myThread = Thread(target=junk_timer, args=(3,))
 myThread.start()
-
-def run():
-    """ Method that runs forever """
-    while True:
-        # Do something
-        # print('Doing something important in the background')
-        x = 2;
-
-run()
