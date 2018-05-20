@@ -12,6 +12,7 @@ import ast
 # defs for funcitons in Tank class
 def get_db():
     conn = sqlite3.connect(tanks_db)
+    # conn.execute("PRAGMA foreign_keys = 1")
     c = conn.cursor()
     return conn, c
 
@@ -22,7 +23,7 @@ def setup_db():
     c.execute('''CREATE TABLE IF NOT EXISTS tanks
                     (tank TEXT UNIQUE, id TEXT UNIQUE, daim INTEGER, max_dist INTEGER, min_dist INTEGER, min_vol INTEGER, min_percent REAL, line_colour TEXT, tank_status TEXT, batt_status TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS measurements
-                    (timestamp TIMESTAMP, FOREIGN KEY(id) REFERENCES tanks(id), water_volume REAL, voltage REAL)''')
+                    (timestamp TIMESTAMP, tank_id TEXT, water_volume REAL, voltage REAL, FOREIGN KEY(tank_id) REFERENCES tanks(id))''')
     c.execute('''CREATE TABLE IF NOT EXISTS userAuth
                     (username TEXT UNIQUE, password TEXT, role TEXT)''')
     conn.commit() # Save (commit) the changes
@@ -56,12 +57,11 @@ class Tanks:
     def setup_tank(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag):
         conn, c = get_db()
         try:
-            c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, tank_status, batt_status))
+            c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag))
             conn.commit()
             return True
         except:
             return False
-
 
 #Variable stuff
 tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
@@ -69,13 +69,6 @@ tz = 'Pacific/Auckland'
 #intitiate tank list so it can be accessed when instances are set up
 tank_list = []
 tz = 'Pacific/Auckland'
-
-t = Tanks('top',   '1', 370, 300, 45, 12000, 20.0, 'b')
-n = Tanks('noels', '2', 200, 100, 20, 4000,  10.0, 'g')
-s = Tanks('sals',  '3', 140, 110, 27, 400,   10.0, 'r')
-m = Tanks('main',  '4', 370, 300, 45, 12000, 50.0, 'm')
-b = Tanks('bay',   '5', 370, 270, 45, 12000, 10.0, 'k')
-r = Tanks('relay', '6', 370, 270, 45, 12000, 10.0, 'c')
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tanks_by_name = {tank.name : tank for tank in tank_list}
@@ -278,3 +271,10 @@ def delete_user(user):
 
 #setup database
 setup_db()
+
+t = Tanks('top',   '1', 370, 300, 45, 12000, 20.0, 'b')
+n = Tanks('noels', '2', 200, 100, 20, 4000,  10.0, 'g')
+s = Tanks('sals',  '3', 140, 110, 27, 400,   10.0, 'r')
+m = Tanks('main',  '4', 370, 300, 45, 12000, 50.0, 'm')
+b = Tanks('bay',   '5', 370, 270, 45, 12000, 10.0, 'k')
+r = Tanks('relay', '6', 370, 270, 45, 12000, 10.0, 'c')

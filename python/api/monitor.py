@@ -6,9 +6,16 @@
 #     - web front end
 #     - serial listener (seriallistener.py)
 
-import matplotlib
-matplotlib.use('Agg')
-import pytz
+# virtual serial for testing
+import os
+import pty
+from threading import Thread
+import random
+from time import sleep
+
+# import matplotlib
+# matplotlib.use('Agg')
+# import pytz
 import sys
 import time
 from threading import Timer
@@ -21,12 +28,45 @@ import numpy as np
 # import telegram
 # import tank_views
 
+#create virtaul port for testing (comment following block for production)
+# master, slave = pty.openpty()
+# s_port = os.ttyname(slave)
+# tank_fake_id = 1
+# def generate_shit():
+#     global tank_fake_id
+#     # print "id is "+str(tank_fake_id)
+#     water = random.randint(5,300)
+#     batt = random.uniform(3.0,5.0)
+#     # build string
+#     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';'
+#     print packet
+#     #write packet to virtual port
+#     port.write(packet)
+#     # increment the tank_id
+#     if (tank_fake_id < 6):
+#         tank_fake_id += 1
+#     else:
+#         tank_fake_id = 1
+#
+# def junk_timer(seconds):
+#     sleep(seconds)
+#     generate_shit()
+#
+# # start thread for testing
+# myThread = Thread(target=junk_timer, args=(3,))
+# myThread.start()
+
 #global variables
 build_list = []
 dur = None
 sql_span = None
 vers = None
-s_port = '/dev/LORA'
+
+# Testing port
+s_port = '/dev/pts/1'
+#production port (uncomment for production)
+# s_port = '/dev/LORA'
+
 #initialise global port
 port = None
 
@@ -108,9 +148,12 @@ def readlineCR(port):
     try:
         rv = ''
         while True:
-            ch = port.read()
+            # for testing (fuck!)
+            ch = os.read(master, 1000)
+            # ch = port.read()
             rv += ch
             if ch=='\n':# or ch=='':
+                print rv
                 if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
                     #print 'Printing status flags stuff on receive'
                     #for x in tanks.tank_list:
@@ -152,5 +195,5 @@ def port_start():
     while True:
         rcv = readlineCR(port)
 
-#setup port and start loop
+#setup port and start loop in production
 port_start()
