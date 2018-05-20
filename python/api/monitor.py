@@ -36,7 +36,7 @@ def junk_timer(seconds):
 def generate_shit():
     global tank_fake_id
     # print "id is "+str(tank_fake_id)
-    water = random.randint(5,300)
+    water = random.randint(10,300)
     batt = random.uniform(3.0,5.0)
     # build string
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';\r\n'
@@ -53,10 +53,6 @@ def generate_shit():
     myThread = Thread(target=junk_timer, args=(3,))
     myThread.start()
 
-# start thread for testing
-myThread = Thread(target=junk_timer, args=(3,))
-myThread.start()
-
 #global variables
 build_list = []
 dur = None
@@ -71,16 +67,26 @@ port = None
 
 def sort_junk(data):
     in_node = data[0]
-    tank_data = sql.get_tank(in_node)
+    tank_data = sql.get_tank(in_node)[0]
     print tank_data
     if len(tank_data)>0:
-        print 'found tank is '+tank_data[0]['name']
+        print 'found tank is '+tank_data['name']
         #print 'following in the instance statusFlags:'
         #for y in tanks.tank_list:
             #print 'status for ' +y.name+' is '+y.get_status()
     else:
         print 'tank not found'
         return
+    print 'data sorted is: '
+    print data
+    #print 'Status as seen in sort_data'
+    #for x in tanks.tank_list:
+        #print x.name +' is ' +x.statusFlag
+    dist = int(data[1])
+    batt = float(data[2])
+    dist = dist - int(tank_data['min_dist'])
+    level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+    sql.add_measurement(in_node,level,batt)
 
 def sort_data(data):
     global vers
@@ -97,14 +103,13 @@ def sort_data(data):
         else:
             print 'tank not found'
             return
-        print 'data sorted is: '
-        print data
+        # print 'data sorted is: '
+        # print data
         #print 'Status as seen in sort_data'
         #for x in tanks.tank_list:
             #print x.name +' is ' +x.statusFlag
         dist = int(data[1])
         batt = float(data[2])
-        sql.add_measurement(in_node,level,batt)
         try:
             if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
                 print 'Payload out of range'
@@ -115,20 +120,17 @@ def sort_data(data):
                 level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
                 # print str(tank_data['min_percent'])+' min_percent'
                 if level < tank_data['min_percent']:
-                    #print rec_tank.name +' under thresh'
-                    #print rec_tank.name+' status prechange is '+rec_tank.statusFlag
+                    print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
-
-                        #print 'dropping through and changing status'
-                        #call funtion to change status
-                        #print rec_tank
-                        #print 'new status is '+rec_tank.statusFlag
                         vers = 'water'
                         # plot.plot_tank(rec_tank, '1', creds.group_ID, 'days')
                         # telegram.send_graph()
                         # #print 'plotted'
                         # send = telegram.bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
                         #print 'sent'
+                        # print 'writing tank status'
+                        sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
+                        # print 'moved through OK'
                     elif tank_data['level_status'] == 'bad':
                         print 'ignoring low level as status flag is bad'
                     else:
@@ -143,22 +145,20 @@ def sort_data(data):
             if (batt == 0) or (batt > 5.0):
                 batt = None
             elif batt < 3.2:
-                print 'got to here low batt'
                 if tank_data['batt_status'] != 'low':
-                    print 'batt is low so fix in db'
-                    #set basttery statys in db
                     # vers = 'batt'
                     # plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
                     # telegram.send_graph()
+                    sql.write_tank_col(tank_data['name'], 'batt_status', 'low')
                 elif tank_data['batt_status'] == 'low':
-                    print 'ignoring low battery as status flag is '+rec_tank.battstatusFlag
+                    print 'ignoring low battery as status flag is '+tank_data['batt_status']
                 else:
                     print 'status flag error'
         except:
             batt = None
         #add to db
         # print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +sql.tanks_by_nodeID[in_node].name
-        # sql.add_measurement(in_node,level,batt)
+        sql.add_measurement(in_node,level,batt)
     except:
         print 'malformed string'
 
@@ -218,4 +218,5 @@ def port_start():
 
 # testing with junk data (comment out prodn)
 #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
-generate_shit()
+myThread = Thread(target=junk_timer, args=(10,))
+myThread.start()

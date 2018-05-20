@@ -118,19 +118,18 @@ def setup_admin_user(user, passw):
 def add_measurement(tank_id,water_volume,voltage):
     # Insert a row of data
     conn, c = get_db()
-    tanks = get_all_tanks()[0]["id"]
-    if tank_id not in tanks:
-        try:
-            # send a message to telegram requesting setup of tank
-            print "Need to add tank"
-            # c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
-            # conn.commit
-        except:
-            print "Cannot add tank"
+    # tanks = get_all_tanks()[0]["id"]
+    # if tank_id not in tanks:
+    #     try:
+    #         # send a message to telegram requesting setup of tank
+    #         print "Need to add tank"
+    #         # c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
+    #         # conn.commit
+    #     except:
+    #         print "Cannot add tank"
     try:
         c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
         conn.commit() # Save (commit) the changes
-        print 'added stuff to db'
     except:
         print 'failed to add to db'
 
@@ -234,53 +233,14 @@ def delete_user(user):
     c.execute("DELETE FROM userAuth WHERE username=?", (user,))
     conn.commit()
 
-# def plot_tank(tank, period, vers, target_id, q_range):
-#     format_date = md.DateFormatter('%H:%M\n%d-%m')
-#     # Note that using plt.subplots below is equivalent to using
-#     # fig = plt.figure and then ax = fig.add_subplot(111)
-#     fig, ax = plt.subplots()
-#     if vers == 'water':
-#         data = 'water_volume'
-#         label = 'Volume (l)'
-#     if vers == 'batt':
-#         data = 'voltage'
-#         label = 'Battery Voltage'
-#     if type(tank) is list:
-#         title_name = ''
-#         for i in tank:
-#             d = query_via_tankid(i.nodeID, period, q_range)
-#             ax.plot_date(d['timestamp'],d[data], i.line_colour, label=i.name, marker='o', markersize='5')
-#             title_name += ' '+i.name
-#             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
-#         title_name += ' plot'
-#     else:
-#         d = query_via_tankid(tank.nodeID, period, q_range)
-#         if vers == 'bi_plot':
-#             title_name = 'Water Level and Voltage for '+tank.name+' Tank'
-#             ax.plot_date(d['timestamp'],d['water_volume'], 'b', label='Water Volume (l)',  marker='o', markersize='5')
-#             ax.set_xlabel('Time')
-#             # Make the y-axis label, ticks and tick labels match the line color.
-#             ax.set_ylabel('Water Volume', color='b')
-#             ax.tick_params('y', colors='b')
-#             ax2 = ax.twinx()
-#             ax2.plot_date(d['timestamp'],d['voltage'], 'r', label='Voltage (V)', marker='p', markersize='5')
-#             ax2.set_ylabel('Voltage', color='r')
-#             ax2.tick_params('y', colors='r')
-#         else:
-#             title_name = tank.name+' plot'
-#             ax.plot_date(d['timestamp'],d[data], tank.line_colour, label=tank.name, marker='o', markersize='5')
-#             ax.set(xlabel='Datetime', ylabel=label, title=tank.name+' '+label)
-#             plt.axhspan(tank.min_vol, tank.calced_vol, facecolor='#2ca02c', alpha=0.3)
-#     ax.get_xaxis().set_major_formatter(format_date)
-#     #times = ax.get_xticklabels()
-#     #plt.setp(times, rotation=30)
-#     plt.legend()
-#     ax.grid()
-#     plt.tight_layout()
-#     fig.savefig(tanks.tank_list[0].pngpath+'net.png')
-#     plt.close()
-#     #send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'), title_name)
-#     send_graph = bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
+def write_tank_col(name, column, payload):
+    conn, c = get_db()
+    try:
+        c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
+        conn.commit()
+    except:
+        print "fucked up adding status"
+
 
 #setup database
 setup_db()
