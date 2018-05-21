@@ -99,7 +99,7 @@ def median_data(data):
 
 #From monitor.py
 # Need to do something like: https://stackoverflow.com/questions/41459657/how-to-create-dynamic-plots-to-display-on-flask
-def plot_tank(key_tank, period, target_id, q_range):
+def plot_tank_list(key_tank, period, target_id, q_range):
     global vers
     global dur
     print vers
@@ -170,3 +170,40 @@ def plot_tank(key_tank, period, target_id, q_range):
 
     # In your Html put:
     # <img src="data:image/png;base64, {{ plot_url }}">
+
+def plot_tank(tank_name, tank_id, period, target_id, q_range):
+        global vers
+    global dur
+    print vers
+    #print 'vers = '+vers
+    format_date = md.DateFormatter('%H:%M\n%d-%m')
+    # Note that using plt.subplots below is equivalent to using
+    # fig = plt.figure and then ax = fig.add_subplot(111)
+    fig, ax = plt.subplots()
+    if vers == 'water':
+        data = 'water_volume'
+        label = 'Volume (%)'
+    if vers == 'batt':
+        data = 'voltage'
+        label = 'Battery Voltage'
+    d = sql.query_via_tankid(tank_id, period, q_range)
+    title_name = tank_name+' plot'
+    ax.plot_date(d['timestamp'],d[data], key_tank.line_colour, label=key_tank.name, marker='o', markersize='5')
+    ax.set(xlabel='Datetime', ylabel=label, title=key_tank.name+' '+label)
+    if vers == 'water':
+        plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
+    if vers == 'batt':
+        plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
+    ax.get_xaxis().set_major_formatter(format_date)
+    #times = ax.get_xticklabels()
+    #plt.setp(times, rotation=30)
+    plt.legend()
+    ax.grid()
+    plt.tight_layout()
+    # fig.savefig(tanks.tank_list[0].pngpath+'net.png')
+    # https://stackoverflow.com/questions/34492197/how-to-render-and-return-plot-to-view-in-flask
+    fig.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    plot_url = base64.b64encode(img.getvalue())
+    return render_template('test.html', plot_url=plot_url)

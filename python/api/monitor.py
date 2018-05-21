@@ -65,49 +65,40 @@ s_port = '/dev/LORA'
 #initialise global port
 port = None
 
-def sort_junk(data):
-    in_node = data[0]
-    tank_data = sql.get_tank(in_node)[0]
-    print tank_data
-    if len(tank_data)>0:
-        print 'found tank is '+tank_data['name']
-        #print 'following in the instance statusFlags:'
-        #for y in tanks.tank_list:
-            #print 'status for ' +y.name+' is '+y.get_status()
-    else:
-        print 'tank not found'
-        return
-    print 'data sorted is: '
-    print data
-    #print 'Status as seen in sort_data'
-    #for x in tanks.tank_list:
-        #print x.name +' is ' +x.statusFlag
-    dist = int(data[1])
-    batt = float(data[2])
-    dist = dist - int(tank_data['min_dist'])
-    level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
-    sql.add_measurement(in_node,level,batt)
+# def sort_junk(data):
+#     in_node = data[0]
+#     tank_data = sql.get_tank(in_node)[0]
+#     print tank_data
+#     if len(tank_data)>0:
+#         print 'found tank is '+tank_data['name']
+#         #print 'following in the instance statusFlags:'
+#         #for y in tanks.tank_list:
+#             #print 'status for ' +y.name+' is '+y.get_status()
+#     else:
+#         print 'tank not found'
+#         return
+#     print 'data sorted is: '
+#     print data
+#     #print 'Status as seen in sort_data'
+#     #for x in tanks.tank_list:
+#         #print x.name +' is ' +x.statusFlag
+#     dist = int(data[1])
+#     batt = float(data[2])
+#     dist = dist - int(tank_data['min_dist'])
+#     level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+#     sql.add_measurement(in_node,level,batt)
 
 def sort_data(data):
     global vers
-    # print data
     try:
         in_node = data[0]
         tank_data = sql.get_tank(in_node)[0]
         print tank_data
         if len(tank_data)>0:
             print 'found tank is '+tank_data['name']
-            #print 'following in the instance statusFlags:'
-            #for y in tanks.tank_list:
-                #print 'status for ' +y.name+' is '+y.get_status()
         else:
             print 'tank not found'
             return
-        # print 'data sorted is: '
-        # print data
-        #print 'Status as seen in sort_data'
-        #for x in tanks.tank_list:
-            #print x.name +' is ' +x.statusFlag
         dist = int(data[1])
         batt = float(data[2])
         try:
@@ -118,12 +109,11 @@ def sort_data(data):
                 print 'payload in range'
                 dist = dist - int(tank_data['min_dist'])
                 level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
-                # print str(tank_data['min_percent'])+' min_percent'
                 if level < tank_data['min_percent']:
                     print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
                         vers = 'water'
-                        # graph = plot.plot_tank(rec_tank, '1', creds.group_ID, 'days')
+                        graph = plot.plot_tank(tank_data['id'], tank_data['name'], '1', creds.group_ID, 'days')
                         # telegram.send_graph()
                         # send = telegram.bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
