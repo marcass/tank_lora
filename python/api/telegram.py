@@ -95,6 +95,9 @@ battst = Keyboard('battstatus')
 def send_graph():
      bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
 
+def messages(target_id, text):
+    bot.sendMessage(target_id, text)
+    
 def on_chat_message(msg):
     global dur
     global vers

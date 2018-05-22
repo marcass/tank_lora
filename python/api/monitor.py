@@ -113,7 +113,7 @@ def sort_data(data):
                     print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
                         vers = 'water'
-                        graph = plot.plot_tank(tank_data['id'], tank_data['name'], '1', creds.group_ID, 'days')
+                        graph = plot.plot_tank_filtered(tank_data['id'], tank_data['name'], '1', creds.group_ID, 'days')
                         # telegram.send_graph()
                         # send = telegram.bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
