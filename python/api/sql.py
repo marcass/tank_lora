@@ -177,24 +177,26 @@ def get_user(column):
 def get_all_tanks():
     conn, c = get_db()
     c.execute("SELECT * FROM tanks ")
-    tank_name =  [i[0] for i in c.fetchall()]
-    tank_id = [i[1] for i in c.fetchall()]
-    tank_diam = [i[2] for i in c.fetchall()]
-    tank_max_dist = [i[3] for i in c.fetchall()]
-    tank_min_dis = [i[4] for i in c.fetchall()]
-    tank_min_vol = [i[5] for i in c.fetchall()]
-    tank_min_percent = [i[6] for i in c.fetchall()]
-    tank_colour = [i[7] for i in c.fetchall()]
-    tank_status = [i[8] for i in c.fetchall()]
-    return [{"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "status":tank_status }]
+    res = c.fetchall()
+    tank_name =  [i[0] for i in res]
+    tank_id = [i[1] for i in res]
+    tank_diam = [i[2] for i in res]
+    tank_max_dist = [i[3] for i in res]
+    tank_min_dist = [i[4] for i in res]
+    tank_min_vol = [i[5] for i in res]
+    tank_min_percent = [i[6] for i in res]
+    tank_colour = [i[7] for i in res]
+    tank_status = [i[8] for i in res]
+    batt_status = [i[9] for i in res]
+    return [{"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "level_status":tank_status, 'batt_status':batt_status}]
 
-def get_tank(node):
+def get_tank(payload, col):
     conn, c = get_db()
-    c.execute("SELECT * FROM tanks WHERE id=?", (node,))
+    c.execute("SELECT * FROM tanks WHERE %s=?" %(col), (payload,))
     ret = c.fetchall()[0]
-    print ret
+    # print ret
     res = [{'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9]}]
-    print res
+    # print res
     return res
 
 ############  Write data ########################

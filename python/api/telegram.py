@@ -6,8 +6,16 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id)
 import telepot.api
+import creds
+import sql
+import plot
 
-
+# stupid global variables
+build_list = []
+build_colour = []
+build_id = []
+vers = None
+dur = None
 # ########### Alert stuff ########################
 # #fix for protocol error message ( see https://github.com/nickoala/telepot/issues/242 )
 def always_use_new(req, **user_kw):
@@ -25,8 +33,7 @@ class Keyboard:
             if type(key_tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in key_tank:
-                            key_list.append(InlineKeyboardButton(text=x['name'] +' reset', callback_data=x['name']+' reset alert'))
-                            #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
+                    key_list.append(InlineKeyboardButton(text=x['name'] +' reset', callback_data=x['name']+' reset alert'))
                 #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
                 #the following makes a row of buttons (hard to read when lots of alerts)
@@ -34,8 +41,8 @@ class Keyboard:
             else:
                 if key_tank['level_status'] == 'bad':
                     keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text=key_tank.name+' reset', callback_data=key_tank.name+' reset alert'),
-                            InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
+                        InlineKeyboardButton(text=key_tank['name']+' reset', callback_data=key_tank['name']+' reset alert'),
+                            InlineKeyboardButton(text='Get ' +key_tank['name'] +' graph', callback_data=key_tank['name']+' fetch graph'),
                             ]])
                 else:
                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -44,7 +51,7 @@ class Keyboard:
         elif self.version == 'battstatus':
             key_list = [InlineKeyboardButton(text='Reset all', callback_data='batt reset')]
             for x in key_tank:
-                        key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset batt'))
+                        key_list.append(InlineKeyboardButton(text=x['name'] +' reset', callback_data=x['name']+' reset batt'))
                         #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
             #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
@@ -54,7 +61,7 @@ class Keyboard:
                         ]])
         elif self.version == 'alert':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                        InlineKeyboardButton(text=key_tank.name+' reset', callback_data=key_tank.name +' reset alert'),
+                        InlineKeyboardButton(text=key_tank['name']+' reset', callback_data=key_tank['name'] +' reset alert'),
                         ]])
         elif self.version == 'graphs':
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
@@ -66,7 +73,7 @@ class Keyboard:
         elif self.version == 'plot':
             keyb_list = []
             for x in key_tank:
-                keyb_list.append(InlineKeyboardButton(text=x.name+' ', callback_data=x.name+' add tank'))
+                keyb_list.append(InlineKeyboardButton(text=x+' ', callback_data=x+' add tank'))
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text='Plot tank volume', callback_data='volume'),
                         InlineKeyboardButton(text='Plot battery voltage', callback_data='voltage'),
@@ -92,8 +99,9 @@ g = Keyboard('graphs')
 d = Keyboard('plot')
 battst = Keyboard('battstatus')
 
-def send_graph():
-     bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
+def send_graph(target_id, graph):
+    #  bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
+    bot.sendPhoto(target_id, graph)
 
 def messages(target_id, text):
     bot.sendMessage(target_id, text)
@@ -104,14 +112,14 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-	tank_names = [i.name for i in tanks.tank_list]
+    	tank_names = sql.get_all_tanks()[0]['name']
         help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Valid names are: "+str(tank_names)+" \n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours] \n'/special stuff' to get other functions"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
             #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
-            if any(k in text for k in tanks.tanks_by_name):
-                in_tank = tanks.tanks_by_name[text.split(' ')[-1]]
+            if any(k in text for k in tank_names):
+                in_tank = text.split(' ')[-1]
                 status_mess(in_tank, chat_id)
             else:
                 status_mess('all', chat_id)
@@ -126,7 +134,7 @@ def on_chat_message(msg):
 	        dur = in_msg[1]
                 if dur.isdigit():
                     #message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))
-                    message = bot.sendMessage(chat_id, "Please select the button(s) that apply in each row of buttons, then click the 'Build' button to produce the graph", reply_markup=d.format_keys(tanks.tank_list))
+                    message = bot.sendMessage(chat_id, "Please select the button(s) that apply in each row of buttons, then click the 'Build' button to produce the graph", reply_markup=d.format_keys(tank_names))
                     #message = bot.sendMessage(chat_id, 'Click the button for each tank you would like then click the build button when done', reply_markup=b.format_keys(tanks.tank_list, vers))
                 else:
                     msg_error = 1
@@ -134,36 +142,6 @@ def on_chat_message(msg):
                 msg_error = 1
             if msg_error:
                 message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/plot [number]', eg /plot 2")
-        elif '/special stuff' in text:
-            message = bot.sendMessage(chat_id, '"/vl [days] [tank]" will plot voltage data and volume data for the specified tank, eg /vl 1 top\n"/battstatus" will give battery status')
-        elif '/vl' in text:
-            in_msg = text.split(' ')
-            volt_error = 0
-            print in_msg
-            if len(in_msg) == 3:
-                if any(k in text for k in tanks.tanks_by_name):
-                    in_tank = tanks.tanks_by_name[text.split(' ')[2]]
-                    print 'in_tank = '+in_tank.name
-                    days = text.split(' ')[1]
-                    print days
-                    if days.isdigit():
-                        vers = 'bi_plot'
-                        print 'version b4 plot '+vers
-                        #plot the tank
-                        plot.plot_tank(in_tank, days, chat_id, 'days')
-                        #send the plot
-                        send_graph()
-                        print 'version afer plot '+vers
-                        vers = None
-                        return
-                    else:
-                        volt_error = 1
-                else:
-                    volt_error = 1
-            else:
-                volt_error = 1
-            if volt_error:
-                message = bot.sendMessage(chat_id, "I'm sorry, I can't recognise that. Please type '/vl [days] [tank name]', eg /vl 1 top")
         elif "/battstatus" in text:
             battstatus_mess(chat_id)
         else:
@@ -175,43 +153,52 @@ def on_callback_query(msg):
     global dur
     global sql_span
     global build_list
+    global build_colour
+    global build_id
     global vers
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     #print('Callback Query:', query_id, from_id, query_data)
     #print msg
+    tank_data = sql.get_all_tanks()[0]
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
         #print 'resetting all on callback'
-        for x in tanks.tank_list:
-            x.set_status('OK')
+        for x in tank_data[0]['name']:
+            sql.write_tank_col(tank_data['name'][x], 'tank_status', 'OK')
         bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     query_tank_name = query_data.split(' ')[0]
     if query_data == 'batt reset':
-        for x in tanks.tank_list:
-            x.set_battstatus('OK')
+        for x in tank_data['name']:
+            sql.write_tank_col(tank_data['name'][x], 'batt_status', 'OK')
         bot.sendMessage(target_id, "All tank's battery status now reset to OK", reply_markup=h.format_keys())
     #print 'query tank name = '+query_tank_name
-    if tanks.tanks_by_name.has_key(query_tank_name):
-        query_tank = tanks.tanks_by_name[query_tank_name]
+    if query_tank_name in tank_data['name']:
+        # it's in the list so lets get index:
+        i = tank_data['name'].index(query_tank_name)
+        query_tank = tank_data['name'][i]
+        query_tank_colour = tank_data['line_colour'][i]
+        query_tank_id = tank_data['id'][i]
         #print 'found a tank called '+query_tank.name
         if 'add tank' in query_data:
             #print 'found "add tank" in query data'
             if (query_tank not in build_list):
                 #print 'appending '+query_tank.name
                 build_list.append(query_tank)
+                build_colour.append(query_tank_colour)
+                build_id.append(query_tank_id)
             else:
                 print query_tank.name+' already added'
             return
         if 'reset batt' in query_data:
-            query_tank.set_battstatus('OK')
+            sql.write_tank_col(tank_data['name'][i], 'batt_status', 'OK')
         if 'reset alert' in query_data:
             #print tank.name +' ' +tank.statusFlag
             #print 'resetting all on callback individually'
-            query_tank.set_status('OK')
+            sql.write_tank_col(tank_data['name'][i], 'tank_status', 'OK')
             #print tank.statusFlag
             bot.answerCallbackQuery(query_id, text='Alert now reset')
-            bot.sendMessage(target_id, query_tank.name +' reset to ' +query_tank.statusFlag)
+            bot.sendMessage(target_id, query_tank +' reset to OK')
             return
         if 'fetch graph' in query_data:
             bot.sendMessage(target_id, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
@@ -226,9 +213,12 @@ def on_callback_query(msg):
         if vers == None:
             bot.sendMessage(target_id, 'Please select a data type to plot (Voltage or Volume) by clicking the approriate button above')
         #print 'period in build = '+str(dur)+' '+sql_span
-        plot.plot_tank(build_list, dur, target_id, sql_span)
-        send_graph()
+        # create a dict with required into for plotting
+        build_dict = {'line_colour':build_colour, 'name':build_list, 'id':build_id}
+        send_graph(target_id, plot.plot_tank_list(build_dict, dur, target_id, sql_span, vers))
         #clear variables
+        build_id = []
+        build_colour = []
         build_list = [] # finished build, so empty list
         return
     if 'hours' in query_data:
@@ -255,12 +245,12 @@ def on_callback_query(msg):
         conv = str(query_data)
         in_tank_name = msg['message']['text'].split(' ')[0]
         #print 'tank is '+in_tank_name
-        if tanks.tanks_by_name.has_key(in_tank_name):
-            graph_tank = tanks.tanks_by_name[in_tank_name]
+        if in_tank_name in tank_data['name']:
+            i = tank_data['name'].index(in_tank_name)
+            graph_tank = tank_data['name'][i]
             #print 'tank is '+graph_tank.name
             vers = 'water'
-            plot.plot_tank(graph_tank, query_data, target_id, 'days')
-            send_graph()
+            send_graph(target_id, plot.plot_tank(graph_tank, query_data, target_id, 'days', vers))
             vers = None
             return
 
@@ -274,31 +264,37 @@ def status_mess(tag, chat_id):
     if tag == 'all':
         data = 'Tank water status:\n'
         bad = []
-        for x in tanks.tank_list:
-            data = data +x.name +' is ' +x.statusFlag +'\n'
-            if x.statusFlag == 'bad':
-                bad.append(x)
+        tanks_list = sql.get_all_tanks()[0]
+        for x in tanks_list['name']:
+            index = tanks_list['name'].index(x)
+            data = data +tanks_list['name'][index] +' is ' +tanks_list['level_status'][index] +'\n'
+            if tanks_list['level_status'][index] == 'bad':
+                bad.append(tanks_list['name'][index])
             #message = bot.sendMessage(creds.group_ID,
             #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
-        message = bot.sendMessage(chat_id, tag.name+' is '+tag.statusFlag, reply_markup=st.format_keys(tag))
+        tank_stuff = sql.get_tank(tag, 'tank')[0]
+        message = bot.sendMessage(chat_id, tank_stuff['name']+' is '+tank_stuff['level_status'], reply_markup=st.format_keys(tag))
 
 def battstatus_mess(chat_id):
     data = 'Tank battery status:\n'
     bad = []
-    for x in tanks.tank_list:
-        data = data +x.name +' is ' +x.battstatusFlag +'\n'
-        if x.battstatusFlag == 'low':
+    tanks_list = sql.get_all_tanks()[0]
+    for x in tanks_list['name']:
+        index = tanks_list['name'].index(x)
+        data = data +tanks_list['name'][index] +' is ' +tanks_list['batt_status'][index] +'\n'
+        if tanks_list['level_status'][index] == 'low':
             bad.append(x)
         #message = bot.sendMessage(creds.group_ID,
         #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
     message = bot.sendMessage(chat_id, data, reply_markup=battst.format_keys(bad))
 
-TOKEN = creds.botAPIKey
+TOKEN = creds.testbotAPIKey
+# TOKEN = creds.botAPIKey
 botID = creds.bot_ID
 bot = telepot.Bot(TOKEN)
 
-#start the message bot
-MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
-print('Listening ...')
+# #start the message bot
+# MessageLoop(bot, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
+# print('Listening ...')

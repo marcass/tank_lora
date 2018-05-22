@@ -19,7 +19,8 @@ import serial
 import creds
 import sql
 import numpy as np
-# import telegram
+import telegram
+import plot
 # import tank_views
 
 # Testing using junk data-set
@@ -36,7 +37,7 @@ def generate_shit():
     batt = random.uniform(3.0,5.0)
     # build string
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';\r\n'
-    print 'packet is '+packet
+    # print 'packet is '+packet
     # increment the tank_id
     if (tank_fake_id < 6):
         tank_fake_id += 1
@@ -44,7 +45,7 @@ def generate_shit():
         tank_fake_id = 1
     #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
     rec_split = packet.split(';')   #make array like [PYTHON, nodeID, payloadance]
-    print rec_split
+    # print rec_split
     sort_data(rec_split[1:4])
     myThread = Thread(target=junk_timer, args=(3,))
     myThread.start()
@@ -63,7 +64,7 @@ port = None
 
 # def sort_junk(data):
 #     in_node = data[0]
-#     tank_data = sql.get_tank(in_node)[0]
+#     tank_data = sql.get_tank(in_node, 'id')[0]
 #     print tank_data
 #     if len(tank_data)>0:
 #         print 'found tank is '+tank_data['name']
@@ -88,8 +89,8 @@ def sort_data(data):
     global vers
     try:
         in_node = data[0]
-        tank_data = sql.get_tank(in_node)[0]
-        print tank_data
+        tank_data = sql.get_tank(in_node, 'id')[0]
+        # print tank_data
         if len(tank_data)>0:
             print 'found tank is '+tank_data['name']
         else:
@@ -110,8 +111,8 @@ def sort_data(data):
                     if tank_data['level_status'] != 'bad':
                         vers = 'water'
                         graph = plot.plot_tank_filtered(tank_data['id'], tank_data['name'], '1', creds.group_ID, 'days')
-                        # telegram.send_graph()
-                        # send = telegram.bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
+                        # telegram.send_graph(graph)
+                        # telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=a.format_keys(tank_data))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
                     elif tank_data['level_status'] == 'bad':
                         print 'ignoring low level as status flag is bad'
@@ -202,3 +203,7 @@ def port_start():
 #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
 myThread = Thread(target=junk_timer, args=(10,))
 myThread.start()
+
+#start the message bot
+telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
+print('Listening ...')

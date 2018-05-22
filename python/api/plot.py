@@ -4,10 +4,10 @@ import numpy as np
 import sql
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-matplotlib.rcParams['timezone'] = tanks.tz
+matplotlib.rcParams['timezone'] = sql.tz
 import StringIO
 import base64
-from telegram import messages
+import telegram
 
 def clean_data(data):
     #std deviation for range is
@@ -51,12 +51,10 @@ def median_data(data):
 
 #From monitor.py
 # Need to do something like: https://stackoverflow.com/questions/41459657/how-to-create-dynamic-plots-to-display-on-flask
-def plot_tank_list(tank_data, period, target_id, q_range):
+def plot_tank_list(tank_data, period, target_id, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
     img = StringIO.StringIO()
-    global vers
-    global dur
     print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -71,24 +69,25 @@ def plot_tank_list(tank_data, period, target_id, q_range):
         label = 'Battery Voltage'
     title_name = ''
     print 'building a list of tanks'
-    for x in tank_data:
-        print tank_data[x]['name'] +' tank in list'
-    for i in tank_data:
+    for x in tank_data['name']:
+        print x +' tank in list'
         try:
-            d = sql.query_via_tankid(tank_data[i]['id'], period, q_range)
+            d = sql.query_via_tankid(tank_data['id'][x], period, q_range)
+            print d
             medians = median_data(d[data])
-            ax.plot_date(d['timestamp'],medians, tank_data[i]['line_colour'], label=tank_data[i]['name'])
-            title_name += ' '+tank_data[i]['name']
+            ax.plot_date(d['timestamp'],medians, tank_data['line_colour'][x], label=tank_data['name'][x])
+            title_name += ' '+tank_data['name'][x]
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
-            messages(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
+            telegram.messages(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
     #this is for telegram to send title name
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
     if vers == 'batt':
         plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
-    ax.get_xaxis().set_major_formatter(format_date)
+    # following line is throwing an error for some reason
+    # ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)
     plt.legend()
@@ -112,7 +111,6 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
     #set up img variable
     img = StringIO.StringIO()
     global vers
-    global dur
     print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -151,11 +149,9 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
     # return render_template('test.html', plot_url=plot_url)
     return base64.b64encode(img.getvalue())
 
-def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_range):
+def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_range, vers):
     #set up img variable
     img = StringIO.StringIO()
-    global vers
-    global dur
     print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
