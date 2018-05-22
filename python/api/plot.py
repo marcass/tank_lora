@@ -99,8 +99,11 @@ def plot_tank_list(tank_data, period, target_id, q_range):
     fig.savefig(img, format='png')
     img.seek(0)
     plt.close()
-    plot_url = base64.b64encode(img.getvalue())
-    return render_template('test.html', plot_url=plot_url)
+    # plot_url = base64.b64encode(img.getvalue())
+    # # In your Html put:
+    # # <img src="data:image/png;base64, {{ plot_url }}">
+    # return render_template('test.html', plot_url=plot_url)
+    return base64.b64encode(img.getvalue())
 
     # In your Html put:
     # <img src="data:image/png;base64, {{ plot_url }}">
@@ -142,10 +145,11 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
     fig.savefig(img, format='png')
     img.seek(0)
     plt.close()
-    plot_url = base64.b64encode(img.getvalue())
-    # In your Html put:
-    # <img src="data:image/png;base64, {{ plot_url }}">
-    return render_template('test.html', plot_url=plot_url)
+    # plot_url = base64.b64encode(img.getvalue())
+    # # In your Html put:
+    # # <img src="data:image/png;base64, {{ plot_url }}">
+    # return render_template('test.html', plot_url=plot_url)
+    return base64.b64encode(img.getvalue())
 
 def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_range):
     #set up img variable
@@ -186,7 +190,8 @@ def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_ran
     fig.savefig(img, format='png')
     img.seek(0) # rewind to beginning of file
     plt.close()
-    plot_url = base64.b64encode(img.getvalue())
-    # In your Html put:
-    # <img src="data:image/png;base64, {{ plot_url }}">
-    return render_template('test.html', plot_url=plot_url)
+    # plot_url = base64.b64encode(img.getvalue())
+    # # In your Html put:
+    # # <img src="data:image/png;base64, {{ plot_url }}">
+    # return render_template('test.html', plot_url=plot_url)
+    return base64.b64encode(img.getvalue())

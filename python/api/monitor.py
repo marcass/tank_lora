@@ -12,10 +12,6 @@ import pty
 from threading import Thread
 import random
 from time import sleep
-
-# import matplotlib
-# matplotlib.use('Agg')
-# import pytz
 import sys
 import time
 from threading import Timer
@@ -117,7 +113,6 @@ def sort_data(data):
                         # telegram.send_graph()
                         # send = telegram.bot.sendMessage(creds.group_ID, rec_tank.name +' tank is low', reply_markup=a.format_keys(rec_tank))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
-                        # print 'moved through OK'
                     elif tank_data['level_status'] == 'bad':
                         print 'ignoring low level as status flag is bad'
                     else:

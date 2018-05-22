@@ -25,21 +25,21 @@ class Keyboard:
             if type(key_tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in key_tank:
-                            key_list.append(InlineKeyboardButton(text=x.name +' reset', callback_data=x.name+' reset alert'))
+                            key_list.append(InlineKeyboardButton(text=x['name'] +' reset', callback_data=x['name']+' reset alert'))
                             #key_list.append(InlineKeyboardButton(text='Get ' +x.name +' graph', callback_data=x.name+' fetch graph'))
                 #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
                 #the following makes a row of buttons (hard to read when lots of alerts)
                 #keyboard = InlineKeyboardMarkup(inline_keyboard=[key_list])
             else:
-                if key_tank.statusFlag == 'bad':
+                if key_tank['level_status'] == 'bad':
                     keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(text=key_tank.name+' reset', callback_data=key_tank.name+' reset alert'),
                             InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
                             ]])
                 else:
                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                            InlineKeyboardButton(text='Get ' +key_tank.name +' graph', callback_data=key_tank.name+' fetch graph'),
+                            InlineKeyboardButton(text='Get ' +key_tank['name'] +' graph', callback_data=key_tank['name']+' fetch graph'),
                              ]])
         elif self.version == 'battstatus':
             key_list = [InlineKeyboardButton(text='Reset all', callback_data='batt reset')]
@@ -97,7 +97,7 @@ def send_graph():
 
 def messages(target_id, text):
     bot.sendMessage(target_id, text)
-    
+
 def on_chat_message(msg):
     global dur
     global vers
