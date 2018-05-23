@@ -187,11 +187,6 @@ def get_tanks():
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
 # up to here
-@app.route("/tank/status", methods=['GET',])
-@jwt_required
-def getStatus():
-    content = request.get_json(silent=False)
-    return jsonify(sql.get_tank_status()), 200
 
 @app.route("/door/status/<door>", methods=['GET',])
 @jwt_required
