@@ -83,7 +83,8 @@ def hello():
 def list_allowed_users():
     '''
     List allowed users
-    ["admin":["max", "mw", "etc"], "user":[...]]
+    Receives: nothing
+    Returns: ["admin":["max", "mw", "etc"], "user":[...]]
     '''
     return jsonify(sql.get_allowed()), 200
 
@@ -92,6 +93,8 @@ def list_allowed_users():
 def add_user():
     '''
     Add a new user to everything.
+    Receives: {"username":pell", "password":"blah","keycode":"00003", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
+    Returns: Nothing
     '''
     content = request.get_json(silent=False)
     #{"username":invalid", "keycode":"invalid", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
@@ -119,7 +122,8 @@ def add_user():
 def remove_user(username):
     '''
     Remove Username in user userAuth table, and update all tables...
-    {'username':'mw'}
+    Receives: nothing
+    Returns: nothing
     '''
     sql.delete_user(username)
     resp = {}
@@ -129,7 +133,9 @@ def remove_user(username):
 # @jwt_required
 def get_user_role(username):
     '''
-
+    Auth check and role fetch.
+    Receives: {'password':<password>}
+    Returns: {'status': 'passed'('failed'), 'role':<role>}
     '''
     content = request.get_json(silent=False)
     password = request.json.get('password', None)
@@ -174,7 +180,7 @@ def update_user():
 # @jwt_required
 def get_users():
     '''
-    Returns [{'username':[blah, blah], }]
+    Returns {'username':[blah, blah], }
     '''
     return jsonify(sql.get_all_users()), 200
 
@@ -186,17 +192,29 @@ def get_tanks():
     '''
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
-# up to here
 
-@app.route("/door/status/<door>", methods=['GET',])
-@jwt_required
-def getADoorStatus(door):
+@app.route("/tank/status/<tank>", methods=['GET',])
+# @jwt_required
+def getATankStatus(tank):
+    '''
+    curl -X GET -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)", "type":"water"(or "batt")}' http://127.0.0.1:5000/tank/status/<tank>
+    '''
     content = request.get_json(silent=False)
-    return jsonify(sql.get_adoorstatus(door)), 200
+    ret = sql.get_tank(tank, 'tank')
+    if content['type'] is 'water':
+        res = {'tank_name':ret['name'], 'level_status':ret['level_status']}
+    elif content['type'] is 'batt':
+        res = {'tank_name':ret['name'], 'batt_status':ret['batt_status']}
+    else:
+        res = {'status': 'Unknown status type'}
+    return jsonify(res), 200
 
-@app.route("/door/log/<door>", methods=['POST',])
-@jwt_required
-def getLog(door):
+@app.route("/tank/graph/<tank>", methods=['POST',])
+# @jwt_required
+def getGraph(tank):
+    '''
+    curl -X POST -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)", "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graph/<tank>
+    '''
     content = request.get_json(silent=False)
     # print content
     return jsonify(sql.get_doorlog(door, content)), 200

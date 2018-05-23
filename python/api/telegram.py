@@ -113,7 +113,7 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-        tank_data = sql.get_all_tanks()[0]
+        tank_data = sql.get_all_tanks()
     	tank_names = tank_data['name']
         help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Valid names are: "+str(tank_names)+" \n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours]"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
@@ -161,7 +161,7 @@ def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     print('Callback Query:', query_id, from_id, query_data)
     #print msg
-    tank_data = sql.get_all_tanks()[0]
+    tank_data = sql.get_all_tanks()
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
         #print 'resetting all on callback'
@@ -259,7 +259,7 @@ def status_mess(tag, chat_id):
     if tag == 'all':
         data = 'Tank water status:\n'
         bad = []
-        tanks_list = sql.get_all_tanks()[0]
+        tanks_list = sql.get_all_tanks()
         for x in tanks_list['name']:
             index = tanks_list['name'].index(x)
             data = data +tanks_list['name'][index] +' is ' +tanks_list['level_status'][index] +'\n'
@@ -267,13 +267,13 @@ def status_mess(tag, chat_id):
                 bad.append(tanks_list['name'][index])
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
-        tank_stuff = sql.get_tank(tag, 'tank')[0]
+        tank_stuff = sql.get_tank(tag, 'tank')
         message = bot.sendMessage(chat_id, tank_stuff['name']+' is '+tank_stuff['level_status'], reply_markup=st.format_keys(tank_stuff))
 
 def battstatus_mess(chat_id):
     data = 'Tank battery status:\n'
     bad = []
-    tanks_list = sql.get_all_tanks()[0]
+    tanks_list = sql.get_all_tanks()
     for x in tanks_list['name']:
         index = tanks_list['name'].index(x)
         data = data +tanks_list['name'][index] +' is ' +tanks_list['batt_status'][index] +'\n'

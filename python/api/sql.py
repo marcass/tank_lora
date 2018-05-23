@@ -166,7 +166,8 @@ def get_all_users():
     c.execute("SELECT * FROM userAuth")
     res = c.fetchall()
     users = [i[0] for i in res]
-    return [{'users':users}]
+    role = [i[2] for i n res]
+    return {'users':users, 'role':role}
 
 def get_user(column):
     conn, c = get_db()
@@ -181,9 +182,9 @@ def fetch_user_data(payload, col):
         res = c.fetchall()
         username = [i[0] for i in res]
         role = [i[2] for i in res]
-        return [{'username':username, 'role':role}]
+        return {'username':username, 'role':role}
     except:
-        return [{'status':'Data not found in userdb'}]
+        return {'status':'Data not found in userdb'}
 
 
 def get_all_tanks():
@@ -200,14 +201,14 @@ def get_all_tanks():
     tank_colour = [i[7] for i in res]
     tank_status = [i[8] for i in res]
     batt_status = [i[9] for i in res]
-    return [{"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "level_status":tank_status, 'batt_status':batt_status}]
+    return {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "level_status":tank_status, 'batt_status':batt_status}
 
 def get_tank(payload, col):
     conn, c = get_db()
     c.execute("SELECT * FROM tanks WHERE %s=?" %(col), (payload,))
     ret = c.fetchall()[0]
     # print ret
-    res = [{'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9], 'line_colour':ret[7]}]
+    res = {'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9], 'line_colour':ret[7]}
     # print res
     return res
 

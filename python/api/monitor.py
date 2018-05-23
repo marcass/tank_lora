@@ -67,7 +67,7 @@ port = None
 
 # def sort_junk(data):
 #     in_node = data[0]
-#     tank_data = sql.get_tank(in_node, 'id')[0]
+#     tank_data = sql.get_tank(in_node, 'id')
 #     print tank_data
 #     if len(tank_data)>0:
 #         print 'found tank is '+tank_data['name']
@@ -92,7 +92,7 @@ def sort_data(data):
     global vers
     try:
         in_node = data[0]
-        tank_data = sql.get_tank(in_node, 'id')[0]
+        tank_data = sql.get_tank(in_node, 'id')
         # print tank_data
         if len(tank_data)>0:
             print 'found tank is '+tank_data['name']
