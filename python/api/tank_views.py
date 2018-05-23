@@ -161,7 +161,7 @@ def get_user_data(username):
 # @jwt_required
 def update_user():
     '''
-    Select Username and update in user doorUsers table. Json must contain old username
+    Select Username and update in user. Json must contain old username
     #{"old_username":"pell", "username":pell", "role":"admin"}
 
     curl -X PUT -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)"}' http://127.0.0.1:5000/user
@@ -186,7 +186,7 @@ def get_tanks():
     '''
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
-
+# up to here
 @app.route("/tank/status", methods=['GET',])
 @jwt_required
 def getStatus():

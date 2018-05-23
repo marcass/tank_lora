@@ -174,6 +174,18 @@ def get_user(column):
     ret = [i[0] for i in c.fetchall()]
     return ret
 
+def fetch_user_data(payload, col):
+    try:
+        conn, c = get_db()
+        c.execute("SELECT * FROM userAuth WEHRE %s=?" %(col),  (user,))
+        res = c.fetchall()
+        username = [i[0] for i in res]
+        role = [i[2] for i in res]
+        return [{'username':username, 'role':role}]
+    except:
+        return [{'status':'Data not found in userdb'}]
+
+
 def get_all_tanks():
     conn, c = get_db()
     c.execute("SELECT * FROM tanks ")
@@ -213,13 +225,11 @@ def setup_user(user_in, passw, role=0):
 
 def write_userdata(resp):
     conn, c = get_db()
-    users_in = get_users('username')
-    if resp['username'] not in users_in:
+    users_in = get_all_users()
+    if resp['username'] not in users_in['users']:
         try:
             if (setup_user(resp['username'], resp['password'], resp['role'])):
-                # c.execute("INSERT INTO userAuth VALUES (?,?,?)",(resp['username'], resp['password'], resp['role']))
                 return {'status':'Setup new user'}
-                conn.commit()
             else:
                 return {'status':'Failed to setup user'}
         except:
@@ -228,7 +238,7 @@ def write_userdata(resp):
         # may want to validate password or setup a system for chaning it?
         c.execute("UPDATE userAuth SET password=?, role=? WHERE user=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
         conn.commit()
-    return {'status':'Success'}
+    return {'status':'Update success'}
 
 def delete_user(user):
     conn, c = get_db()
