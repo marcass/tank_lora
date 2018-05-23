@@ -55,8 +55,8 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
     img = StringIO.StringIO()
-    print vers
-    #print 'vers = '+vers
+    print 'vers = '+vers
+    # print tank_data
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
     # fig = plt.figure and then ax = fig.add_subplot(111)
@@ -71,14 +71,18 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
     print 'building a list of tanks'
     for x in tank_data['name']:
         print x +' tank in list'
+        # get index number
+        i = tank_data['name'].index(x)
         try:
-            d = sql.query_via_tankid(tank_data['id'][x], period, q_range)
-            print d
+            d = sql.query_via_tankid(tank_data['id'][i], period, q_range)
+            # print d
             medians = median_data(d[data])
-            ax.plot_date(d['timestamp'],medians, tank_data['line_colour'][x], label=tank_data['name'][x])
-            title_name += ' '+tank_data['name'][x]
+            ax.plot_date(d['timestamp'],medians, tank_data['line_colour'][i], label=tank_data['name'][i])
+            # ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i])
+            title_name += ' '+tank_data['name'][i]
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
+            # print 'data get failed'
             telegram.messages(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
     #this is for telegram to send title name
     title_name += ' plot'
@@ -87,9 +91,10 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
     if vers == 'batt':
         plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
     # following line is throwing an error for some reason
-    # ax.get_xaxis().set_major_formatter(format_date)
+    ax.get_xaxis().set_major_formatter(format_date)
     #times = ax.get_xticklabels()
     #plt.setp(times, rotation=30)
+    # following line is throwing an error for some reason
     plt.legend()
     ax.grid()
     plt.tight_layout()
@@ -102,15 +107,15 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
     # # In your Html put:
     # # <img src="data:image/png;base64, {{ plot_url }}">
     # return render_template('test.html', plot_url=plot_url)
-    return base64.b64encode(img.getvalue())
+    # not sure what the z is....
+    return ('z.png', img)
 
     # In your Html put:
     # <img src="data:image/png;base64, {{ plot_url }}">
 
-def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
+def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range, vers):
     #set up img variable
     img = StringIO.StringIO()
-    global vers
     print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -126,8 +131,8 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
     d = sql.query_via_tankid(tank_id, period, q_range)
     #this is for telegram to send title name
     title_name = tank_name+' plot'
-    ax.plot_date(d['timestamp'],d[data], key_tank.line_colour, label=key_tank.name, marker='o', markersize='5')
-    ax.set(xlabel='Datetime', ylabel=label, title=key_tank.name+' '+label)
+    ax.plot_date(d['timestamp'],d[data], line_colour, label=tank_name, marker='o', markersize='5')
+    ax.set(xlabel='Datetime', ylabel=label, title=tank_name+' '+label)
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
     if vers == 'batt':
@@ -147,7 +152,7 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range):
     # # In your Html put:
     # # <img src="data:image/png;base64, {{ plot_url }}">
     # return render_template('test.html', plot_url=plot_url)
-    return base64.b64encode(img.getvalue())
+    return ('z.png', img)
 
 def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_range, vers):
     #set up img variable
@@ -169,8 +174,8 @@ def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_ran
     ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
     #this is for telegram to send title name
     title_name = tank_name+' plot'
-    ax.plot_date(d['timestamp'], medians, line_colour, label=tank_name, marker='o', markersize='5')
-    ax.set(xlabel='Datetime', ylabel=label, title=key_tank.name+' '+label)
+    ax.plot_date(d['timestamp'], medians, line_colour, label=tank_name)
+    ax.set(xlabel='Datetime', ylabel=label, title=tank_name+' '+label)
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
     if vers == 'batt':
@@ -190,4 +195,4 @@ def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_ran
     # # In your Html put:
     # # <img src="data:image/png;base64, {{ plot_url }}">
     # return render_template('test.html', plot_url=plot_url)
-    return base64.b64encode(img.getvalue())
+    return ('z.png', img)

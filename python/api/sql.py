@@ -136,7 +136,7 @@ def add_measurement(tank_id,water_volume,voltage):
 def localtime_from_response(resp):
     ts = datetime.datetime.strptime(resp, "%Y-%m-%d %H:%M:%S.%f")
     ts = ts.replace(tzinfo=pytz.UTC)
-    return ts.astimezone(pytz.timezone(tanks.tz))
+    return ts.astimezone(pytz.timezone(tz))
 
 def query_via_tankid(tank_id, days_str, q_range):
     try:
@@ -195,7 +195,7 @@ def get_tank(payload, col):
     c.execute("SELECT * FROM tanks WHERE %s=?" %(col), (payload,))
     ret = c.fetchall()[0]
     # print ret
-    res = [{'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9]}]
+    res = [{'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9], 'line_colour':ret[7]}]
     # print res
     return res
 

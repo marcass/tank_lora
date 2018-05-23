@@ -29,11 +29,12 @@ class Keyboard:
         self.version = version
 
     def format_keys(self, key_tank=0):
+        print 'in tank is '+str(key_tank)
         if self.version == 'status':
             if type(key_tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
                 for x in key_tank:
-                    key_list.append(InlineKeyboardButton(text=x['name'] +' reset', callback_data=x['name']+' reset alert'))
+                    key_list.append(InlineKeyboardButton(text=x +' reset', callback_data=x+' reset alert'))
                 #the following makes a vertical column of buttons (array of array of InlineKeyboardButton's)
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[c] for c in key_list])
                 #the following makes a row of buttons (hard to read when lots of alerts)
@@ -112,8 +113,9 @@ def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     try:
         text = msg['text']
-    	tank_names = sql.get_all_tanks()[0]['name']
-        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Valid names are: "+str(tank_names)+" \n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours] \n'/special stuff' to get other functions"
+        tank_data = sql.get_all_tanks()[0]
+    	tank_names = tank_data['name']
+        help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Valid names are: "+str(tank_names)+" \n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours]"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
@@ -157,14 +159,14 @@ def on_callback_query(msg):
     global build_id
     global vers
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    #print('Callback Query:', query_id, from_id, query_data)
+    print('Callback Query:', query_id, from_id, query_data)
     #print msg
     tank_data = sql.get_all_tanks()[0]
     target_id = msg['message']['chat']['id']
     if query_data == 'all reset':
         #print 'resetting all on callback'
-        for x in tank_data[0]['name']:
-            sql.write_tank_col(tank_data['name'][x], 'tank_status', 'OK')
+        for x in tank_data['name']:
+            sql.write_tank_col(x, 'tank_status', 'OK')
         bot.sendMessage(target_id, "All tank's status now reset to OK", reply_markup=h.format_keys())
         return
     query_tank_name = query_data.split(' ')[0]
@@ -188,7 +190,7 @@ def on_callback_query(msg):
                 build_colour.append(query_tank_colour)
                 build_id.append(query_tank_id)
             else:
-                print query_tank.name+' already added'
+                print query_tank+' already added'
             return
         if 'reset batt' in query_data:
             sql.write_tank_col(tank_data['name'][i], 'batt_status', 'OK')
@@ -201,7 +203,7 @@ def on_callback_query(msg):
             bot.sendMessage(target_id, query_tank +' reset to OK')
             return
         if 'fetch graph' in query_data:
-            bot.sendMessage(target_id, query_tank.name +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
+            bot.sendMessage(target_id, query_tank +' would like to send you some graphs. Which would you like?', reply_markup=g.format_keys(query_tank))
             return
         elif query_data == 'status':
             status_mess(query_tank, target_id)
@@ -245,22 +247,15 @@ def on_callback_query(msg):
         conv = str(query_data)
         in_tank_name = msg['message']['text'].split(' ')[0]
         #print 'tank is '+in_tank_name
+        print tank_data
         if in_tank_name in tank_data['name']:
             i = tank_data['name'].index(in_tank_name)
-            graph_tank = tank_data['name'][i]
-            #print 'tank is '+graph_tank.name
             vers = 'water'
-            send_graph(target_id, plot.plot_tank(graph_tank, query_data, target_id, 'days', vers))
+            send_graph(target_id, plot.plot_tank_raw(tank_data['name'][i], tank_data['id'][i], tank_data['line_colour'][i], query_data, target_id, 'days', vers))
             vers = None
             return
 
 def status_mess(tag, chat_id):
-    #print 'status message follows!:'
-    ##for y in tanks.tank_list:
-        ##print 'status for ' +y.name+' is '+y.statusFlag
-    #for y in tanks.tank_list:
-        #print y
-        #print 'status for '+y.name+' is  '+y.get_status()
     if tag == 'all':
         data = 'Tank water status:\n'
         bad = []
@@ -270,12 +265,10 @@ def status_mess(tag, chat_id):
             data = data +tanks_list['name'][index] +' is ' +tanks_list['level_status'][index] +'\n'
             if tanks_list['level_status'][index] == 'bad':
                 bad.append(tanks_list['name'][index])
-            #message = bot.sendMessage(creds.group_ID,
-            #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
         message = bot.sendMessage(chat_id, data, reply_markup=st.format_keys(bad))
     else:
         tank_stuff = sql.get_tank(tag, 'tank')[0]
-        message = bot.sendMessage(chat_id, tank_stuff['name']+' is '+tank_stuff['level_status'], reply_markup=st.format_keys(tag))
+        message = bot.sendMessage(chat_id, tank_stuff['name']+' is '+tank_stuff['level_status'], reply_markup=st.format_keys(tank_stuff))
 
 def battstatus_mess(chat_id):
     data = 'Tank battery status:\n'
@@ -286,8 +279,6 @@ def battstatus_mess(chat_id):
         data = data +tanks_list['name'][index] +' is ' +tanks_list['batt_status'][index] +'\n'
         if tanks_list['level_status'][index] == 'low':
             bad.append(x)
-        #message = bot.sendMessage(creds.group_ID,
-        #tank.name+' is '+tank.statusFlag, reply_markup=st.format_keys(tank))
     message = bot.sendMessage(chat_id, data, reply_markup=battst.format_keys(bad))
 
 TOKEN = creds.testbotAPIKey

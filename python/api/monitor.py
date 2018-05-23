@@ -5,6 +5,9 @@
 #     - alerts (telegram.py)
 #     - web front end
 #     - serial listener (seriallistener.py)
+# For prduction
+#     - enable alerts when below thresh (tank and batt)
+#     - configure input form junk to serial
 
 # virtual serial for testing
 import os
@@ -33,7 +36,7 @@ def junk_timer(seconds):
 def generate_shit():
     global tank_fake_id
     # print "id is "+str(tank_fake_id)
-    water = random.randint(10,300)
+    water = random.randint(180,300)
     batt = random.uniform(3.0,5.0)
     # build string
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';\r\n'
@@ -110,8 +113,8 @@ def sort_data(data):
                     print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
                         vers = 'water'
-                        graph = plot.plot_tank_filtered(tank_data['id'], tank_data['name'], '1', creds.group_ID, 'days')
-                        # telegram.send_graph(graph)
+                        graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', creds.group_ID, 'days', 'water')
+                        # telegram.send_graph(creds.group_ID, graph)
                         # telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=a.format_keys(tank_data))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
                     elif tank_data['level_status'] == 'bad':

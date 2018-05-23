@@ -63,6 +63,7 @@
 import sys
 import re
 import sql
+import plot
 from flask import Flask, request, jsonify
 # from flask_cors import CORS
 # from flask_jwt_extended import JWTManager
@@ -86,28 +87,8 @@ def list_allowed_users():
     '''
     return jsonify(sql.get_allowed()), 200
 
-
-@app.route("/usekey", methods=['POST',])
-# @jwt_required
-def usekey():
-    try:
-        content = request.get_json(silent=False)
-        # print content
-    except:
-        print 'failed to get data'
-    door = content['door']
-    pin = content['pincode']
-    #use_key(pin, door)
-    if middleman.use_key(pin, door):
-        mqtt.notify_door(1, door)
-        resp = {'pin_correct':1}
-    else:
-        mqtt.notify_door(0, door)
-        resp = {'pin_correct':0}
-    return jsonify(resp), 200
-
 @app.route("/user", methods=['POST',])
-@jwt_required
+# @jwt_required
 def add_user():
     '''
     Add a new user to everything.
@@ -134,10 +115,10 @@ def add_user():
     return jsonify(sql.write_userdata(content)), 200
 
 @app.route("/user/<username>", methods=['DELETE',])
-@jwt_required
+# @jwt_required
 def remove_user(username):
     '''
-    Remove Username in user doorUsers table, and update all tables...
+    Remove Username in user userAuth table, and update all tables...
     {'username':'mw'}
     '''
     sql.delete_user(username)
@@ -145,7 +126,7 @@ def remove_user(username):
     return jsonify(resp), 200
 
 @app.route("/auth/user/<username>", methods=['GET',])
-@jwt_required
+# @jwt_required
 def get_user_role(username):
     '''
 
@@ -156,7 +137,7 @@ def get_user_role(username):
     return jsonify(sql.auth_user(username, password)), 200
 
 @app.route("/user/data/<username>", methods=['GET',])
-@jwt_required
+# @jwt_required
 def get_user_data(username):
     '''
     Receives: nothing
@@ -166,15 +147,15 @@ def get_user_data(username):
     # print content
     return jsonify(sql.fetch_user_data(username)), 200
 
-@app.route("/user", methods=['GET',])
-@jwt_required
-def get_user():
-    '''
-    Receives: {'username':'max'}
-    Returns {'username':, 'keycode':, enabled:'', timeStart:, timeEnd, doors: [...]}
-    '''
-    content = request.get_json(silent=False)
-    return jsonify(sql.fetch_user_data(content['username'])), 200
+# @app.route("/user", methods=['GET',])
+# @jwt_required
+# def get_user():
+#     '''
+#     Receives: {'username':'max'}
+#     Returns {'username':, }
+#     '''
+#     content = request.get_json(silent=False)
+#     return jsonify(sql.fetch_user_data(content['username'])), 200
 
 @app.route("/user", methods=['PUT',])
 # @jwt_required
