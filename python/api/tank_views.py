@@ -83,6 +83,7 @@ def hello():
 def list_allowed_users():
     '''
     List allowed users
+    curl -X GET http://127.0.0.1:5000/listallowed
     Receives: nothing
     Returns: ["admin":["max", "mw", "etc"], "user":[...]]
     '''
@@ -93,28 +94,11 @@ def list_allowed_users():
 def add_user():
     '''
     Add a new user to everything.
-    Receives: {"username":pell", "password":"blah","keycode":"00003", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
+    curl -X POST -H "Content-Type: application/json" -d '{"username":pell", "password":"blah", "role":"user"}' http://127.0.0.1:5000/user
+    Receives: {"username":pell", "password":"blah", "role":"user"}
     Returns: Nothing
     '''
     content = request.get_json(silent=False)
-    #{"username":invalid", "keycode":"invalid", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
-    #{"username":pell", "password":"blah","keycode":"00003", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
-    timeStart = None
-    timeEnd = None
-    doorlist = None
-    if content.has_key('timeStart'):
-        # print 'has time start'
-        timeStart = content['timeStart'] # parse this to datetime in sql script
-    else:
-        content.update({'timeStart':0})
-        # print 'making timeStart content = '+str(content)
-    if content.has_key('timeEnd'):
-        timeEnd = content['timeEnd'] # parse this to datetime in sql scrip
-    else:
-        content.update({'timeEnd':0})
-    if not keycode_validation(content['keycode']):
-        return jsonify({'status':'keycode failure'}), 200
-    #sql.write_userdata(content)
     return jsonify(sql.write_userdata(content)), 200
 
 @app.route("/user/<username>", methods=['DELETE',])
@@ -122,18 +106,19 @@ def add_user():
 def remove_user(username):
     '''
     Remove Username in user userAuth table, and update all tables...
+    curl -X DELETE http://127.0.0.1:5000/<username>
     Receives: nothing
-    Returns: nothing
+    Returns: {'status':'Error. User '+name+' not deleted'}/{'status':'Success. User '+name+' deleted'}
     '''
-    sql.delete_user(username)
-    resp = {}
-    return jsonify(resp), 200
+    return jsonify(sql.delete_user(username)), 200
 
+# shouldn't this be a POST?
 @app.route("/auth/user/<username>", methods=['GET',])
 # @jwt_required
 def get_user_role(username):
     '''
     Auth check and role fetch.
+    curl -X GET -H "Content-Type: application/json" -d '{"password":<userPass>}' http://127.0.0.1:5000/user
     Receives: {'password':<password>}
     Returns: {'status': 'passed'('failed'), 'role':<role>}
     '''
@@ -146,6 +131,7 @@ def get_user_role(username):
 # @jwt_required
 def get_user_data(username):
     '''
+    curl -X GET http://127.0.0.1:5000/<username>
     Receives: nothing
     Returns {'username': max, 'role':'user'}
     '''
@@ -153,24 +139,16 @@ def get_user_data(username):
     # print content
     return jsonify(sql.fetch_user_data(username)), 200
 
-# @app.route("/user", methods=['GET',])
-# @jwt_required
-# def get_user():
-#     '''
-#     Receives: {'username':'max'}
-#     Returns {'username':, }
-#     '''
-#     content = request.get_json(silent=False)
-#     return jsonify(sql.fetch_user_data(content['username'])), 200
-
 @app.route("/user", methods=['PUT',])
 # @jwt_required
 def update_user():
     '''
     Select Username and update in user. Json must contain old username
-    #{"old_username":"pell", "username":pell", "role":"admin"}
-
     curl -X PUT -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)"}' http://127.0.0.1:5000/user
+    Returns: {'status':'Success','message':'User update success'}
+            {'status':'Error', 'message':'Failed as non-unique new user'}
+            {'status':'Error', 'message':'Failed to setup user'}
+            {'status':'Success'. 'message':'Setup new user'}
     '''
     content = request.get_json(silent=False)
     # print content
@@ -180,6 +158,7 @@ def update_user():
 # @jwt_required
 def get_users():
     '''
+    curl -X GET http://127.0.0.1:5000/users
     Returns {'username':[blah, blah], }
     '''
     return jsonify(sql.get_all_users()), 200
@@ -188,7 +167,9 @@ def get_users():
 # @jwt_required
 def get_tanks():
     '''
-    Returns all possible tank names in db [{'name':[tank1','tank2',...], 'id':[1,2...], diam":[], "max":[], "min":[], "min_vol":[], "min_percent":[], "line_colour":[], "status":[]}]
+    curl -X GET http://127.0.0.1:5000/tanks
+    Receives: nothing
+    Returns all possible tank names in db {'name':[tank1','tank2',...], 'id':[1,2...], diam":[], "max":[], "min":[], "min_vol":[], "min_percent":[], "line_colour":[], "status":[]}
     '''
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
@@ -197,7 +178,8 @@ def get_tanks():
 # @jwt_required
 def getATankStatus(tank):
     '''
-    curl -X GET -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)", "type":"water"(or "batt")}' http://127.0.0.1:5000/tank/status/<tank>
+    curl -X GET -H "Content-Type: application/json" -d '{"type":"water"(or "batt")}' http://127.0.0.1:5000/tank/status/<tank>
+    Receives: {'tank_name':<tank>, 'level_status/batt_status':<status>}
     '''
     content = request.get_json(silent=False)
     ret = sql.get_tank(tank, 'tank')
@@ -213,19 +195,48 @@ def getATankStatus(tank):
 # @jwt_required
 def getGraph(tank):
     '''
-    curl -X POST -H "Content-Type: application/json" -d '{"username":"max","role":"admin(or user)", "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graph/<tank>
+    curl -X POST -H "Content-Type: application/json" -d '{"type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graph/<tank>
+    Receives: image object
     '''
     content = request.get_json(silent=False)
     # print content
-    return jsonify(sql.get_doorlog(door, content)), 200
+    tank_data = sql.get_tank(tank, 'tank')
+    {'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9], 'line_colour':ret[7]}
+    return plot.plot_tank_raw(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
 
-@app.route("/door/status", methods=['PUT',])
-@jwt_required
+@app.route("/tank/graphs", methods=['POST',])
+# @jwt_required
+def getGraph(tank):
+    '''
+    curl -X POST -H "Content-Type: application/json" -d '{"tanks":[], "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graphs
+    Receives: image object
+    '''
+    content = request.get_json(silent=False)
+    # print content
+    build_id = []
+    build_colour = []
+    build_list = []
+    for x in content['tanks']:
+        tank_data = sql.get_tank(x, 'tank')
+        build_id.append(tank_data['id'])
+        build_colour.append(tank_data['line_colour'])
+        build_list.append(tank_data['name'])
+    build_dict = {'line_colour':build_colour, 'name':build_list, 'id':build_id}
+    return plot.plot_tank_list(build_dict, content['period'], content['range'], content['type'])
+
+
+@app.route("/tank/status", methods=['PUT',])
+# @jwt_required
 def update_status():
+    '''
+    curl -X PUT -H "Content-Type: application/json" -d '{"tank":<tank>, "type":"tank_status"(or "batt_status"), 'status':<new status>}' http://127.0.0.1:5000/tank/graphs
+    Returns:
+    '''
     content = request.get_json(silent=False)
     sql.update_doorstatus(content["status"], content['door'])
-    return jsonify(content), 200
+    return jsonify(sql.write_tank_col(content['tank'], content['type'], content['status'])), 200
 
+#up to here
 @app.route("/getlog", methods=['GET',])
 @jwt_required
 def getAccessLog():

@@ -51,7 +51,7 @@ def median_data(data):
 
 #From monitor.py
 # Need to do something like: https://stackoverflow.com/questions/41459657/how-to-create-dynamic-plots-to-display-on-flask
-def plot_tank_list(tank_data, period, target_id, q_range, vers):
+def plot_tank_list(tank_data, period, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
     img = StringIO.StringIO()
@@ -83,8 +83,7 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
             # print 'data get failed'
-            telegram.messages(target_id, "Please resend the plot request, eg '/plot 1' as there has been a problem")
-    #this is for telegram to send title name
+            print "Please resend the plot request, eg '/plot 1' as there has been a problem"
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
@@ -113,7 +112,7 @@ def plot_tank_list(tank_data, period, target_id, q_range, vers):
     # In your Html put:
     # <img src="data:image/png;base64, {{ plot_url }}">
 
-def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range, vers):
+def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
     img = StringIO.StringIO()
     print vers
@@ -154,7 +153,7 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, target_id, q_range, v
     # return render_template('test.html', plot_url=plot_url)
     return ('z.png', img)
 
-def plot_tank_filtered(tank_name, tank_id, line_colour, period, target_id, q_range, vers):
+def plot_tank_filtered(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
     img = StringIO.StringIO()
     print vers

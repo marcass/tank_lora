@@ -217,7 +217,7 @@ def on_callback_query(msg):
         #print 'period in build = '+str(dur)+' '+sql_span
         # create a dict with required into for plotting
         build_dict = {'line_colour':build_colour, 'name':build_list, 'id':build_id}
-        send_graph(target_id, plot.plot_tank_list(build_dict, dur, target_id, sql_span, vers))
+        send_graph(target_id, plot.plot_tank_list(build_dict, dur, sql_span, vers))
         #clear variables
         build_id = []
         build_colour = []
@@ -251,7 +251,7 @@ def on_callback_query(msg):
         if in_tank_name in tank_data['name']:
             i = tank_data['name'].index(in_tank_name)
             vers = 'water'
-            send_graph(target_id, plot.plot_tank_raw(tank_data['name'][i], tank_data['id'][i], tank_data['line_colour'][i], query_data, target_id, 'days', vers))
+            send_graph(target_id, plot.plot_tank_raw(tank_data['name'][i], tank_data['id'][i], tank_data['line_colour'][i], query_data, 'days', vers))
             vers = None
             return
 

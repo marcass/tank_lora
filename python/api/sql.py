@@ -161,6 +161,22 @@ def query_via_tankid(tank_id, days_str, q_range):
 
 
 ###################  GETs  ########################
+def auth_user(thisuser, passw):
+    conn, c = get_db()
+    try:
+        c.execute("SELECT * FROM userAuth WHERE username=?", (thisuser,))
+        ret = c.fetchall()
+        pw_hash = ret[0][1]
+        role = ret[0][2]
+        if (pbkdf2_sha256.verify(passw, pw_hash)):
+            status = 'passed'
+        else:
+            status = 'failed'
+        ret_dict = {'status': status, 'role': role}
+    except:
+        ret_dict = {'status': 'exception', 'role': 'undefined'}
+    return ret_dict
+
 def get_all_users():
     conn, c = get_db()
     c.execute("SELECT * FROM userAuth")
@@ -198,10 +214,10 @@ def get_all_tanks():
     tank_min_dist = [i[4] for i in res]
     tank_min_vol = [i[5] for i in res]
     tank_min_percent = [i[6] for i in res]
-    tank_colour = [i[7] for i in res]
+    line_colour = [i[7] for i in res]
     tank_status = [i[8] for i in res]
     batt_status = [i[9] for i in res]
-    return {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":tank_colour, "level_status":tank_status, 'batt_status':batt_status}
+    return {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":line_colour, "level_status":tank_status, 'batt_status':batt_status}
 
 def get_tank(payload, col):
     conn, c = get_db()
@@ -230,29 +246,36 @@ def write_userdata(resp):
     if resp['username'] not in users_in['users']:
         try:
             if (setup_user(resp['username'], resp['password'], resp['role'])):
-                return {'status':'Setup new user'}
+                return {'status':'Success'. 'message':'Setup new user'}
             else:
-                return {'status':'Failed to setup user'}
+                return {'status':'Error', 'message':'Failed to setup user'}
         except:
-            return {'status':'Failed as non-unique new user'}
+            return {'status':'Error', 'message':'Failed as non-unique new user'}
     else:
         # may want to validate password or setup a system for chaning it?
         c.execute("UPDATE userAuth SET password=?, role=? WHERE user=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
         conn.commit()
-    return {'status':'Update success'}
+        return {'status':'Success','message':'User update success'}
 
 def delete_user(user):
     conn, c = get_db()
-    c.execute("DELETE FROM userAuth WHERE username=?", (user,))
-    conn.commit()
+    try:
+        c.execute("DELETE FROM userAuth WHERE username=?", (user,))
+        conn.commit()
+        return {'status':'Success. User '+name+' deleted'}
+    except:
+        return {'status':'Error. User '+name+' not deleted'}
+
 
 def write_tank_col(name, column, payload):
     conn, c = get_db()
     try:
         c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
         conn.commit()
+        return {'status':'Success', 'message': 'Status updated'}
     except:
-        print "fucked up adding status"
+        return {'status':'Error', 'message':'Status not updated'}
+
 
 
 #setup database
