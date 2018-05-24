@@ -130,6 +130,16 @@ def get_tanks():
     content = request.get_json(silent=False)
     return jsonify(sql.get_all_tanks()), 200
 
+@app.route("/tank/add", methods=['POST',])
+# @jwt_required
+def add_tank():
+    '''
+    curl -X POST -H "Content-Type: application/json" -d '{"name": , "nodeID": , "diam": , "max_payload": , "invalid_min": , "min_vol": , "min_percent": , "line_colour":  }' http://127.0.0.1:5000/tank/graph/<tank>
+    Returns True or False
+    '''
+    content = request.get_json(silent=False)
+    return jsonify(sql.Tanks(contnet['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )), 200
+
 @app.route("/tank/status/<tank>", methods=['GET',])
 # @jwt_required
 def getATankStatus(tank):
@@ -152,6 +162,20 @@ def getATankStatus(tank):
 def getGraph(tank):
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
+    Receives: image object
+    '''
+    content = request.get_json(silent=False)
+    # print content
+    tank_data = sql.get_tank(tank, 'tank')
+    res =  plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
+    # above returns tuple ('z.png', img), need to encode 'img' for return
+    return base64.b64encode(res[1].getvalue())
+
+@app.route("/tank/rawgraph/<tank>", methods=['POST',])
+# @jwt_required
+def getRawGraph(tank):
+    '''
+    curl -X POST -H "Content-Type: application/json" -d '{"type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/rawgraph/<tank>
     Receives: image object
     '''
     content = request.get_json(silent=False)
