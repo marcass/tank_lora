@@ -72,6 +72,7 @@ tank_list = []
 tanks_by_name = {tank.name : tank for tank in tank_list}
 tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 
+########################Time stuff #####################################
 # Sort out time management!
 # - check how they are being written into db now
 # - make it easy on self...
@@ -102,24 +103,7 @@ def utc_from_string(payload):
     utc_dt = local_dt.astimezone(pytz.utc)
     return utc_dt
 
-#setup admin user on first run
-def setup_admin_user(user, passw):
-    conn, c = get_db()
-    c.execute("SELECT * FROM userAuth")
-    if len(c.fetchall()) > 0:
-        return
-    else:
-        pw_hash = pbkdf2_sha256.hash(passw)
-        c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user, pw_hash, 'admin'))
-        conn.commit()
-
-def add_measurement(tank_id,water_volume,voltage):
-    conn, c = get_db()
-    try:
-        c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
-        conn.commit() # Save (commit) the changes
-    except:
-        print 'failed to add to db'
+###################  GETs  ########################
 
 def query_via_tankid(tank_id, days_str, q_range):
     try:
@@ -142,8 +126,6 @@ def query_via_tankid(tank_id, days_str, q_range):
     #print ret_dict
     return ret_dict
 
-
-###################  GETs  ########################
 def auth_user(thisuser, passw):
     conn, c = get_db()
     try:
@@ -212,6 +194,25 @@ def get_tank(payload, col):
     return res
 
 ############  Write data ########################
+#setup admin user on first run
+def setup_admin_user(user, passw):
+    conn, c = get_db()
+    c.execute("SELECT * FROM userAuth")
+    if len(c.fetchall()) > 0:
+        return
+    else:
+        pw_hash = pbkdf2_sha256.hash(passw)
+        c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user, pw_hash, 'admin'))
+        conn.commit()
+
+def add_measurement(tank_id,water_volume,voltage):
+    conn, c = get_db()
+    try:
+        c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
+        conn.commit() # Save (commit) the changes
+    except:
+        print 'failed to add to db'
+
 # Not sure what the role thing in here is for
 def setup_user(user_in, passw, role=0):
     conn, c = get_db()
