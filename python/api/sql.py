@@ -12,7 +12,6 @@ import ast
 # defs for funcitons in Tank class
 def get_db():
     conn = sqlite3.connect(tanks_db)
-    # conn.execute("PRAGMA foreign_keys = 1")
     c = conn.cursor()
     return conn, c
 
@@ -66,9 +65,8 @@ class Tanks:
 #Variable stuff
 tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
-#intitiate tank list so it can be accessed when instances are set up
+#initiate tank list so it can be accessed when instances are set up
 tank_list = []
-tz = 'Pacific/Auckland'
 
 #dict creation (key is term gleaned from incoming data, value is Tank instatnce
 tanks_by_name = {tank.name : tank for tank in tank_list}
@@ -116,27 +114,12 @@ def setup_admin_user(user, passw):
         conn.commit()
 
 def add_measurement(tank_id,water_volume,voltage):
-    # Insert a row of data
     conn, c = get_db()
-    # tanks = get_all_tanks()[0]["id"]
-    # if tank_id not in tanks:
-    #     try:
-    #         # send a message to telegram requesting setup of tank
-    #         print "Need to add tank"
-    #         # c.execute("INSERT INTO tanks VALUES (?,?)", (tanks.tanks_by_name[tank_id], tank_id))
-    #         # conn.commit
-    #     except:
-    #         print "Cannot add tank"
     try:
         c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
         conn.commit() # Save (commit) the changes
     except:
         print 'failed to add to db'
-
-def localtime_from_response(resp):
-    ts = datetime.datetime.strptime(resp, "%Y-%m-%d %H:%M:%S.%f")
-    ts = ts.replace(tzinfo=pytz.UTC)
-    return ts.astimezone(pytz.timezone(tz))
 
 def query_via_tankid(tank_id, days_str, q_range):
     try:
@@ -182,7 +165,7 @@ def get_all_users():
     c.execute("SELECT * FROM userAuth")
     res = c.fetchall()
     users = [i[0] for i in res]
-    role = [i[2] for i n res]
+    role = [i[2] for i in res]
     return {'users':users, 'role':role}
 
 def get_user(column):
@@ -246,7 +229,7 @@ def write_userdata(resp):
     if resp['username'] not in users_in['users']:
         try:
             if (setup_user(resp['username'], resp['password'], resp['role'])):
-                return {'status':'Success'. 'message':'Setup new user'}
+                return {'status':'Success', 'message':'Setup new user'}
             else:
                 return {'status':'Error', 'message':'Failed to setup user'}
         except:

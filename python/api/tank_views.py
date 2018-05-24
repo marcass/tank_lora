@@ -76,6 +76,9 @@ from init import app, jwt
 
 @app.route("/")
 def hello():
+    '''
+    curl -X GET http://127.0.0.1:5000/
+    '''
     return "Hello World!"
 
 @app.route("/listallowed", methods=['GET',])
@@ -235,17 +238,6 @@ def update_status():
     content = request.get_json(silent=False)
     sql.update_doorstatus(content["status"], content['door'])
     return jsonify(sql.write_tank_col(content['tank'], content['type'], content['status'])), 200
-
-#up to here
-@app.route("/getlog", methods=['GET',])
-@jwt_required
-def getAccessLog():
-    '''
-    curl -X GET -H "Content-Type: application/json" -d '{"days":"5"}' http://127.0.0.1:5000/getlog
-    '''
-    content = request.get_json(silent=False)
-    resp = get_access_log(content['days'])
-    return jsonify(resp), 200
 
 try:
     sql.setup_admin_user(sys.argv[1], sys.argv[2])

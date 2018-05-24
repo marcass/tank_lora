@@ -102,7 +102,10 @@ battst = Keyboard('battstatus')
 
 def send_graph(target_id, graph):
     #  bot.sendPhoto(target_id, open(tanks.tank_list[0].pngpath +'net.png'))
-    bot.sendPhoto(target_id, graph)
+    try:
+        bot.sendPhoto(target_id, graph)
+    except:
+        print 'graph send failed'
 
 def messages(target_id, text):
     bot.sendMessage(target_id, text)
