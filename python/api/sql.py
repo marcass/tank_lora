@@ -157,15 +157,17 @@ def get_user(column):
     return ret
 
 def fetch_user_data(payload, col):
-    try:
-        conn, c = get_db()
-        c.execute("SELECT * FROM userAuth WEHRE %s=?" %(col),  (user,))
-        res = c.fetchall()
-        username = [i[0] for i in res]
-        role = [i[2] for i in res]
-        return {'username':username, 'role':role}
-    except:
-        return {'status':'Data not found in userdb'}
+    # try:
+    print payload
+    print col
+    conn, c = get_db()
+    c.execute("SELECT * FROM userAuth WHERE %s=?" %(col), (payload,))
+    res = c.fetchall()
+    username = [i[0] for i in res]
+    role = [i[2] for i in res]
+    return {'username':username, 'role':role}
+    # except:
+    #     return {'status':'Data not found in userdb'}
 
 
 def get_all_tanks():
@@ -237,7 +239,7 @@ def write_userdata(resp):
             return {'status':'Error', 'message':'Failed as non-unique new user'}
     else:
         # may want to validate password or setup a system for chaning it?
-        c.execute("UPDATE userAuth SET password=?, role=? WHERE user=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
+        c.execute("UPDATE userAuth SET password=?, role=? WHERE username=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
         conn.commit()
         return {'status':'Success','message':'User update success'}
 
@@ -246,9 +248,9 @@ def delete_user(user):
     try:
         c.execute("DELETE FROM userAuth WHERE username=?", (user,))
         conn.commit()
-        return {'status':'Success. User '+name+' deleted'}
+        return {'status':'Success. User '+user+' deleted'}
     except:
-        return {'status':'Error. User '+name+' not deleted'}
+        return {'status':'Error. User '+user+' not deleted'}
 
 
 def write_tank_col(name, column, payload):
