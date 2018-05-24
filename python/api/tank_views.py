@@ -135,10 +135,21 @@ def get_tanks():
 def add_tank():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"name": , "nodeID": , "diam": , "max_payload": , "invalid_min": , "min_vol": , "min_percent": , "line_colour":  }' http://127.0.0.1:5000/tank/graph/<tank>
-    Returns True or False
+    Returns: {'Status': 'Success', 'Message': 'Tank added'}/{'Status': 'Error', 'Message': 'Tank not added'}
     '''
     content = request.get_json(silent=False)
-    return jsonify(sql.Tanks(contnet['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )), 200
+    content['nodeID'] = sql.Tanks(contnet['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )
+    return jsonify(), 200
+
+@app.route("/tank/remove/<tank>", methods=['DELETE',])
+# @jwt_required
+def delete_tank():
+    '''
+    curl -X DELETE http://127.0.0.1:5000/tank/remove/<tank>
+    Returns: {'Status': 'Success', 'Message': 'Tank removed'}/{'Status': 'Error', 'Message': 'Tank not removed'}
+    '''
+    content = request.get_json(silent=False)
+    return jsonify(sql.delete_tank(tank)), 200
 
 @app.route("/tank/status/<tank>", methods=['GET',])
 # @jwt_required

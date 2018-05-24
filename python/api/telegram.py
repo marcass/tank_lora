@@ -122,7 +122,6 @@ def on_chat_message(msg):
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
         elif ('/status' in text) or ('/Status' in text):
-            #hasKey = lambda text, tanks.tanks_by_name: any(k in text for k in tanks.tanks_by_name)
             if any(k in text for k in tank_names):
                 in_tank = text.split(' ')[-1]
                 status_mess(in_tank, chat_id)

@@ -36,41 +36,32 @@ class Tanks:
         self.invalid_min = invalid_min   #Distatnce from sensor probe end to water level in full tank
         self.min_vol = min_vol
         self.line_colour = line_colour
-        self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
+        self.pot_dist = self.max_payload - self.invalid_min
+        self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.pot_dist)/1000.
         self.statusFlag = 'OK'
         self.battstatusFlag = 'OK'
         self.pngpath = '/home/pi/git/tank_lora/python/'
         self.min_percent = min_percent
-        self.pot_dist = self.max_payload - self.invalid_min
         #populate db table if not already populated
-        self.setup_tank(self.name, self.nodeID, self.diam, self.max_payload, self.invalid_min, self.min_vol, self.min_percent, self.line_colour, self.statusFlag, self.battstatusFlag)
-        #append instance to tank_list
-        tank_list.append(self)
-
+        self.setup_tank(self.name, self.nodeID, self.diam, self.max_payload, self.invalid_min, self.min_vol, self.min_percent, self.line_colour, self.statusFlag, self.battstatusFlag, self.calced_vol)
 
     def volume(self, payload):
         #litres (measurements in cm)
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
 
-    def setup_tank(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag):
+    def setup_tank(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag, calced_vol):
         conn, c = get_db()
         try:
             c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag))
             conn.commit()
-            return True
+            return {'Status': 'Success', 'Message': 'Tank added'}
         except:
-            return False
+            return {'Status': 'Error', 'Message': 'Tank not added'}
 
 #Variable stuff
 tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
-#initiate tank list so it can be accessed when instances are set up
-tank_list = []
-
-#dict creation (key is term gleaned from incoming data, value is Tank instatnce
-tanks_by_name = {tank.name : tank for tank in tank_list}
-tanks_by_nodeID = {tank.nodeID : tank for tank in tank_list}
 
 ########################Time stuff #####################################
 # Sort out time management!
@@ -251,6 +242,15 @@ def delete_user(user):
         return {'status':'Success. User '+user+' deleted'}
     except:
         return {'status':'Error. User '+user+' not deleted'}
+
+def delete_tank(tank):
+    conn, c = get_db()
+    try:
+        c.execute("DELETE FROM tanks WHERE tank=?", (tank,))
+        conn.commit()
+        return {'Status':'Success'. 'Message': 'Tank '+tank+' deleted'}
+    except:
+        return {'Status':'Error'. 'Message': 'Tank '+tank+' not deleted'}
 
 
 def write_tank_col(name, column, payload):
