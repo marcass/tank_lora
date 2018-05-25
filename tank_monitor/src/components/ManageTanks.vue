@@ -2,10 +2,10 @@
   <div>
     <app-nav></app-nav>
     <h1>Tank Table</h1>
-   <div class="col-md-5" v-for="item in tank_name">
+   <div class="col-md-5" v-for="item in tanks">
      <ul>
        <!-- <li>{{ item.name }} is {{ item.level_status }}</li> -->
-       <li>{{ item }} water level is {{ item in tank_water_status }}</li>
+       <li>{{ item.name }} water level is {{ item.level_status }} and battery is {{ item.batt_status }}</li>
      </ul>
    </div>
   </div>
@@ -18,9 +18,7 @@ export default {
   name: 'doors',
   data () {
     return {
-      tank_name: [],
-      tank_water_status: [],
-      tank_batt_status: []
+      tanks: []
     }
   },
   components: {
@@ -29,9 +27,7 @@ export default {
   methods: {
     getTanks () {
       getTanks().then((ret) => {
-        this.tank_name = ret.name
-        this.tank_water_status = ret.level_status
-        this.tank_batt_status = ret.batt_status
+        this.tanks = ret
       })
     }
   },

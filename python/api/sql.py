@@ -53,9 +53,12 @@ class Tanks:
     def setup_tank(self, name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag, calced_vol):
         conn, c = get_db()
         try:
-            c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag))
-            conn.commit()
-            return {'Status': 'Success', 'Message': 'Tank added'}
+            if name in get_all_tanks()['name']:
+                return {'Status': 'Error', 'Message':'Tank already in db'}
+            else:
+                c.execute("INSERT INTO tanks VALUES (?,?,?,?,?,?,?,?,?,?)", (name, nodeID, diam, max_payload, invalid_min, min_vol, min_percent, line_colour, statusFlag, battstatusFlag))
+                conn.commit()
+                return {'Status': 'Success', 'Message': 'Tank added'}
         except:
             return {'Status': 'Error', 'Message': 'Tank not added'}
 
@@ -175,7 +178,30 @@ def get_all_tanks():
     line_colour = [i[7] for i in res]
     tank_status = [i[8] for i in res]
     batt_status = [i[9] for i in res]
-    return {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":line_colour, "level_status":tank_status, 'batt_status':batt_status}
+    ret = {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":line_colour, "level_status":tank_status, 'batt_status':batt_status}
+    return ret
+
+def get_tank_list():
+    conn, c = get_db()
+    c.execute("SELECT * FROM tanks ")
+    res = c.fetchall()
+    tank_name =  [i[0] for i in res]
+    tank_id = [i[1] for i in res]
+    tank_diam = [i[2] for i in res]
+    tank_max_dist = [i[3] for i in res]
+    tank_min_dist = [i[4] for i in res]
+    tank_min_vol = [i[5] for i in res]
+    tank_min_percent = [i[6] for i in res]
+    line_colour = [i[7] for i in res]
+    tank_status = [i[8] for i in res]
+    batt_status = [i[9] for i in res]
+    ret_dict = {"name":tank_name, "id":tank_id, "diam":tank_diam, "max":tank_max_dist, "min":tank_min_dist, "min_vol":tank_min_vol, "min_percent":tank_min_percent, "line_colour":line_colour, "level_status":tank_status, 'batt_status':batt_status}
+    res_list = []
+    for c in ret_dict['name']:
+        i = ret_dict['name'].index(c)
+        res_dict = {"name":c, "id":tank_id[i], "diam":tank_diam[i], "max":tank_max_dist[i], "min":tank_min_dist[i], "min_vol":tank_min_vol[i], "min_percent":tank_min_percent[i], "line_colour":line_colour[i], "level_status":tank_status[i], 'batt_status':batt_status[i]}
+        res_list.append(res_dict)
+    return res_list
 
 def get_tank(payload, col):
     conn, c = get_db()
