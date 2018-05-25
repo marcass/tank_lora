@@ -18,12 +18,11 @@ axios.defaults.headers.delete['Content-Type'] = 'application/json';
 //     console.log('RES', res);
 // });
 
-export {getTanks};
+export { getTanks, getGraph, getGraphs };
 
 function simple_get(url) {
   return axios.get(url)
   .then(function (response) {
-      console.log(response.data);
       return response.data
   });
 }
@@ -31,6 +30,22 @@ function simple_get(url) {
 function getTanks() {
   const url = BASE_URL+'/tanks'
   return simple_get(url)
+}
+
+function getGraph(payload) {
+  const url = BASE_URL+'/tank/graph'
+  return axios.post(url, payload)
+  .then(function (response) {
+      return response.data
+  });
+}
+
+function getGraphs(payload) {
+  const url = BASE_URL+'/tank/graphs'
+  return axios.post(url, payload)
+  .then(function (response) {
+      return response.data
+  });
 }
 
 // function getUser(user) {

@@ -36,7 +36,7 @@ def junk_timer(seconds):
 def generate_shit():
     global tank_fake_id
     # print "id is "+str(tank_fake_id)
-    water = random.randint(20,300)
+    water = random.randint(0,300)
     batt = random.uniform(3.0,5.0)
     # build string
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';\r\n'

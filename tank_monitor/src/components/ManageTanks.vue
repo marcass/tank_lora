@@ -2,7 +2,7 @@
   <div>
     <app-nav></app-nav>
     <h1>Tank Table</h1>
-   <div class="col-md-5" v-for="item in tanks">
+   <div class="col-md-5" v-for="item in tanks" v-bind:key="item.name">
      <ul>
        <!-- <li>{{ item.name }} is {{ item.level_status }}</li> -->
        <li>{{ item.name }} water level is {{ item.level_status }} and battery is {{ item.batt_status }}</li>
@@ -15,7 +15,7 @@
 import { getTanks } from '../../utils/tank-api'
 import AppNav from './AppNav'
 export default {
-  name: 'doors',
+  name: 'status',
   data () {
     return {
       tanks: []

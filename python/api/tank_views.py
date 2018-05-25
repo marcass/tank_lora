@@ -168,30 +168,30 @@ def getATankStatus(tank):
         res = {'status': 'Unknown status type'}
     return jsonify(res), 200
 
-@app.route("/tank/graph/<tank>", methods=['POST',])
+@app.route("/tank/graph", methods=['POST',])
 # @jwt_required
-def getGraph(tank):
+def getGraph():
     '''
-    curl -X POST -H "Content-Type: application/json" -d '{"type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
+    curl -X POST -H "Content-Type: application/json" -d '{"name":"main","type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    # print content
-    tank_data = sql.get_tank(tank, 'tank')
+    print content
+    tank_data = sql.get_tank(content['name'], 'tank')
     res =  plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
     # above returns tuple ('z.png', img), need to encode 'img' for return
     return base64.b64encode(res[1].getvalue())
 
-@app.route("/tank/rawgraph/<tank>", methods=['POST',])
+@app.route("/tank/rawgraph", methods=['POST',])
 # @jwt_required
-def getRawGraph(tank):
+def getrawGraph():
     '''
-    curl -X POST -H "Content-Type: application/json" -d '{"type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/rawgraph/<tank>
+    curl -X POST -H "Content-Type: application/json" -d '{"name":"main","type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    # print content
-    tank_data = sql.get_tank(tank, 'tank')
+    print content
+    tank_data = sql.get_tank(content['name'], 'tank')
     res =  plot.plot_tank_raw(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
     # above returns tuple ('z.png', img), need to encode 'img' for return
     return base64.b64encode(res[1].getvalue())
@@ -199,7 +199,7 @@ def getRawGraph(tank):
 
 @app.route("/tank/graphs", methods=['POST',])
 # @jwt_required
-def getGraphs(tank):
+def getGraphs():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"tanks":[], "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graphs
     Receives: image object

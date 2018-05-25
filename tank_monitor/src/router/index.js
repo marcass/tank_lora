@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import TankLord from '@/components/Landing'
 import Graphs from '@/components/GraphTanks'
+import Graph from '@/components/GraphATank'
 import ManageUsers from '@/components/ManageUsers'
 import ManageTanks from '@/components/ManageTanks'
 
@@ -24,6 +25,11 @@ export default new Router({
       path: '/graph/tanks',
       name: 'Graphs',
       component: Graphs
+    },
+    {
+      path: '/graph/tank',
+      name: 'Graph',
+      component: Graph
     },
     {
       path: '/user/management',

@@ -39,6 +39,13 @@ Overvoltage protection provided by solar charger like adafruuit solar charger
 
 Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 
+### Flashing
+
+* Change nodeID on each sketch prior to Flashing
+* Flash remote stations with 'sensor_node'
+* Flash nodes that are only forwarders duplex_forwarder (specifying which nodes can be forwarded), or duplex_all_forwarder if you are forwarding all signal, or sensor_duplex if taking readings off a tank too. Alter prefix of forwarder for tracking if necessary
+* Node attached to base station (Rpi) flashed with master node
+
 ### Libraries
 * NewPing http://playground.arduino.cc/Code/NewPing (NewPing not working with 3.3V range detectors so using custom script)
    * Can also use measure echo pin pulse using a while loop or PulseIn builtin
@@ -49,6 +56,7 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * Starting services
  On raspberry pi: sudo systemctl [start][stop][status][restart] serial-attach.service
 * Seial listener: `sudo systemctl start serial-attach.service`
+* update for flask service and web service (nginix)
 
 ## Testing
 
@@ -74,6 +82,3 @@ These need to be set in LoRa.setPins(ss, reset, dio0); (see https://github.com/s
 * Totoal consumption with led resistor removed from LoRa32u4 is 1.2mA on assembled board. (4 predicted, but still OK)
 
 NOTE: TPL 5010 with ~90k Ohm resistor gives 26min between wakes
-
-
-
