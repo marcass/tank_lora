@@ -248,9 +248,9 @@ def delete_tank(tank):
     try:
         c.execute("DELETE FROM tanks WHERE tank=?", (tank,))
         conn.commit()
-        return {'Status':'Success'. 'Message': 'Tank '+tank+' deleted'}
+        return {'Status':'Success', 'Message': 'Tank '+tank+' deleted'}
     except:
-        return {'Status':'Error'. 'Message': 'Tank '+tank+' not deleted'}
+        return {'Status':'Error', 'Message': 'Tank '+tank+' not deleted'}
 
 
 def write_tank_col(name, column, payload):

@@ -138,7 +138,7 @@ def add_tank():
     Returns: {'Status': 'Success', 'Message': 'Tank added'}/{'Status': 'Error', 'Message': 'Tank not added'}
     '''
     content = request.get_json(silent=False)
-    content['nodeID'] = sql.Tanks(contnet['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )
+    content['nodeID'] = sql.Tanks(content['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )
     return jsonify(), 200
 
 @app.route("/tank/remove/<tank>", methods=['DELETE',])
