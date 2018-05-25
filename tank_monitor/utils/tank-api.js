@@ -23,6 +23,7 @@ export {getTanks};
 function simple_get(url) {
   return axios.get(url)
   .then(function (response) {
+      console.log(response.data);
       return response.data
   });
 }
