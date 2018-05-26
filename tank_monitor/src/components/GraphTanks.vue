@@ -9,13 +9,20 @@
         </div>
       </li>
     <!-- <img v-bind:src="'data:image/png;base64,'+graphic" /> -->
-      <li>
+      <!-- <li>
         <div v-for="item in tanks" v-bind:key="item.name">
           <input type="checkbox" id="item.id" :value="item.name" v-model="sel_tanks">
           <label for="item.id">{{ item.name }}</label>
           <br>
         </div>
-        <!-- <span>Selected tanks: {{ sel_tanks }}</span> -->
+      </li> -->
+      <li>
+        <select v-model="sel_tanks" multiple>
+          <option disabled value="">Select tanks(s) to graph</option>
+          <option v-for="item in tanks" v-bind:key="item.name">{{ item.name }}</option>
+        </select>
+        <!-- <br>
+        <span>Selected: {{ sel_tanks }}</span> -->
       </li>
       <li>
         <select v-model="graph_type">
@@ -34,9 +41,16 @@
         <!-- <span>Selected time range: {{ range }}</span> -->
       </li>
       <li>
+        <select v-model="period">
+          <option disabled value="">Select graph period</option>
+          <option v-for="n in 365" v-bind:key="n">{{ n }}</option>
+        </select>
+        <!-- <span>Selected time range: {{ period }}</span> -->
+      </li>
+      <!-- <li>
         <span>Selected period: {{ period }}</span>
         <input v-model="period">
-      </li>
+      </li> -->
       <li>
         <button v-on:click="graph(JSON.stringify({'tanks':sel_tanks, 'type':graph_type, 'range':range, 'period':period}))">Make the graph</button>
       </li>
@@ -45,7 +59,7 @@
 </template>
 
 <script>
-import { getGraphs, getTanks } from '../../utils/tank-api'
+import { getGraphs, getTanksList } from '../../utils/tank-api'
 import AppNav from './AppNav'
 export default {
   name: 'graphs',
@@ -66,13 +80,12 @@ export default {
   },
   methods: {
     graph (payload) {
-      // getGraph({'name': 'main', 'type': 'water', 'range': 'days', 'period': '1'}).then((ret) => {
       getGraphs(payload).then((ret) => {
         this.graphic = ret
       })
     },
     getTanks () {
-      getTanks().then((ret) => {
+      getTanksList().then((ret) => {
         this.tanks = ret
       })
     }

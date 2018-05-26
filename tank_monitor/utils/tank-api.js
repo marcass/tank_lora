@@ -18,7 +18,7 @@ axios.defaults.headers.delete['Content-Type'] = 'application/json';
 //     console.log('RES', res);
 // });
 
-export { getTanks, getGraph, getGraphs };
+export { getTanksDict, getGraph, getGraphs, getTanksList, getATank, putTank };
 
 function simple_get(url) {
   return axios.get(url)
@@ -27,9 +27,19 @@ function simple_get(url) {
   });
 }
 
-function getTanks() {
-  const url = BASE_URL+'/tanks'
+function getTanksDict() {
+  const url = BASE_URL+'/tanksdict'
   return simple_get(url)
+}
+
+function getTanksList() {
+  const url = BASE_URL+'/tankslist'
+  return simple_get(url)
+}
+
+function getATank(data) {
+  const url = BASE_URL+'/tank/'
+  return simple_get(url+data)
 }
 
 function getGraph(payload) {
@@ -46,6 +56,11 @@ function getGraphs(payload) {
   .then(function (response) {
       return response.data
   });
+}
+
+function putTank(payload) {
+  const url = BASE_URL+'/tank'
+  return axios.put(url, payload);
 }
 
 // function getUser(user) {

@@ -208,7 +208,8 @@ def get_tank(payload, col):
     c.execute("SELECT * FROM tanks WHERE %s=?" %(col), (payload,))
     ret = c.fetchall()[0]
     # print ret
-    res = {'name':ret[0], 'id':ret[1], 'max_dist':ret[2], 'min_dist':ret[4], 'min_percent':ret[6], 'level_status':ret[8], 'batt_status':ret[9], 'line_colour':ret[7]}
+    #  daim, max_dist, min_dist, min_vol, min_percent, line_colour, tank_status, batt_status
+    res = {'name':ret[0], 'id':ret[1], 'diam':ret[2], 'max_dist':ret[3], 'min_dist':ret[4], 'min_vol':ret[5], 'min_percent':ret[6], 'line_colour':ret[7], 'level_status':ret[8], 'batt_status':ret[9]}
     # print res
     return res
 

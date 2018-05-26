@@ -119,13 +119,37 @@ def get_users():
     '''
     return jsonify(sql.get_all_users()), 200
 
-@app.route("/tanks", methods=['GET',])
+@app.route("/tank/<name>", methods=['GET',])
 # @jwt_required
-def get_tanks():
+def get_a_tank(name):
     '''
-    curl -X GET http://127.0.0.1:5000/tanks
+    curl -X GET http://127.0.0.1:5000/tank/<name>
     Receives: nothing
-    Returns all possible tank names in db {'name':[tank1','tank2',...], 'id':[1,2...], diam":[], "max":[], "min":[], "min_vol":[], "min_percent":[], "line_colour":[], "status":[]}
+    Returns dict of tank attributes {'name':'tank1', 'id':'1', diam":, "max":, "min":, "min_vol":, "min_percent":, "line_colour":, "status":}
+    '''
+    content = request.get_json(silent=False)
+    # print content
+    return jsonify(sql.get_tank(name, 'tank')), 200
+
+@app.route("/tanksdict", methods=['GET',])
+# @jwt_required
+def get_tanks_dict():
+    '''
+    curl -X GET http://127.0.0.1:5000/tanksdict
+    Receives: nothing
+    Returns dict of lists db {'name':[tank1','tank2',...], 'id':[1,2...], diam":[], "max":[], "min":[], "min_vol":[], "min_percent":[], "line_colour":[], "status":[]}
+    '''
+    content = request.get_json(silent=False)
+    # print content
+    return jsonify(sql.get_all_tanks()), 200
+
+@app.route("/tankslist", methods=['GET',])
+# @jwt_required
+def get_tanks_list():
+    '''
+    curl -X GET http://127.0.0.1:5000/tankslist
+    Receives: nothing
+    Returns list of dicts of all tanks data [{'name':'tank1', 'id':'1', diam":, "max":, "min":, "min_vol":, "min_percent":, "line_colour":, "status":}, {}, {}, ]
     '''
     content = request.get_json(silent=False)
     return jsonify(sql.get_tank_list()), 200
@@ -205,7 +229,7 @@ def getGraphs():
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    # print content
+    print content
     build_id = []
     build_colour = []
     build_list = []
@@ -227,8 +251,17 @@ def update_status():
     Returns:
     '''
     content = request.get_json(silent=False)
-    sql.update_doorstatus(content["status"], content['door'])
     return jsonify(sql.write_tank_col(content['tank'], content['type'], content['status'])), 200
+
+@app.route("/tank", methods=['PUT',])
+# @jwt_required
+def update_tank():
+    '''
+    curl -X PUT -H "Content-Type: application/json" -d '{"name": , "col": , "data":}' http://127.0.0.1:5000/tank
+    Returns: {'status':'Success', 'message': 'Status updated'}/{'status':'Error', 'message':'Status not updated'}
+    '''
+    content = request.get_json(silent=False)
+    return jsonify(sql.write_tank_col(content['name'], content['col'], content['data'])), 200
 
 try:
     sql.setup_admin_user(sys.argv[1], sys.argv[2])
