@@ -96,28 +96,49 @@
      </ul>
      <div v-if="this.display == true">
        <table>
-         <!-- <tr>
-           <th colspan=10>
-             <h3>{{ TankName }} tank</h3>
-           </th>
-         </tr>
          <tr>
-           <th>
-             {{ ColName }}
-           </th>
-         <tr>
-           <td>
-             {{ tank.ColName }}
-           </td>
-        </tr>
-        <tr>
-          <td>
-            {{ tank.ColName }}
-          </td>
-       </tr> -->
-         <tr>
-           <td>
+           <td v-if="this.ColName == 'tank'">
              <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName == 'tank_status'">
+             <select v-model="NewVal">
+              <option disabled value="">Select water level status</option>
+              <option value="OK">OK</option>
+              <option value="bad">Low</option>
+            </select>
+           </td>
+           <td v-if="this.ColName == 'batt_status'">
+             <select v-model="NewVal">
+              <option disabled value="">Select battery status</option>
+              <option value="OK">OK</option>
+              <option value="bad">Low</option>
+            </select>
+           </td>
+           <td v-if="this.ColName =='id'">
+             Must be a unique integer not shared by another tank and referenced in sensor code
+             <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName =='diam'">
+             The diameter of the tank in cm
+             <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName =='max_dist'">
+             The distance from the sensor to the empty level of tank
+             <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName =='min_dist'">
+             The distance from the sensor to the full level of tank
+             <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName =='min_percent'">
+             The percentage of tank fill when alert is triggered. Must be 0-100
+             <input v-model="NewVal">
+           </td>
+           <td v-if="this.ColName == 'line_colour'">
+             <select v-model="NewVal">
+              <option disabled value="">Select Line colour from available colours</option>
+              <option v-for="item in this.AvailColours" v-bind:key="item">{{ item }}</option>
+            </select>
            </td>
          </tr>
        </table>
@@ -127,30 +148,22 @@
 </template>
 
 <script>
-import { getTanksList, getATank, putTank } from '../../utils/tank-api'
+import { getTanksList, getTanksDict, getATank, putTank } from '../../utils/tank-api'
 import AppNav from './AppNav'
 export default {
   name: 'status',
   data () {
     return {
       tanks: [],
+      tanksdict: '',
       tank: '',
       TankName: '',
       display: false,
-      NewName: '',
-      NewLevelStatus: '',
-      NewBattStatus: '',
-      NewID: '',
-      NewDiam: '',
-      NewMaxDist: '',
-      NewMinDist: '',
-      NewMinVol: '',
-      NewMinPercent: '',
-      NewLineColour: '',
-      NewList: [],
-      DictList: ['name', 'level_status', 'batt_status', 'id', 'diam', 'max_dist', 'min_dist', 'min_vol', 'min_percent', 'line_colour'],
+      DictList: ['tank', 'tank_status', 'batt_status', 'id', 'diam', 'max_dist', 'min_dist', 'min_percent', 'line_colour'],
       ColName: '',
-      NewVal: ''
+      NewVal: '',
+      LineColours: ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'],
+      AvailColours: []
     }
   },
   components: {
@@ -159,8 +172,23 @@ export default {
   methods: {
     Tanks () {
       getTanksList().then((ret) => {
-        console.log(ret)
+        // console.log(ret)
         this.tanks = ret
+      })
+    },
+    TanksDict () {
+      getTanksDict().then((ret) => {
+        // array.filter(function(currentValue, index, arr), thisValue)
+        this.tanksdict = ret
+        // console.log(this.tanksdict)
+        console.log(this.tanksdict.line_colour)
+        console.log(this.LineColours)
+        var x = this.tanksdict.line_colour
+        Array.prototype.diff = function (a) {
+          return this.filter(function (i) { return a.indexOf(i) < 0 })
+        }
+        this.AvailColours = this.LineColours.diff(x)
+        console.log(this.AvailColours)
       })
     },
     editTank (data) {
@@ -176,6 +204,8 @@ export default {
   },
   mounted () {
     this.Tanks()
+    this.TanksDict()
+    // this.makecolourArray()
   }
 }
 </script>

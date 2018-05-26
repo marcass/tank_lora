@@ -59,7 +59,9 @@ function getGraphs(payload) {
 }
 
 function putTank(payload) {
+  console.log('about to put')
   const url = BASE_URL+'/tank'
+  console.log(url)
   return axios.put(url, payload);
 }
 
