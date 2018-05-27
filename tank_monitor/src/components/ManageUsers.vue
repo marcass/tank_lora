@@ -2,7 +2,7 @@
   <div class="users">
     <app-nav></app-nav>
     <h2>All users</h2>
-      <table>
+      <table class='center'>
         <tr>
           <th>
             User
@@ -20,7 +20,8 @@
           </td>
         </tr>
       </table>
-      <button v-on:click="displayAdd()"><h2>Add a user</h2></button>
+      <br><br>
+      <button v-on:click="displayAdd()">Add a user</button>
       <div v-if="this.display == 'add'">
         <table>
         <tr>
@@ -54,7 +55,7 @@
         </tr>
       </table>
       </div>
-      <button v-on:click="displayDel()"><h2>Delete a user</h2></button>
+      <button v-on:click="displayDel()">Delete a user</button>
       <div v-if="this.display == 'del'">
         <ul>
         <li>
@@ -119,6 +120,10 @@ export default {
 <style scoped>
 h1, h2 {
   font-weight: normal;
+}
+
+.center {
+  margin: auto;
 }
 
 ul {

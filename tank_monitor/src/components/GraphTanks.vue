@@ -2,20 +2,11 @@
   <div>
     <app-nav></app-nav>
     <h1>Graph some tanks</h1>
-    <ul>
-      <li>
-        <div v-if="graphic != ''">
-          <img v-bind:src="'data:image/png;base64,'+graphic" />
-        </div>
-      </li>
-    <!-- <img v-bind:src="'data:image/png;base64,'+graphic" /> -->
-      <!-- <li>
-        <div v-for="item in tanks" v-bind:key="item.name">
-          <input type="checkbox" id="item.id" :value="item.name" v-model="sel_tanks">
-          <label for="item.id">{{ item.name }}</label>
-          <br>
-        </div>
-      </li> -->
+    <div v-if="graphic != ''">
+      <img v-bind:src="'data:image/png;base64,'+graphic" />
+    </div>
+    <div>
+      <ul>
       <li>
         <select v-model="sel_tanks" multiple>
           <option disabled value="">Select tanks(s) to graph</option>
@@ -55,6 +46,7 @@
         <button v-on:click="graph(JSON.stringify({'tanks':sel_tanks, 'type':graph_type, 'range':range, 'period':period}))">Make the graph</button>
       </li>
     </ul>
+    </div>
   </div>
 </template>
 
@@ -115,5 +107,9 @@ li {
 
 a {
   color: #42b283;
+}
+
+div {
+  clear: both;
 }
 </style>

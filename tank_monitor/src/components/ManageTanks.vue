@@ -73,7 +73,9 @@
        </td>
      </tr>
    </table>
-   <h2>Edit a tank</h2>
+   <br><br>
+   <button v-on:click="displayEdit()">Edit a tank</button>
+   <div v-if="this.thingy == 'edit'">
      <ul>
        <li>
         <select v-model="TankName">
@@ -144,7 +146,9 @@
        </table>
        <button v-on:click="updateTank({ 'col': ColName, 'name': tank.name, 'data': NewVal })">Update tank now</button>
      </div>
-     <h2>Add a tank</h2>
+    </div>
+    <button v-on:click="displayAdd()">Add a tank</button>
+    <div v-if="this.thingy == 'add'">
      <table>
        <tr>
          <th>
@@ -173,41 +177,43 @@
          </th>
        </tr>
        <tr>
-       <td>
-         <input v-model="NewName">
-       </td>
-       <td>
-         <input v-model="NewID">
-       </td>
-       <td>
-         <input v-model="NewDiam">
-       </td>
-       <td>
-         <input v-model="NewMax">
-       </td>
-       <td>
-         <input v-model="NewMin">
-       </td>
-       <td>
-         <input v-model="NewMinVol">
-       </td>
-       <td>
-         <input v-model="NewMinPercent">
-       </td>
-       <td>
-         <select v-model="NewLine">
-            <option disabled value="">Select Line colour from available colours</option>
-            <option v-for="item in this.AvailColours" v-bind:key="item">{{ item }}</option>
-          </select>
-       </td>
-     </tr>
-     <tr>
-       <td colspan="8">
-        <button v-on:click="addATank({ 'name': NewName, 'nodeID': NewID, 'diam': NewDiam, 'max_payload': NewMax, 'invalid_min': NewMin, 'min_vol': NewMinVol, 'min_percent': NewMinPercent, 'line_colour': NewLine })">Add tank now</button>
-       </td>
-     </tr>
+         <td>
+           <input v-model="NewName">
+         </td>
+         <td>
+           <input v-model="NewID">
+         </td>
+         <td>
+           <input v-model="NewDiam">
+         </td>
+         <td>
+           <input v-model="NewMax">
+         </td>
+         <td>
+           <input v-model="NewMin">
+         </td>
+         <td>
+           <input v-model="NewMinVol">
+         </td>
+         <td>
+           <input v-model="NewMinPercent">
+         </td>
+         <td>
+           <select v-model="NewLine">
+              <option disabled value="">Select Line colour from available colours</option>
+              <option v-for="item in this.AvailColours" v-bind:key="item">{{ item }}</option>
+            </select>
+         </td>
+       </tr>
+       <tr>
+         <td colspan="8">
+          <button v-on:click="addATank({ 'name': NewName, 'nodeID': NewID, 'diam': NewDiam, 'max_payload': NewMax, 'invalid_min': NewMin, 'min_vol': NewMinVol, 'min_percent': NewMinPercent, 'line_colour': NewLine })">Add tank now</button>
+         </td>
+       </tr>
      </table>
-     <h2>Delete a tank</h2>
+   </div>
+   <button v-on:click="displayDel()">Delete a tank</button>
+   <div v-if="this.thingy == 'del'">
      <ul>
        <li>
         <select v-model="TankNameDel">
@@ -219,6 +225,7 @@
         <button v-on:click="delATank(TankNameDel)">Delete tank now</button>
       </li>
     </ul>
+  </div>
   </div>
 </template>
 
@@ -247,7 +254,8 @@ export default {
       NewMinVol: '',
       NewMinPercent: '',
       NewLine: '',
-      TankNameDel: ''
+      TankNameDel: '',
+      thingy: ''
     }
   },
   components: {
@@ -258,6 +266,15 @@ export default {
       getTanksList().then((ret) => {
         this.tanks = ret
       })
+    },
+    displayEdit () {
+      this.thingy = 'edit'
+    },
+    displayAdd () {
+      this.thingy = 'add'
+    },
+    displayDel () {
+      this.thingy = 'del'
     },
     TanksDict () {
       getTanksDict().then((ret) => {
