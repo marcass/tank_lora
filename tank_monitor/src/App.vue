@@ -1,14 +1,13 @@
 <template>
   <div id="app">
-    <!-- <img src="./assets/logo.png"> -->
-    <!-- <div v-if="$auth.ready()"> -->
+    <div v-if="$auth.ready()">
       <router-view/>
-    <!-- </div> -->
-    <!-- <div v-if="!$auth.ready()">
+    </div>
+    <div v-if="!$auth.ready()">
       <div style="text-align:center; padding-top:50px;">
           Loading site...
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
@@ -24,17 +23,17 @@ export default {
     }
   },
   methods: {
-    // logout () {
-    //   this.$auth.logout({
-    //     makeRequest: true,
-    //     success () {
-    //       console.log('success ' + this.context)
-    //     },
-    //     error () {
-    //       console.log('error ' + this.context)
-    //     }
-    //   })
-    // }
+    logout () {
+      this.$auth.logout({
+        makeRequest: true,
+        success () {
+          console.log('success ' + this.context)
+        },
+        error () {
+          console.log('error ' + this.context)
+        }
+      })
+    }
   }
 }
 </script>

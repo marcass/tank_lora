@@ -53,6 +53,7 @@ def auth():
             'refresh_token': create_refresh_token(identity=username), 'data':{
             'role': content['role']}
         }
+        # print ret
         return jsonify(ret), 200
     else:
         return jsonify({"msg": "Bad username or password"}), 401

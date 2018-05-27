@@ -46,7 +46,7 @@ def hello():
     return "Hello World!"
 
 @app.route("/user", methods=['POST',])
-# @jwt_required
+@jwt_required
 def add_user():
     '''
     Add a new user to everything.
@@ -58,7 +58,7 @@ def add_user():
     return jsonify(sql.write_userdata(content)), 200
 
 @app.route("/user/<username>", methods=['DELETE',])
-# @jwt_required
+@jwt_required
 def remove_user(username):
     '''
     Remove Username in user userAuth table, and update all tables...
@@ -70,7 +70,7 @@ def remove_user(username):
 
 # shouldn't this be a POST?
 @app.route("/auth/user/<username>", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_user_role(username):
     '''
     Auth check and role fetch.
@@ -84,7 +84,7 @@ def get_user_role(username):
     return jsonify(sql.auth_user(username, password)), 200
 
 @app.route("/user/data/<username>", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_user_data(username):
     '''
     curl -X GET http://127.0.0.1:5000/user/data/<username>
@@ -96,7 +96,7 @@ def get_user_data(username):
     return jsonify(sql.fetch_user_data(username, 'username')), 200
 
 @app.route("/user", methods=['PUT',])
-# @jwt_required
+@jwt_required
 def update_user():
     '''
     Select Username and update in user. Json must contain old username
@@ -111,7 +111,7 @@ def update_user():
     return jsonify(sql.write_userdata(content)), 200
 
 @app.route("/users", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_users():
     '''
     curl -X GET http://127.0.0.1:5000/users
@@ -120,7 +120,7 @@ def get_users():
     return jsonify(sql.get_all_users()), 200
 
 @app.route("/tank/<name>", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_a_tank(name):
     '''
     curl -X GET http://127.0.0.1:5000/tank/<name>
@@ -132,7 +132,7 @@ def get_a_tank(name):
     return jsonify(sql.get_tank(name, 'tank')), 200
 
 @app.route("/tanksdict", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_tanks_dict():
     '''
     curl -X GET http://127.0.0.1:5000/tanksdict
@@ -144,7 +144,7 @@ def get_tanks_dict():
     return jsonify(sql.get_all_tanks()), 200
 
 @app.route("/tankslist", methods=['GET',])
-# @jwt_required
+@jwt_required
 def get_tanks_list():
     '''
     curl -X GET http://127.0.0.1:5000/tankslist
@@ -155,7 +155,7 @@ def get_tanks_list():
     return jsonify(sql.get_tank_list()), 200
 
 @app.route("/tank/add", methods=['POST',])
-# @jwt_required
+@jwt_required
 def add_tank():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"name": , "nodeID": , "diam": , "max_payload": , "invalid_min": , "min_vol": , "min_percent": , "line_colour":  }' http://127.0.0.1:5000/tank/graph/<tank>
@@ -168,7 +168,7 @@ def add_tank():
     return jsonify(), 200
 
 @app.route("/tank/remove/<tank>", methods=['DELETE',])
-# @jwt_required
+@jwt_required
 def delete_tank(tank):
     '''
     curl -X DELETE http://127.0.0.1:5000/tank/remove/<tank>
@@ -178,7 +178,7 @@ def delete_tank(tank):
     return jsonify(sql.delete_tank(tank)), 200
 
 @app.route("/tank/status/<tank>", methods=['GET',])
-# @jwt_required
+@jwt_required
 def getATankStatus(tank):
     '''
     curl -X GET -H "Content-Type: application/json" -d '{"type":"water"(or "batt")}' http://127.0.0.1:5000/tank/status/<tank>
@@ -195,7 +195,7 @@ def getATankStatus(tank):
     return jsonify(res), 200
 
 @app.route("/tank/graph", methods=['POST',])
-# @jwt_required
+@jwt_required
 def getGraph():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"name":"main","type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
@@ -209,7 +209,7 @@ def getGraph():
     return base64.b64encode(res[1].getvalue())
 
 @app.route("/tank/rawgraph", methods=['POST',])
-# @jwt_required
+@jwt_required
 def getrawGraph():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"name":"main","type":"water"(or"batt"), "range":"days"(or "hours"), "period":"1"}' http://127.0.0.1:5000/tank/graph/<tank>
@@ -224,7 +224,7 @@ def getrawGraph():
 
 
 @app.route("/tank/graphs", methods=['POST',])
-# @jwt_required
+@jwt_required
 def getGraphs():
     '''
     curl -X POST -H "Content-Type: application/json" -d '{"tanks":[], "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graphs
@@ -244,9 +244,30 @@ def getGraphs():
     res = plot.plot_tank_list(build_dict, content['period'], content['range'], content['type'])
     return base64.b64encode(res[1].getvalue())
 
+@app.route("/tank/rawgraphs", methods=['POST',])
+@jwt_required
+def getGraphsRaw():
+    '''
+    curl -X POST -H "Content-Type: application/json" -d '{"tanks":[], "type":"water"(or"batt"), "range":"days"(or "hours"), "period":<integer>}' http://127.0.0.1:5000/tank/graphs
+    Receives: image object
+    '''
+    content = request.get_json(silent=False)
+    print content
+    build_id = []
+    build_colour = []
+    build_list = []
+    for x in content['tanks']:
+        tank_data = sql.get_tank(x, 'tank')
+        build_id.append(tank_data['id'])
+        build_colour.append(tank_data['line_colour'])
+        build_list.append(tank_data['name'])
+    build_dict = {'line_colour':build_colour, 'name':build_list, 'id':build_id}
+    res = plot.plot_tank_list_raw(build_dict, content['period'], content['range'], content['type'])
+    return base64.b64encode(res[1].getvalue())
+
 
 @app.route("/tank/status", methods=['PUT',])
-# @jwt_required
+@jwt_required
 def update_status():
     '''
     curl -X PUT -H "Content-Type: application/json" -d '{"tank":<tank>, "type":"tank_status"(or "batt_status"), 'status':<new status>}' http://127.0.0.1:5000/tank/graphs
@@ -256,7 +277,7 @@ def update_status():
     return jsonify(sql.write_tank_col(content['tank'], content['type'], content['status'])), 200
 
 @app.route("/tank", methods=['PUT',])
-# @jwt_required
+@jwt_required
 def update_tank():
     '''
     curl -X PUT -H "Content-Type: application/json" -d '{"name": , "col": , "data":}' http://127.0.0.1:5000/tank

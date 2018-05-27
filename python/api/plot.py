@@ -112,6 +112,63 @@ def plot_tank_list(tank_data, period, q_range, vers):
     # In your Html put:
     # <img src="data:image/png;base64, {{ plot_url }}">
 
+def plot_tank_list_raw(tank_data, period, q_range, vers):
+    # tank_data is a list of dicts consisting of id, name and line colour for all tanks
+    #set up img variable
+    img = StringIO.StringIO()
+    print 'vers = '+vers
+    # print tank_data
+    format_date = md.DateFormatter('%H:%M\n%d-%m')
+    # Note that using plt.subplots below is equivalent to using
+    # fig = plt.figure and then ax = fig.add_subplot(111)
+    fig, ax = plt.subplots()
+    if vers == 'water':
+        data = 'water_volume'
+        label = 'Volume (%)'
+    if vers == 'batt':
+        data = 'voltage'
+        label = 'Battery Voltage'
+    title_name = ''
+    print 'building a list of tanks'
+    for x in tank_data['name']:
+        print x +' tank in list'
+        # get index number
+        i = tank_data['name'].index(x)
+        try:
+            d = sql.query_via_tankid(tank_data['id'][i], period, q_range)
+            # print d
+            ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i])
+            # ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i])
+            title_name += ' '+tank_data['name'][i]
+            ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
+        except:
+            # print 'data get failed'
+            print "Please resend the plot request, eg '/plot 1' as there has been a problem"
+    title_name += ' plot'
+    if vers == 'water':
+        plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
+    if vers == 'batt':
+        plt.axhspan(3.2, 4.2, facecolor='#2ca02c', alpha=0.3)
+    # following line is throwing an error for some reason
+    ax.get_xaxis().set_major_formatter(format_date)
+    #times = ax.get_xticklabels()
+    #plt.setp(times, rotation=30)
+    # following line is throwing an error for some reason
+    plt.legend()
+    ax.grid()
+    plt.tight_layout()
+    # fig.savefig(tanks.tank_list[0].pngpath+'net.png')
+    # https://stackoverflow.com/questions/34492197/how-to-render-and-return-plot-to-view-in-flask
+    fig.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    # plot_url = base64.b64encode(img.getvalue())
+    # # In your Html put:
+    # # <img src="data:image/png;base64, {{ plot_url }}">
+    # return render_template('test.html', plot_url=plot_url)
+    # not sure what the z is....
+    return ('z.png', img)
+
 def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
     img = StringIO.StringIO()

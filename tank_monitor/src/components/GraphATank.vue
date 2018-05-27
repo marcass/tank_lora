@@ -34,6 +34,7 @@ export default {
   },
   mounted () {
     this.graph()
+    console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
   }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="users">
+  <div>
     <app-nav></app-nav>
     <h2>All users</h2>
     <table class='center'>
@@ -22,8 +22,9 @@
     </table>
     <br><br>
     <button v-on:click="displayAdd()">Add a user</button>
+    <br><br>
     <div v-if="this.display == 'add'">
-      <table>
+      <table class='center'>
       <tr>
         <td>
           Username
@@ -50,14 +51,18 @@
       </tr>
       <tr>
         <td colspan="3">
+          <br><br>
           <button v-on:click="addAUser({'username': NewUser, 'password': password, 'role': Newrole })">Add user now</button>
+          <br><br>
         </td>
       </tr>
     </table>
     </div>
+    <br><br>
     <button v-on:click="displayDel()">Delete a user</button>
+    <br><br>
     <div v-if="this.display == 'del'">
-      <ul>
+      <ul class='center'>
         <li>
           <select v-model="DelUser">
            <option disabled value="">Select user to delete</option>
@@ -69,7 +74,9 @@
         </li>
       </ul>
     </div>
+    <br><br>
     <button v-on:click="displayUpdate()">Update a user</button>
+    <br><br>
     <div v-if="this.display == 'update'">
       <ul>
         <li>
@@ -93,6 +100,9 @@
         </li>
       </ul>
     </div>
+    <div v-if="this.disp != ''">
+      {{ this.message.status }}
+    </div>
   </div>
 </template>
 
@@ -111,7 +121,9 @@ export default {
       display: '',
       UpdateUser: '',
       UpdateUserRole: '',
-      NewPass: ''
+      NewPass: '',
+      messsage: '',
+      disp: ''
     }
   },
   components: {
@@ -120,15 +132,23 @@ export default {
   methods: {
     getUsers () {
       getUsers().then((ret) => {
-        console.log(ret)
         this.userlist = ret
       })
     },
     addAUser (data) {
-      addUser(data)
+      this.disp = ''
+      addUser(data).then((ret) => {
+        this.message = ret
+        this.disp = '1'
+        console.log(ret)
+      })
     },
     delAUser (data) {
-      delUser(data)
+      this.disp = ''
+      delUser(data).then((ret) => {
+        this.message = ret
+        this.disp = '1'
+      })
     },
     displayDel () {
       this.display = 'del'
@@ -140,11 +160,16 @@ export default {
       this.display = 'update'
     },
     updateAUser (data) {
-      updateUser(data)
+      this.disp = ''
+      updateUser(data).then((ret) => {
+        this.message = ret
+        this.disp = '1'
+      })
     }
   },
   mounted () {
     this.getUsers()
+    console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
   }
 }
 </script>

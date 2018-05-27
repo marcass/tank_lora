@@ -11,6 +11,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "@websanova/vue-auth": "^2.21.11-beta",
     "axios": "^0.18.0",
     "liquor-tree": "^0.2.28",
     "vue": "^2.5.2",

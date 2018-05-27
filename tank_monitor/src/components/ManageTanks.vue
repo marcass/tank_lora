@@ -280,8 +280,8 @@ export default {
       getTanksDict().then((ret) => {
         // array.filter(function(currentValue, index, arr), thisValue)
         this.tanksdict = ret
-        // console.log(this.tanksdict)
         var x = this.tanksdict.line_colour
+        // eslint-disable-next-line
         Array.prototype.diff = function (a) {
           return this.filter(function (i) { return a.indexOf(i) < 0 })
         }
@@ -307,6 +307,7 @@ export default {
   mounted () {
     this.Tanks()
     this.TanksDict()
+    console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
     // this.makecolourArray()
   }
 }

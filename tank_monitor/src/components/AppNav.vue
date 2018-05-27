@@ -5,29 +5,35 @@
           :data="nonauthtreeData"
           @node:selected="onNodeSelected"
         />
-      </span>
-      <span v-show="$auth.check()">
-        <span v-show="$auth.check('admin')">
+      </span> -->
+      <span v-if="$auth.check()">
+        <span v-if="$auth.check('admin')">
           <tree
             :data="authtreeData"
             class="tree--small"
-            @node:selected="onNodeSelected"
+            @node:selected="this.onNodeSelected"
           />
         </span>
-        <span v-show="$auth.check('user')">
+        <span v-if="$auth.check('user')">
           <tree
-            :data="usertreeData"
+            :data="this.usertreeData"
             @node:selected="onNodeSelected"
           />
         </span>
-      </span> -->
-      <span>
+      </span>
+      <span v-if="$auth.check(undefined)">
+        <tree
+          :data="this.nonauthtreeData"
+          @node:selected="onNodeSelected"
+        />
+      </span>
+      <!-- <span>
         <tree
           :data="authtreeData"
           class="tree--small"
           @node:selected="onNodeSelected"
         />
-      </span>
+      </span> -->
     </div>
 </template>
 
@@ -54,23 +60,40 @@ export default {
       // var data = this.data
       console.log('data ' + node.text)
       if (node.text === 'Logout') {
-        // this.$auth.logout({
-        //   makeRequest: false,
-        //   success () {
-        //     console.log('success ' + this.context)
-        //   },
-        //   error () {
-        //     console.log('error ' + this.context)
-        //   }
-        // })
+        this.$auth.logout({
+          makeRequest: false,
+          success () {
+            console.log('success ' + this.context)
+          },
+          error () {
+            console.log('error ' + this.context)
+          }
+        })
         console.log('logout pressed')
+        console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
+        this.$router.push({name: 'Login'})
       } else {
         this.$router.push({name: node.text})
         // this.$router.push('/auth/login')
         // router.push({name: node.text})
       }
+    },
+    checkCreds () {
+      if (!this.$auth.check()) {
+        this.nonauthtreeData = [{text: 'Login'}]
+      } else {
+        this.nonauthtreeData = []
+        this.authtreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}, {text: 'ManageUsers'}, {text: 'ManageTanks'}]}]
+        this.usertreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}]}]
+      }
     }
   },
+  created () {
+    this.checkCreds()
+  },
+  // beforeCreate () {
+  //   this.nonauthtreeData = [{text: 'Login'}]
+  // },
   components: {
     // [tree-nav.name]: LiquorTree
   },
@@ -93,13 +116,7 @@ export default {
         ]
       }
     ],
-    nonauthtreeData: [
-      {text: 'TankLord',
-        children: [
-          {text: 'login'}
-        ]
-      }
-    ]
+    nonauthtreeData: [{text: 'Login'}]
   })
 }
 </script>
