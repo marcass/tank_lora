@@ -18,7 +18,7 @@ axios.defaults.headers.delete['Content-Type'] = 'application/json';
 //     console.log('RES', res);
 // });
 
-export { delUser, addUser, getUsers, getTanksDict, getGraph, getGraphs, getTanksList, getATank, putTank, addTank, delTank };
+export { updateUser, delUser, addUser, getUsers, getTanksDict, getGraph, getGraphs, getTanksList, getATank, putTank, addTank, delTank };
 
 function simple_get(url) {
   return axios.get(url)
@@ -99,6 +99,12 @@ function delUser(user) {
       return response.data
   });
 }
+
+function updateUser(payload) {
+  const url = BASE_URL+'/user'
+  return axios.put(url, payload);
+}
+
 // function getUser(user) {
 //   const url = BASE_URL+'/user/data/'+user
 //   return simple_get(url)

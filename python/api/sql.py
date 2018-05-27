@@ -256,8 +256,13 @@ def write_userdata(resp):
         except:
             return {'status':'Error', 'message':'Failed as non-unique new user'}
     else:
+        col = resp['col']
+        if (col == 'password'):
+            data = pbkdf2_sha256.hash(resp['data'])
+        else:
+            data = resp['data']
         # may want to validate password or setup a system for chaning it?
-        c.execute("UPDATE userAuth SET password=?, role=? WHERE username=?", (pbkdf2_sha256.hash(resp['password']), resp['role'], resp['username']))
+        c.execute("UPDATE userAuth SET %s=?  WHERE username=?" %(col), (data, resp['username']))
         conn.commit()
         return {'status':'Success','message':'User update success'}
 

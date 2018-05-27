@@ -100,7 +100,7 @@ def get_user_data(username):
 def update_user():
     '''
     Select Username and update in user. Json must contain old username
-    curl -X PUT -H "Content-Type: application/json" -d '{"username":"max","password":<pass>, "role":"admin(or user)"}' http://127.0.0.1:5000/user
+    curl -X PUT -H "Content-Type: application/json" -d '{"username": <username>, "col":"username","data":<new_user>"}' http://127.0.0.1:5000/user
     Returns: {'status':'Success','message':'User update success'}
             {'status':'Error', 'message':'Failed as non-unique new user'}
             {'status':'Error', 'message':'Failed to setup user'}
