@@ -22,7 +22,7 @@ def setup_db():
     c.execute('''CREATE TABLE IF NOT EXISTS tanks
                     (tank TEXT UNIQUE, id TEXT UNIQUE, daim INTEGER, max_dist INTEGER, min_dist INTEGER, min_vol INTEGER, min_percent REAL, line_colour TEXT, tank_status TEXT, batt_status TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS measurements
-                    (timestamp TIMESTAMP, tank_id TEXT, water_volume REAL, voltage REAL, FOREIGN KEY(tank_id) REFERENCES tanks(id))''')
+                    (timestamp TIMESTAMP, tank_id TEXT, water_volume REAL, voltage REAL, FOREIGN KEY(tank_id) REFERENCES tanks(id) ON DELETE CASCADE)''')
     c.execute('''CREATE TABLE IF NOT EXISTS userAuth
                     (username TEXT UNIQUE, password TEXT, role TEXT)''')
     conn.commit() # Save (commit) the changes
@@ -290,13 +290,20 @@ def write_tank_col(name, column, payload):
         return {'status':'Error', 'message':'Status not updated'}
 
 
+def initialise():
+    t = Tanks('top',   '1', 370, 300, 45, 12000, 20.0, 'b')
+    n = Tanks('noels', '2', 200, 100, 20, 4000,  10.0, 'g')
+    s = Tanks('sals',  '3', 140, 110, 27, 400,   10.0, 'r')
+    m = Tanks('main',  '4', 370, 300, 45, 12000, 50.0, 'm')
+    b = Tanks('bay',   '5', 370, 270, 45, 12000, 10.0, 'k')
+    r = Tanks('relay', '6', 370, 270, 45, 12000, 10.0, 'c')
+    del t
+    del n
+    del s
+    del m
+    del b
+    del r
 
 #setup database
 setup_db()
-
-t = Tanks('top',   '1', 370, 300, 45, 12000, 20.0, 'b')
-n = Tanks('noels', '2', 200, 100, 20, 4000,  10.0, 'g')
-s = Tanks('sals',  '3', 140, 110, 27, 400,   10.0, 'r')
-m = Tanks('main',  '4', 370, 300, 45, 12000, 50.0, 'm')
-b = Tanks('bay',   '5', 370, 270, 45, 12000, 10.0, 'k')
-r = Tanks('relay', '6', 370, 270, 45, 12000, 10.0, 'c')
+initialise()

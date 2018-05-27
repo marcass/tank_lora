@@ -42,7 +42,7 @@ def generate_shit():
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';\r\n'
     # print 'packet is '+packet
     # increment the tank_id
-    if (tank_fake_id < 6):
+    if (tank_fake_id < 7):
         tank_fake_id += 1
     else:
         tank_fake_id = 1

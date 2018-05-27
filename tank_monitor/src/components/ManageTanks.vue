@@ -144,11 +144,86 @@
        </table>
        <button v-on:click="updateTank({ 'col': ColName, 'name': tank.name, 'data': NewVal })">Update tank now</button>
      </div>
+     <h2>Add a tank</h2>
+     <table>
+       <tr>
+         <th>
+           Tank name
+         </th>
+         <th>
+           Tank ID
+         </th>
+         <th>
+           Daimeter
+         </th>
+         <th>
+           Maximum distance
+         </th>
+         <th>
+           Minimum distance
+         </th>
+         <th>
+           Minimum volume
+         </th>
+         <th>
+           Alert percent
+         </th>
+         <th>
+           Graph colour
+         </th>
+       </tr>
+       <tr>
+       <td>
+         <input v-model="NewName">
+       </td>
+       <td>
+         <input v-model="NewID">
+       </td>
+       <td>
+         <input v-model="NewDiam">
+       </td>
+       <td>
+         <input v-model="NewMax">
+       </td>
+       <td>
+         <input v-model="NewMin">
+       </td>
+       <td>
+         <input v-model="NewMinVol">
+       </td>
+       <td>
+         <input v-model="NewMinPercent">
+       </td>
+       <td>
+         <select v-model="NewLine">
+            <option disabled value="">Select Line colour from available colours</option>
+            <option v-for="item in this.AvailColours" v-bind:key="item">{{ item }}</option>
+          </select>
+       </td>
+     </tr>
+     <tr>
+       <td colspan="8">
+        <button v-on:click="addATank({ 'name': NewName, 'nodeID': NewID, 'diam': NewDiam, 'max_payload': NewMax, 'invalid_min': NewMin, 'min_vol': NewMinVol, 'min_percent': NewMinPercent, 'line_colour': NewLine })">Add tank now</button>
+       </td>
+     </tr>
+     </table>
+     <h2>Delete a tank</h2>
+     <ul>
+       <li>
+        <select v-model="TankNameDel">
+          <option disabled value="">Select tank to delete</option>
+          <option v-for="item in tanks" v-bind:key="item.name">{{ item.name }}</option>
+        </select>
+      </li>
+      <li>
+        <button v-on:click="delATank(TankNameDel)">Delete tank now</button>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
-import { getTanksList, getTanksDict, getATank, putTank } from '../../utils/tank-api'
+import { getTanksList, getTanksDict, getATank, putTank, addTank, delTank } from '../../utils/tank-api'
 import AppNav from './AppNav'
 export default {
   name: 'status',
@@ -163,7 +238,16 @@ export default {
       ColName: '',
       NewVal: '',
       LineColours: ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'],
-      AvailColours: []
+      AvailColours: [],
+      NewName: '',
+      NewID: '',
+      NewDiam: '',
+      NewMax: '',
+      NewMin: '',
+      NewMinVol: '',
+      NewMinPercent: '',
+      NewLine: '',
+      TankNameDel: ''
     }
   },
   components: {
@@ -172,7 +256,6 @@ export default {
   methods: {
     Tanks () {
       getTanksList().then((ret) => {
-        // console.log(ret)
         this.tanks = ret
       })
     },
@@ -181,14 +264,11 @@ export default {
         // array.filter(function(currentValue, index, arr), thisValue)
         this.tanksdict = ret
         // console.log(this.tanksdict)
-        console.log(this.tanksdict.line_colour)
-        console.log(this.LineColours)
         var x = this.tanksdict.line_colour
         Array.prototype.diff = function (a) {
           return this.filter(function (i) { return a.indexOf(i) < 0 })
         }
         this.AvailColours = this.LineColours.diff(x)
-        console.log(this.AvailColours)
       })
     },
     editTank (data) {
@@ -198,8 +278,13 @@ export default {
       this.display = true
     },
     updateTank (data) {
-      console.log(data)
       putTank(data)
+    },
+    addATank (data) {
+      addTank(data)
+    },
+    delATank (data) {
+      delTank(data)
     }
   },
   mounted () {

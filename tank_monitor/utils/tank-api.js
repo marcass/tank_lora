@@ -18,7 +18,7 @@ axios.defaults.headers.delete['Content-Type'] = 'application/json';
 //     console.log('RES', res);
 // });
 
-export { getTanksDict, getGraph, getGraphs, getTanksList, getATank, putTank };
+export { delUser, addUser, getUsers, getTanksDict, getGraph, getGraphs, getTanksList, getATank, putTank, addTank, delTank };
 
 function simple_get(url) {
   return axios.get(url)
@@ -59,12 +59,46 @@ function getGraphs(payload) {
 }
 
 function putTank(payload) {
-  console.log('about to put')
   const url = BASE_URL+'/tank'
-  console.log(url)
   return axios.put(url, payload);
 }
 
+function addTank(payload) {
+  const url = BASE_URL+'/tank/add'
+  return axios.post(url, payload)
+  .then(function (response) {
+      return response.data
+  });
+}
+
+function delTank(tank) {
+  const url = BASE_URL+'/tank/remove/'
+  return axios.delete(url+tank)
+  .then(function (response) {
+      return response.data
+  });
+}
+
+function getUsers() {
+  const url = BASE_URL+'/users'
+  return simple_get(url)
+}
+
+function addUser(payload) {
+  const url = BASE_URL+'/user'
+  return axios.post(url, payload)
+  .then(function (response) {
+      return response.data
+  });
+}
+
+function delUser(user) {
+  const url = BASE_URL+'/user/'
+  return axios.delete(url+user)
+  .then(function (response) {
+      return response.data
+  });
+}
 // function getUser(user) {
 //   const url = BASE_URL+'/user/data/'+user
 //   return simple_get(url)

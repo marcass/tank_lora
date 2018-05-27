@@ -115,7 +115,7 @@ def update_user():
 def get_users():
     '''
     curl -X GET http://127.0.0.1:5000/users
-    Returns {'username':[blah, blah], }
+    Returns {'username':[blah, blah], 'role': [blah blah] }
     '''
     return jsonify(sql.get_all_users()), 200
 
@@ -162,12 +162,14 @@ def add_tank():
     Returns: {'Status': 'Success', 'Message': 'Tank added'}/{'Status': 'Error', 'Message': 'Tank not added'}
     '''
     content = request.get_json(silent=False)
-    content['nodeID'] = sql.Tanks(content['name'], content['nodeID'], content['diam'], content['max_payload'], content['invalid_min'], content['min_vol'], content['min_percent'], content['line_colour'] )
+    x = sql.Tanks(content['name'], content['nodeID'], int(content['diam']), int(content['max_payload']), int(content['invalid_min']), int(content['min_vol']), float(content['min_percent']), content['line_colour'] )
+    # del instance as no longetr used and won't be updated on mods in code
+    del x
     return jsonify(), 200
 
 @app.route("/tank/remove/<tank>", methods=['DELETE',])
 # @jwt_required
-def delete_tank():
+def delete_tank(tank):
     '''
     curl -X DELETE http://127.0.0.1:5000/tank/remove/<tank>
     Returns: {'Status': 'Success', 'Message': 'Tank removed'}/{'Status': 'Error', 'Message': 'Tank not removed'}
