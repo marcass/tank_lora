@@ -12,7 +12,7 @@ Vue.use(VueAuth, {
   auth: require('./bearer.js'),
   http: require('@websanova/vue-auth/drivers/http/axios.1.x.js'),
   router: require('@websanova/vue-auth/drivers/router/vue-router.2.x.js'),
-  authRedirect: {path: '/users'},
+  authRedirect: {path: '/login'},
   refreshData: {enabled: false},
   rolesVar: 'role',
   fetchData: {

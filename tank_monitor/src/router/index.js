@@ -6,6 +6,8 @@ import Graph from '@/components/GraphATank'
 import ManageUsers from '@/components/ManageUsers'
 import ManageTanks from '@/components/ManageTanks'
 import Login from '@/components/Login'
+import Three from '@/components/403'
+import Four from '@/components/404'
 
 Vue.use(Router)
 
@@ -40,6 +42,16 @@ export default new Router({
       path: '/',
       name: 'Login',
       component: Login
+    },
+    {
+      path: '/403',
+      name: '403',
+      component: Three
+    },
+    {
+      path: '/404',
+      name: '404',
+      component: Four
     }
   ]
 })

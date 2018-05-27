@@ -6,7 +6,7 @@
           @node:selected="onNodeSelected"
         />
       </span> -->
-      <span v-if="$auth.check()">
+      <!-- <span v-if="$auth.check()">
         <span v-if="$auth.check('admin')">
           <tree
             :data="authtreeData"
@@ -26,14 +26,14 @@
           :data="this.nonauthtreeData"
           @node:selected="onNodeSelected"
         />
-      </span>
-      <!-- <span>
+      </span> -->
+      <span>
         <tree
           :data="authtreeData"
           class="tree--small"
           @node:selected="onNodeSelected"
         />
-      </span> -->
+      </span>
     </div>
 </template>
 
@@ -45,17 +45,6 @@ Vue.use(LiquorTree)
 export default {
   name: 'app-nav',
   methods: {
-    // logout () {
-    //   this.$auth.logout({
-    //     makeRequest: false,
-    //     success () {
-    //       console.log('success ' + this.context)
-    //     },
-    //     error () {
-    //       console.log('error ' + this.context)
-    //     }
-    //   })
-    // },
     onNodeSelected (node) {
       // var data = this.data
       console.log('data ' + node.text)
@@ -77,16 +66,16 @@ export default {
         // this.$router.push('/auth/login')
         // router.push({name: node.text})
       }
-    },
-    checkCreds () {
-      if (!this.$auth.check()) {
-        this.nonauthtreeData = [{text: 'Login'}]
-      } else {
-        this.nonauthtreeData = []
-        this.authtreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}, {text: 'ManageUsers'}, {text: 'ManageTanks'}]}]
-        this.usertreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}]}]
-      }
     }
+    // checkCreds () {
+    //   if (!this.$auth.check()) {
+    //     this.nonauthtreeData = [{text: 'Login'}]
+    //   } else {
+    //     this.nonauthtreeData = []
+    //     this.authtreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}, {text: 'ManageUsers'}, {text: 'ManageTanks'}]}]
+    //     this.usertreeData = [{text: 'TankLord', children: [{text: 'Graphs'}, {text: 'Logout'}]}]
+    //   }
+    // }
   },
   created () {
     this.checkCreds()
@@ -107,16 +96,16 @@ export default {
           {text: 'ManageTanks'}
         ]
       }
-    ],
-    usertreeData: [
-      {text: 'TankLord',
-        children: [
-          {text: 'Graphs'},
-          {text: 'Logout'}
-        ]
-      }
-    ],
-    nonauthtreeData: [{text: 'Login'}]
+    ]
+    // usertreeData: [
+    //   {text: 'TankLord',
+    //     children: [
+    //       {text: 'Graphs'},
+    //       {text: 'Logout'}
+    //     ]
+    //   }
+    // ],
+    // nonauthtreeData: [{text: 'Login'}]
   })
 }
 </script>
