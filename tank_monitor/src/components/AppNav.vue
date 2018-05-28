@@ -77,9 +77,9 @@ export default {
     //   }
     // }
   },
-  created () {
-    this.checkCreds()
-  },
+  // created () {
+  //   this.checkCreds()
+  // },
   // beforeCreate () {
   //   this.nonauthtreeData = [{text: 'Login'}]
   // },

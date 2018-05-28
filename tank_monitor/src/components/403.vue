@@ -1,9 +1,9 @@
 <template>
   <div>
     <app-nav></app-nav>
-    <h1>Oops, unauthoresed, please login</h1>
-    <router-link tag="li" to="/Login">
-      <a>Login</a>
+    <h1>Oops, you aren't allowed here, please login or request elevated privilges</h1>
+    <router-link :to="{path: '/'}">Login
+      <!-- <a>Login</a> -->
     </router-link>
   </div>
 </template>

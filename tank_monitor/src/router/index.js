@@ -16,27 +16,32 @@ export default new Router({
     {
       path: '/landing',
       name: 'TankLord',
-      component: TankLord
+      component: TankLord,
+      meta: {auth: true}
     },
     {
       path: '/graph/tanks',
       name: 'Graphs',
-      component: Graphs
+      component: Graphs,
+      meta: {auth: true}
     },
     {
       path: '/graph/tank',
       name: 'Graph',
-      component: Graph
+      component: Graph,
+      meta: {auth: true}
     },
     {
       path: '/user/management',
       name: 'ManageUsers',
-      component: ManageUsers
+      component: ManageUsers,
+      meta: {auth: {roles: 'admin'}}
     },
     {
       path: '/tank/management',
       name: 'ManageTanks',
-      component: ManageTanks
+      component: ManageTanks,
+      meta: {auth: {roles: 'admin'}}
     },
     {
       path: '/',

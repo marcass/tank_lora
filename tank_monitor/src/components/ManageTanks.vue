@@ -7,7 +7,7 @@
        <li>{{ item.name }} water level is {{ item.level_status }} and battery is {{ item.batt_status }}</li>
      </ul>
    </div> -->
-   <table>
+   <table class='center'>
      <tr>
        <th>
          Tank name
@@ -317,6 +317,10 @@ export default {
 <style scoped>
 h1, h2 {
   font-weight: normal;
+}
+
+.center {
+  margin: auto;
 }
 
 ul {
