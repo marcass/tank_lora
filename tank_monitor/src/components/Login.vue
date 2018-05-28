@@ -23,7 +23,7 @@
 
       <hr/>
 
-      <div v-show="error" style="color:red; word-wrap:break-word;">{{ error | json }}</div>
+      <div v-show="this.message.Status === 'Error'" style="color:red; word-wrap:break-word;">{{ this.message.Message }}</div>
     </form>
   </div>
 </template>
@@ -32,7 +32,6 @@
 export default {
   data () {
     return {
-      // context: 'login context',
       token: '',
       refresh_token: '',
       role: '',
@@ -43,19 +42,14 @@ export default {
         },
         rememberMe: true,
         fetchUser: false
-        // redirect: '/users'
       },
-
-      error: null
+      error: null,
+      message: ''
     }
   },
-  // components: {
-  //   role
-  // },
   mounted () {
-    console.log(this.$auth.redirect())
+    // console.log(this.$auth.redirect())
   },
-
   methods: {
     login () {
       var redirect = this.$auth.redirect()
@@ -65,13 +59,15 @@ export default {
         redirect: {name: redirect ? redirect.from.name : 'TankLord'},
         fetchUser: this.data.fetchUser,
         success (res) {
+          console.log(res)
           var roleIn = res.data.data.role
+          this.$auth.refresh({ data: this.data })
           this.$auth.user({'role': roleIn, 'username': this.data.body.username})
-          console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
+          // console.log(res)
+          // console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
         },
         error (res) {
-          console.log('error ' + this.context)
-          this.error = res.data
+          this.message = {'Status': 'Error', 'Message': 'Incorrect username or password'}
         }
       })
     }

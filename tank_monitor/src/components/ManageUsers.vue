@@ -47,7 +47,7 @@
             <option value="user">Normal user</option>
           </select>
         </td>
-        <input v-model="password">
+        <input v-model="password" type="password">
       </tr>
       <tr>
         <td colspan="3">

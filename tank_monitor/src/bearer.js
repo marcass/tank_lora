@@ -4,6 +4,8 @@ module.exports = {
   },
   response: function (res) {
     var token = res.data.access_token
+    // var refreshToken = res.data.refresh_token
+    // return {token, refreshToken}
     return token
   }
 }
