@@ -1,6 +1,6 @@
 [Unit]
 Description=Telegram bot application for tank alerts
- 
+
 [Service]
 Type=simple
 User=pi
@@ -8,4 +8,3 @@ ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/alerts.py
 
 [Install]
 WantedBy=multi-user.target
-

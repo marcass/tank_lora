@@ -2,6 +2,7 @@
 # https://github.com/vimalloc/flask-jwt-extended
 # also check out: https://gist.github.com/jslvtr/139cf76db7132b53f2b20c5b6a9fa7ad
 import sql
+import creds
 # import pprint
 from flask import Flask, request, jsonify
 from flask_jwt_extended import jwt_required, \
@@ -10,7 +11,8 @@ from flask_jwt_extended import jwt_required, \
 
 from init import app, jwt
 
-app.secret_key = 'ksajdkhsadulaulkj1092830983no1y24'  # Change this!
+# app.secret_key = 'ksajdkhsadulaulkj1092830983no1y24'  # Change this!
+app.secret_key = creds.flask_secret
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
 
 @app.route('/auth/login', methods=['POST'])
