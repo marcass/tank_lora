@@ -97,7 +97,7 @@
       </li>
      </ul>
      <div v-if="this.display == true">
-       <table>
+       <table class='center'>
          <tr>
            <td v-if="this.ColName == 'tank'">
              <input v-model="NewVal">
@@ -145,6 +145,7 @@
          </tr>
        </table>
        <button v-on:click="updateTank({ 'col': ColName, 'name': tank.name, 'data': NewVal })">Update tank now</button>
+       <br><br>
      </div>
     </div>
     <button v-on:click="displayAdd()">Add a tank</button>
