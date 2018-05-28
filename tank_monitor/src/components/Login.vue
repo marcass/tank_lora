@@ -61,7 +61,7 @@ export default {
         success (res) {
           console.log(res)
           var roleIn = res.data.data.role
-          this.$auth.refresh({ data: this.data })
+          // this.$auth.refresh({ data: this.data })
           this.$auth.user({'role': roleIn, 'username': this.data.body.username})
           // console.log(res)
           // console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)

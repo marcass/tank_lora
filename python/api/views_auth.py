@@ -2,7 +2,7 @@
 # https://github.com/vimalloc/flask-jwt-extended
 # also check out: https://gist.github.com/jslvtr/139cf76db7132b53f2b20c5b6a9fa7ad
 import sql
-import pprint
+# import pprint
 from flask import Flask, request, jsonify
 from flask_jwt_extended import jwt_required, \
     create_access_token, jwt_refresh_token_required, \
@@ -31,7 +31,7 @@ def auth():
             'refresh_token': create_refresh_token(identity=username), 'data':{
             'role': content['role']}
         }
-        print ret
+        # print ret
         return jsonify(ret), 200
     else:
         return jsonify({"Status": "Error", "Message": "Bad username or password"}), 401
@@ -44,10 +44,12 @@ def auth():
 
 # websanova defalts to: refreshData: {url: 'auth/refresh', method: 'GET', enabled: true, interval: 30}
 @app.route('/auth/refresh', methods=['POST', 'GET'])
+# refresh token not supported out of the box with websanova so using jwt to refresh
 # @jwt_refresh_token_required
+@jwt_required
 def refresh():
-    str = pprint.pformat(request.environ, depth=5)
-    print str
+    # str = pprint.pformat(request.environ, depth=5)
+    # print str
 
     current_user = get_jwt_identity()
     ret = {

@@ -18,6 +18,41 @@ axios.defaults.headers.delete['Content-Type'] = 'application/json';
 //     console.log('RES', res);
 // });
 
+// 401 interceptor pushes to login page
+axios.interceptors.response.use(
+  (response) => {
+    return response
+  },
+ (error) => {
+   if (error.response.status === 401) {
+     Vue.auth.logout({
+       redirect: {name: 'Login'}
+     })
+   }
+})
+
+// Vue.axios.interceptors.push(function(request, next) {
+//         next(function (res) {
+//
+//             // Unauthorized Access
+//
+//             if (
+//                 res.status === 401 &&
+//                 ['UnauthorizedAccess', 'InvliadToken'].indexOf(res.data.code) > -1
+//             ) {
+//                 Vue.auth.logout({
+//                     redirect: {name: 'auth-login'}
+//                 });
+//             }
+//
+//             // System Error
+//
+//             else if (res.status === 500) {
+//                 // Redirect to 500 page
+//             }
+//         });
+//     });
+
 export { updateUser, delUser, addUser, getUsers, getTanksDict, getGraph, getGraphsRaw, getGraphs, getTanksList, getATank, putTank, addTank, delTank };
 
 function simple_get(url) {
