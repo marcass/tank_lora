@@ -1,14 +1,11 @@
 # add to /etc/nginx/sites-available/default
 
 # Following blocks are for uwsgi config. Started with:
-# $ uwsgi -s /tmp/yourflaskapp.sock --manage-script-name --mount /home/git/tank_lora/python/api/tank_views=myapp:app
-# where mount point is the python file (without extension) that calls app = Flask(__name__)
-location /yourflaskapp {
-        rewrite ^/yourflaskapp/;
-        try_files $uri @yourflaskapp;
-}
+# $ uwsgi -s /tmp/tanktestapi.sock --manage-script-name --mount /home/git/tank_lora/python/api/tank_views=myapp:app
 
-location @yourflaskapp {
+location = /tanktestapi { rewrite ^ /tanktestapi/; }
+location /tanktestapi { try_files $uri @tanktestapi; }
+location @tanktestapi {
         include uwsgi_params;
-          uwsgi_pass unix:/tmp/yourflaskapp.sock;
+        uwsgi_pass unix:/tmp/tanktestapi.sock;
 }

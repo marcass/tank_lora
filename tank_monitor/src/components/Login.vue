@@ -54,6 +54,7 @@ export default {
     login () {
       var redirect = this.$auth.redirect()
       this.$auth.login({
+        // url: 'https://skibo.duckdns.org/tanktestapi/auth/login',
         data: this.data.body, // Axios
         rememberMe: this.data.rememberMe,
         redirect: {name: redirect ? redirect.from.name : 'TankLord'},
