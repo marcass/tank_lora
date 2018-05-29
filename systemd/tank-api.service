@@ -4,6 +4,7 @@ Description=Flask app for tank monitor
 [Service]
 Type=simple
 User=pi
+# --chmod-socket 666 needs to be added
 ExecStart=/usr/bin/uwsgi -s /tmp/tanktestapi.sock --plugin python --manage-script-name --mount /home/marcus/git/tank_lora/python/api/tank_views=app
 
 [Install]
