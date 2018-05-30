@@ -3,8 +3,9 @@ Description=Flask app for tank monitor
 
 [Service]
 Type=simple
-User=pi
-ExecStart=/usr/bin/uwsgi -s /tmp/tanktestapi.sock --chmod-socket=666 --plugin python --manage-script-name --mount /home/marcus/git/tank_lora/python/api/tank_views=app
+WorkingDirectory=/home/marcus/git/tank_lora/python/api
+User=www-data
+ExecStart=/usr/bin/uwsgi -s /tmp/api.sock --chmod-socket=666 --plugin python --manage-script-name --mount /tanktestapi=tank_views:app
 
 [Install]
 WantedBy=multi-user.target

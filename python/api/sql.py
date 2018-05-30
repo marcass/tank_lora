@@ -63,7 +63,7 @@ class Tanks:
             return {'Status': 'Error', 'Message': 'Tank not added'}
 
 #Variable stuff
-tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
+tanks_db = '/home/marcus/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
 
 ########################Time stuff #####################################
@@ -287,12 +287,13 @@ def delete_tank(tank):
 
 def write_tank_col(name, column, payload):
     conn, c = get_db()
-    try:
-        c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
-        conn.commit()
-        return {'status':'Success', 'message': 'Status updated'}
-    except:
-        return {'status':'Error', 'message':'Status not updated'}
+    # try:
+    print 'modifying tank'
+    c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
+    conn.commit()
+    return {'Status':'Success', 'Message': 'Status updated'}
+    # except:
+    #     return {'Status':'Error', 'Message':'Status not updated'}
 
 
 def initialise():

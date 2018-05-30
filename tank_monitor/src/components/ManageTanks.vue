@@ -227,6 +227,14 @@
       </li>
     </ul>
   </div>
+  <ul v-if="this.statMess = 'Error'">
+    <li>
+      {{ this.statMess.Status }}
+    </li>
+    <li>
+      {{ this.statMess.Message }}
+    </li>
+  </ul>
   </div>
 </template>
 
@@ -256,7 +264,9 @@ export default {
       NewMinPercent: '',
       NewLine: '',
       TankNameDel: '',
-      thingy: ''
+      thingy: '',
+      statMess: '',
+      status: ''
     }
   },
   components: {
@@ -296,13 +306,24 @@ export default {
       this.display = true
     },
     updateTank (data) {
-      putTank(data)
+      console.log(data)
+      putTank(data).then((ret) => {
+        console.log(ret)
+        this.statMess = ret
+      })
+      this.status = this.statMess.Status
     },
     addATank (data) {
-      addTank(data)
+      addTank(data).then((ret) => {
+        this.statMess = ret
+        this.status = this.statMess.Status
+      })
     },
     delATank (data) {
-      delTank(data)
+      delTank(data).then((ret) => {
+        this.statMess = ret
+        this.status = this.statMess.Status
+      })
     }
   },
   mounted () {

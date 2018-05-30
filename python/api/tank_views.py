@@ -165,7 +165,8 @@ def add_tank():
     x = sql.Tanks(content['name'], content['nodeID'], int(content['diam']), int(content['max_payload']), int(content['invalid_min']), int(content['min_vol']), float(content['min_percent']), content['line_colour'] )
     # del instance as no longetr used and won't be updated on mods in code
     del x
-    return jsonify(), 200
+    ret = {'Status': 'Success', 'Message': 'Well done'}
+    return jsonify(ret), 200
 
 @app.route("/tank/remove/<tank>", methods=['DELETE',])
 @jwt_required
