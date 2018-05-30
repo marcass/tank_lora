@@ -1,11 +1,10 @@
 # add to /etc/nginx/sites-available/default
 
-# Following blocks are for uwsgi config. Started with:
-# $ uwsgi -s /tmp/tanktestapi.sock --manage-script-name --mount /home/git/tank_lora/python/api/tank_views=myapp:app
-
-location = /tanktestapi { rewrite ^ /tanktestapi/; }
-location /tanktestapi { try_files $uri @tanktestapi; }
-location @tanktestapi {
-        include uwsgi_params;
-        uwsgi_pass unix:/tmp/tanktestapi.sock;
-}
+        #tanktest api
+        location /tanktestapi {
+                rewrite ^/tanktestapi(.*) $1 break;
+                try_files $uri @tanktestapi; }
+        location @tanktestapi {
+                include uwsgi_params;
+                uwsgi_pass unix:///tmp/api.sock;
+        }
