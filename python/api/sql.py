@@ -287,13 +287,13 @@ def delete_tank(tank):
 
 def write_tank_col(name, column, payload):
     conn, c = get_db()
-    # try:
-    print 'modifying tank'
-    c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
-    conn.commit()
-    return {'Status':'Success', 'Message': 'Status updated'}
-    # except:
-    #     return {'Status':'Error', 'Message':'Status not updated'}
+    try:
+        # print 'modifying tank'
+        c.execute("UPDATE tanks SET %s=? WHERE tank=?" %(column), (payload,name))
+        conn.commit()
+        return {'Status':'Success', 'Message': 'Status updated'}
+    except:
+        return {'Status':'Error', 'Message':'Status not updated'}
 
 
 def initialise():
