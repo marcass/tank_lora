@@ -271,9 +271,9 @@ def delete_user(user):
     try:
         c.execute("DELETE FROM userAuth WHERE username=?", (user,))
         conn.commit()
-        return {'status':'Success. User '+user+' deleted'}
+        return {'Status':'Success', 'Message': 'User '+user+' deleted'}
     except:
-        return {'status':'Error. User '+user+' not deleted'}
+        return {'Status':'Error', 'Message': 'User '+user+' not deleted'}
 
 def delete_tank(tank):
     conn, c = get_db()

@@ -101,7 +101,7 @@
       </ul>
     </div>
     <div v-if="this.message">
-      {{ this.message.message }}
+      {{ this.message.Message }}
     </div>
   </div>
 </template>
