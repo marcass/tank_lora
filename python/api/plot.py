@@ -83,7 +83,7 @@ def plot_tank_list(tank_data, period, q_range, vers):
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
             # print 'data get failed'
-            print "Please resend the plot request, eg '/plot 1' as there has been a problem"
+            print "filtered tank plot failed"
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
@@ -137,13 +137,12 @@ def plot_tank_list_raw(tank_data, period, q_range, vers):
         try:
             d = sql.query_via_tankid(tank_data['id'][i], period, q_range)
             # print d
-            ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i])
-            # ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i])
+            ax.plot_date(d['timestamp'], d[data], tank_data['line_colour'][i], label=tank_data['name'][i], marker='o', markersize='5')
             title_name += ' '+tank_data['name'][i]
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
             # print 'data get failed'
-            print "Please resend the plot request, eg '/plot 1' as there has been a problem"
+            print "Plot tank list raw failed"
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)

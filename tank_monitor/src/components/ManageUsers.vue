@@ -100,8 +100,8 @@
         </li>
       </ul>
     </div>
-    <div v-if="this.disp != ''">
-      {{ this.message.status }}
+    <div v-if="this.message">
+      {{ this.message.message }}
     </div>
   </div>
 </template>
@@ -139,6 +139,7 @@ export default {
       this.disp = ''
       addUser(data).then((ret) => {
         this.message = ret
+        this.getUsers()
         this.disp = '1'
         console.log(ret)
       })
@@ -147,7 +148,9 @@ export default {
       this.disp = ''
       delUser(data).then((ret) => {
         this.message = ret
+        this.getUsers()
         this.disp = '1'
+        console.log(ret)
       })
     },
     displayDel () {
@@ -164,6 +167,7 @@ export default {
       updateUser(data).then((ret) => {
         this.message = ret
         this.disp = '1'
+        console.log(ret)
       })
     }
   },

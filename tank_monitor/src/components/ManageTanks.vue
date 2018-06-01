@@ -10,34 +10,44 @@
    <table class='center'>
      <tr>
        <th>
-         Tank name
+         Tank name<br>
+         (tank)
        </th>
        <th>
-         Water status
+         Water status<br>
+         (tank_status)
        </th>
        <th>
-         Battery status
+         Battery status<br>
+         (batt_status)
        </th>
        <th>
-         Tank ID
+         Tank ID<br>
+         (id)
        </th>
        <th>
-         Daimeter
+         Daimeter<br>
+         (diam)
        </th>
        <th>
-         Maximum distance
+         Maximum distance<br>
+         (max_dist)
        </th>
        <th>
-         Minimum distance
+         Minimum distance<br>
+         (min_dist)
        </th>
        <th>
-         Minimum volume
+         Minimum volume<br>
+         (min_vol)
        </th>
        <th>
-         Alert percent
+         Alert percent<br>
+         (min_percent)
        </th>
        <th>
-         Graph colour
+         Graph colour<br>
+         (line_colour)
        </th>
      </tr>
      <tr v-for="item in tanks" v-bind:key="item.name">
@@ -309,6 +319,7 @@ export default {
       console.log(data)
       putTank(data).then((ret) => {
         console.log(ret)
+        this.Tanks()
         this.statMess = ret
       })
       this.status = this.statMess.Status
@@ -316,12 +327,14 @@ export default {
     addATank (data) {
       addTank(data).then((ret) => {
         this.statMess = ret
+        this.Tanks()
         this.status = this.statMess.Status
       })
     },
     delATank (data) {
       delTank(data).then((ret) => {
         this.statMess = ret
+        this.Tanks()
         this.status = this.statMess.Status
       })
     }

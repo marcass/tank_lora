@@ -250,11 +250,11 @@ def write_userdata(resp):
     if resp['username'] not in users_in['users']:
         try:
             if (setup_user(resp['username'], resp['password'], resp['role'])):
-                return {'status':'Success', 'message':'Setup new user'}
+                return {'Status':'Success', 'Message':'Setup new user'}
             else:
-                return {'status':'Error', 'message':'Failed to setup user'}
+                return {'Status':'Error', 'Message':'Failed to setup user'}
         except:
-            return {'status':'Error', 'message':'Failed as non-unique new user'}
+            return {'Status':'Error', 'Message':'Failed as non-unique new user'}
     else:
         col = resp['col']
         if (col == 'password'):
@@ -264,7 +264,7 @@ def write_userdata(resp):
         # may want to validate password or setup a system for chaning it?
         c.execute("UPDATE userAuth SET %s=?  WHERE username=?" %(col), (data, resp['username']))
         conn.commit()
-        return {'status':'Success','message':'User update success'}
+        return {'Status':'Success','Message':'User update success'}
 
 def delete_user(user):
     conn, c = get_db()

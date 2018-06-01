@@ -2,9 +2,17 @@
   <div>
     <app-nav></app-nav>
     <h1>Graph some tanks</h1>
-    <div v-if="graphic != ''">
-      <img v-bind:src="'data:image/png;base64,'+graphic" />
+    <div v-if="graphing">
+      <div v-if="graphic != ''">
+        <img v-bind:src="'data:image/png;base64,'+graphic" />
+      </div>
+      <div v-else>
+        <p>Building your graph, please be patient...</p>
+      </div>
     </div>
+    <!-- <div v-if="graphic != ''">
+      <img v-bind:src="'data:image/png;base64,'+graphic" />
+    </div> -->
     <div>
       <table class='center'>
         <tr>
@@ -69,7 +77,8 @@ export default {
       graph_type: '',
       period: '',
       sel_tanks: [],
-      range: ''
+      range: '',
+      graphing: false
     }
   },
   components: {
@@ -77,11 +86,13 @@ export default {
   },
   methods: {
     graph (payload) {
+      this.graphing = true
       getGraphs(payload).then((ret) => {
         this.graphic = ret
       })
     },
     graphRaw (payload) {
+      this.graphing = true
       getGraphsRaw(payload).then((ret) => {
         this.graphic = ret
       })
@@ -95,7 +106,7 @@ export default {
   mounted () {
     // this.graph(),
     this.getTanks()
-    console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
+    // console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
   }
 }
 </script>

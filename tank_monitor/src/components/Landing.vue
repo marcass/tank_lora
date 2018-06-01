@@ -2,7 +2,12 @@
   <div>
     <app-nav></app-nav>
     <h1>This is what's been happening in the last day</h1>
-    <img v-bind:src="'data:image/png;base64,'+graphic" />
+    <div v-if="this.display">
+      <img v-bind:src="'data:image/png;base64,'+graphic" />
+    </div>
+    <div v-else>
+      <h4>Loading graph......</h4>
+    </div>
   </div>
 </template>
 
@@ -14,7 +19,8 @@ export default {
   data () {
     return {
       graphic: '',
-      tankList: []
+      tankList: [],
+      display: false
     }
   },
   components: {
@@ -28,6 +34,7 @@ export default {
         getGraphs(JSON.stringify({'tanks': tankList, 'type': 'water', 'range': 'days', 'period': '1'})).then((ret) => {
         // getGraphs(JSON.stringify({'tanks': ['main', 'noels'], 'type': 'water', 'range': 'days', 'period': '1'})).then((ret) => {
           this.graphic = ret
+          this.display = true
         })
       })
     }
