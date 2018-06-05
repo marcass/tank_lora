@@ -209,6 +209,27 @@ def readlineCR(port):
         print 'failed on port read'
         port_start()
 
+def readlineCR_test(port):
+    rv = ''
+    while True:
+        # for testing (fuck!)
+        ch = os.read(master)
+        # ch = port.read()
+        rv += ch
+        if ch=='\n':# or ch=='':
+            print rv
+            if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevel>;<batteryvoltage>;>\r\n
+                #print 'Printing status flags stuff on receive'
+                #for x in tanks.tank_list:
+                    #print x.name +' is ' +x.statusFlag
+                print rv
+                rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
+                print rec_split
+                sort_data(rec_split[1:4])
+                #q.put(rec_split[1:4])           #put data in queue for processing at rate
+                rv = ''
+
+
 #Serial port function opening fucntion
 def port_check(in_port):
     global port
@@ -231,7 +252,8 @@ def port_start():
             print 'Exited because serial port not found'
             sys.exit()
     while True:
-        rcv = readlineCR(port)
+        # rcv = readlineCR(port)
+        rcv = readlineCR_test(port)
 
 #setup port and start loop in production
 port_start()
