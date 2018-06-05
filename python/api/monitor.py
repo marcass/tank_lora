@@ -250,8 +250,8 @@ def port_start():
             print 'Exited because serial port not found'
             sys.exit()
     while True:
-        # rcv = readlineCR(port)
-        rcv = readlineCR_test(port)
+        rcv = readlineCR(port)
+        # rcv = readlineCR_test(port)
 
 #setup port and start loop in production
 port_start()
