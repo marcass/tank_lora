@@ -212,9 +212,7 @@ def readlineCR(port):
 def readlineCR_test(port):
     rv = ''
     while True:
-        # for testing (fuck!)
-        ch = os.read()
-        # ch = port.read()
+        ch = port.read()
         rv += ch
         if ch=='\n':# or ch=='':
             print rv
