@@ -187,7 +187,7 @@ def readlineCR(port):
         rv = ''
         while True:
             # for testing (fuck!)
-            ch = os.read(master)
+            ch = os.read()
             # ch = port.read()
             rv += ch
             if ch=='\n':# or ch=='':
@@ -213,7 +213,7 @@ def readlineCR_test(port):
     rv = ''
     while True:
         # for testing (fuck!)
-        ch = os.read(master)
+        ch = os.read()
         # ch = port.read()
         rv += ch
         if ch=='\n':# or ch=='':
