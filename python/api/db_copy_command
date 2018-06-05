@@ -1,0 +1,14 @@
+marcus@houseslave:~/git/tank_lora/python/api$ sqlite3
+SQLite version 3.16.2 2017-01-06 16:32:41
+Enter ".help" for usage hints.
+Connected to a transient in-memory database.
+Use ".open FILENAME" to reopen on a persistent database.
+sqlite> .open tank_database.db
+sqlite> .databases
+main: /home/marcus/git/tank_lora/python/api/tank_database.db
+sqlite> attach database 'real_data.db' as real_data;
+sqlite> .databases
+main: /home/marcus/git/tank_lora/python/api/tank_database.db
+real_data: /home/marcus/git/tank_lora/python/api/real_data.db
+sqlite> insert into main.measurements(timestamp, tank_id, water_volume, voltage) select timestamp, cast(tank_id as text), water_volume, voltage from real_data.measurements;
+sqlite> .quit

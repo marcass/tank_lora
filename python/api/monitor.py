@@ -145,11 +145,11 @@ def sort_data(data):
                         vers = 'water'
                         graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', 'days', 'water')
                         # test send_graph
-                        telegram.send_graph(creds.marcus_ID, graph)
-                        telegram.bot.sendMessage(creds.marcus_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
+                        # telegram.send_graph(creds.marcus_ID, graph)
+                        # telegram.bot.sendMessage(creds.marcus_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
                         # pruduction send
-                        # telegram.send_graph(creds.group_ID, graph)
-                        # telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
+                        telegram.send_graph(creds.group_ID, graph)
+                        telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
                     elif tank_data['level_status'] == 'bad':
                         print 'ignoring low level as status flag is bad'
@@ -234,12 +234,12 @@ def port_start():
         rcv = readlineCR(port)
 
 #setup port and start loop in production
-# port_start()
+port_start()
 
 # testing with junk data (comment out prodn)
 #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
-myThread = Thread(target=junk_timer, args=(10,))
-myThread.start()
+# myThread = Thread(target=junk_timer, args=(10,))
+# myThread.start()
 
 #start the message bot
 telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()

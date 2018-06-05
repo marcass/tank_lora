@@ -63,7 +63,7 @@ class Tanks:
             return {'Status': 'Error', 'Message': 'Tank not added'}
 
 #Variable stuff
-tanks_db = '/home/marcus/git/tank_lora/python/api/tank_database.db'
+tanks_db = '/home/pi/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
 
 ########################Time stuff #####################################
