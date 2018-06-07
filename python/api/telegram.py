@@ -29,7 +29,7 @@ class Keyboard:
         self.version = version
 
     def format_keys(self, key_tank=0):
-        print 'in tank is '+str(key_tank)
+        #print 'in tank is '+str(key_tank)
         if self.version == 'status':
             if type(key_tank) is list:
                 key_list = [InlineKeyboardButton(text='Reset all', callback_data='all reset')]
@@ -111,6 +111,8 @@ def messages(target_id, text):
     bot.sendMessage(target_id, text)
 
 def on_chat_message(msg):
+    #print 'message received'
+    #print msg
     global dur
     global vers
     content_type, chat_type, chat_id = telepot.glance(msg)
@@ -283,8 +285,8 @@ def battstatus_mess(chat_id):
             bad.append(x)
     message = bot.sendMessage(chat_id, data, reply_markup=battst.format_keys(bad))
 
-TOKEN = creds.testbotAPIKey
-# TOKEN = creds.botAPIKey
+#TOKEN = creds.testbotAPIKey
+TOKEN = creds.botAPIKey
 botID = creds.bot_ID
 bot = telepot.Bot(TOKEN)
 

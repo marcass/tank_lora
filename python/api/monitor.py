@@ -251,9 +251,6 @@ def port_start():
         rcv = readlineCR(port)
         # rcv = readlineCR_test(port)
 
-#setup port and start loop in production
-port_start()
-
 # testing with junk data (comment out prodn)
 #arduino formats message as PY;<nodeID>;<waterlevle;batteryvoltage;>\r\n
 # myThread = Thread(target=junk_timer, args=(10,))
@@ -262,3 +259,6 @@ port_start()
 #start the message bot
 telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
 print('Listening ...')
+
+#setup port and start loop in production
+port_start()
