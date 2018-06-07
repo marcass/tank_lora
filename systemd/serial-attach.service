@@ -3,7 +3,7 @@ Description=Python serial listener for incoming tank data
  
 [Service]
 Type=simple
-User=www-data
+User=pi
 ExecStart=/usr/bin/python /home/marcus/git/tank_lora/python/api/monitor.py
 
 [Install]
