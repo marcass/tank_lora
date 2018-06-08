@@ -6,7 +6,8 @@ import App from './App'
 import router from './router'
 import VueAuth from '@websanova/vue-auth'
 // import BASE_URL from '../utils/tank-api'
-const BASE_URL = 'https://skibo.duckdns.org/tanktestapi'
+const BASE_URL = 'http://localhost/tanktestapi'
+// const BASE_URL = 'https://wilsonbay.duckdns.org/tanktestapi'
 // export { BASE_URL }
 
 Vue.router = router
