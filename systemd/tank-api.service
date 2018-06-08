@@ -2,8 +2,9 @@
 Description=Flask app for tank monitor
 
 [Service]
-User=marcus
-ExecStart=/usr/local/bin/uwsgi --ini /home/pi/git/tank_lora/python/api/uwsgi-api.ini
+User=pi
+#ExecStart=/usr/local/bin/uwsgi --ini /home/pi/git/tank_lora/python/api/uwsgi-api.ini
+ExecStart=/usr/bin/python /home/pi/git/tank_lora/python/api/tank_views.py
 Restart=always
 KillSignal=SIGQUIT
 #Type=notify

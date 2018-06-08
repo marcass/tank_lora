@@ -6,8 +6,8 @@ import Vue from 'vue'
 
 Vue.use(VueAxios, axios)
 
-const BASE_URL = 'http://localhost/tanktestapi';
-// const BASE_URL = 'https://wilsonbay.duckdns.org/tanktestapi';
+// const BASE_URL = 'http://localhost/tanktestapi';
+const BASE_URL = 'https://wilsonbay.duckdns.org/tanktestapi';
 // const BASE_URL = 'http://localhost:5000';
 Vue.axios.defaults.baseURL = BASE_URL;
 axios.defaults.headers.post['Content-Type'] = 'application/json';

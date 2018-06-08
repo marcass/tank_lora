@@ -18,7 +18,7 @@ app.config['JWT_HEADER_TYPE'] = 'Bearer'
 @app.route('/auth/login', methods=['POST'])
 def auth():
     '''
-    curl -X POST -H "Content-Type: application/json" -d '{"username":"mw", "password": "pass"} http://127.0.0.1:5000/auth/login
+    curl -X POST -H "Content-Type: application/json" -d '{"username":"mw", "password": "pass"}' http://127.0.0.1:5000/auth/login
     '''
     username = request.json.get('username', None)
     password = request.json.get('password', None)

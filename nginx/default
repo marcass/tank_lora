@@ -1,4 +1,4 @@
-# add to /etc/nginx/sites-available/default
+# add to /etc/nginx/sites-available/default if using uwsgi
 
         #tanktest api
         location /tanktestapi {
@@ -7,4 +7,12 @@
         location @tanktestapi {
                 include uwsgi_params;
                 uwsgi_pass unix:///tmp/api.sock;
+        }
+
+# couldn't get uwsgi to work for pi so used dev flask (naughty)
+
+        #tanktest api
+        location /tanktestapi {
+                rewrite ^/tanktestapi(.*) $1 break;
+                proxy_pass http://127.0.0.1:5000/;
         }
