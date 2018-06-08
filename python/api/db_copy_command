@@ -12,3 +12,38 @@ main: /home/marcus/git/tank_lora/python/api/tank_database.db
 real_data: /home/marcus/git/tank_lora/python/api/real_data.db
 sqlite> insert into main.measurements(timestamp, tank_id, water_volume, voltage) select timestamp, cast(tank_id as text), water_volume, voltage from real_data.measurements;
 sqlite> .quit
+
+
+reverse proxy command:
+ssh -R 8080:localhost:80 best.nose@35.230.90.52
+
+in nginx config of GC:
+location / {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to displaying a 404.
+                #try_files $uri $uri/ =404;
+                proxy_pass http://localhost:8080;
+        }
+
+in sshd_config may need to add:
+GatewayPorts yes
+AllowTcpForwarding yes
+
+Need to set the tunnel up with autossh:
+
+[Unit]
+Description=Keeps a tunnel to 'google instance' open
+After=network-online.target
+
+[Service]
+User=pi
+# -p [PORT]
+# -l [user]
+# -M 0 --> no monitoring
+# -N Just open the connection and do nothing (not interactive)
+# LOCALPORT:IP_ON_EXAMPLE_COM:PORT_ON_EXAMPLE_COM
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/bin/autossh -M 0 -N -q -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -R 8080:localhost:80 -i /home/pi/.ssh/id_rsa best.nose@http://35.230.90.52
+
+[Install]
+WantedBy=multi-user.target
