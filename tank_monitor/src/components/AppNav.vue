@@ -20,7 +20,7 @@ export default {
   methods: {
     onNodeSelected (node) {
       // var data = this.data
-      console.log('data ' + node.text)
+      // console.log('data ' + node.text)
       if (node.text === 'Logout') {
         this.$auth.logout({
           makeRequest: false,
@@ -31,8 +31,8 @@ export default {
             console.log('error ' + this.context)
           }
         })
-        console.log('logout pressed')
-        console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
+        // console.log('logout pressed')
+        // console.log('user = ' + this.$auth.user().username + ' role = ' + this.$auth.user().role)
         this.$router.push({name: 'Login'})
       } else {
         this.$router.push({name: node.text})
