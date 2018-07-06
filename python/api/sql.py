@@ -8,6 +8,7 @@ from datetime import timedelta
 from dateutil import parser
 import creds
 import ast
+import ciso8601
 
 # defs for funcitons in Tank class
 def get_db():
@@ -79,6 +80,8 @@ def localtime_from_response(resp):
 def utc_from_string(payload):
     local = pytz.timezone(tz)
     try:
+        #try ciso8601 if parseing is slow
+        # naive = ciso8601.parse_datetime(payload)
         naive = datetime.datetime.strptime(payload, "%Y-%m-%dT%H:%M:%S.%fZ")
     except:
         # print 'not first format'
