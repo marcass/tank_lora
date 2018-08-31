@@ -25,6 +25,7 @@ import creds
 import sql
 import numpy as np
 from numpy import medain
+import tank_data
 
 #global variables
 build_list = []
@@ -425,8 +426,11 @@ def sort_data(data):
         batt = data[2]
         try:
             dist = int(dist)
+            print 'in distance is '+str(dist)
             rec_tank.water_buff.append(dist)
             filtered_dist = median(rec_tank.water_buff)
+            print rec_tank.water_buff
+            print 'filtered in dist is 'str(filtered_dist)
             if (filtered_dist < rec_tank.invalid_min) or (filtered_dist > rec_tank.max_payload):
                 print 'Payload out of range'
                 level = None
@@ -434,6 +438,7 @@ def sort_data(data):
                 print 'payload in range'
                 dist = filtered_dist - rec_tank.invalid_min
                 level = float(rec_tank.pot_dist - dist)/float(rec_tank.pot_dist) * 100.0
+                tank_data.post_data({'masurement': 'tanks', 'type':'water_level', 'sensor':rec_tank.name 'group': 'rob_tank', 'value':level})
                 if level < rec_tank.min_percent:
                     #print rec_tank.name +' under thresh'
                     #print rec_tank.name+' status prechange is '+rec_tank.statusFlag
@@ -460,6 +465,7 @@ def sort_data(data):
             batt = float(batt)
             rec_tank.batt_buff.append(batt)
             batt = median(rec_tank.batt_buff)
+            tank_data.post_data({'masurement': 'tanks', 'type':'battery_level', 'sensor':rec_tank.name 'group': 'rob_tank', 'value':batt})
             if (batt == 0) or (batt > 5.0):
                 batt = None
             elif batt < 3.2:
