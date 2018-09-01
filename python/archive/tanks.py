@@ -12,7 +12,7 @@ class Tanks:
         self.diam = diam                 #diameter of tank in cm
         self.max_payload = max_payload   #Distatnce from sensor to water outlet in tank in cm
         self.invalid_min = invalid_min   #Distatnce from sensor probe end to water level in full tank
-        self.min_vol = min_vol 
+        self.min_vol = min_vol
         self.line_colour = line_colour
         self.calced_vol = ((self.diam / 2.) ** 2. * 3.14 * self.max_payload)/1000.
         try:
@@ -26,14 +26,17 @@ class Tanks:
         self.pngpath = '/home/pi/git/tank_lora/python/'
         self.min_percent = min_percent
         self.pot_dist = self.max_payload - self.invalid_min
+        # setup cirluclar buffer for values
+        self.batt_buff = deque(maxlen=5)
+        self.water_buff = deque(maxlen=5)
         #append instance to tank_list
         tank_list.append(self)
-        
+
     def volume(self, payload):
         #litres (measurements in cm)
         actual_vol = self.calced_vol - ((self.diam / 2.) ** 2. * 3.14 * payload/1000.) # payload variable set in serial port function
         return actual_vol
-    
+
     def set_status(self, status):
         #need to do a write to external file (eg status.py)
         #f = open('myfile', 'w')
@@ -48,7 +51,7 @@ class Tanks:
             print 'status changed via method'
         else:
             print 'status unchanged via method'
-            
+
     def get_status(self):
         #on initialisation need to get from external file, (eg status.py)
         #if self.statusFlag == 'bad':
@@ -71,7 +74,7 @@ class Tanks:
             print 'status changed via method'
         else:
             print 'status unchanged via method'
-            
+
     def get_batt_status(self):
         #on initialisation need to get from external file, (eg status.py)
         #if self.battstatusFlag == 'bad':
@@ -79,7 +82,7 @@ class Tanks:
         #elif self.battstatusFlag == 'OK':
             #print 'it should be OK'
         return self.battstatusFlag
-            
+
 def ret_status():
     global status_dict_out
     try:
@@ -91,7 +94,7 @@ def ret_status():
         print 'No status file exception'
         status_dict_out = -1
         return status_dict_out
-        
+
 def ret_battstatus():
     global battstatus_dict_out
     try:
@@ -112,7 +115,7 @@ tz = 'Pacific/Auckland'
 
 ret_status()
 ret_battstatus()
-    
+
 t = Tanks('top',   '1', 370, 300, 45, 12000, 20.0, 'b')
 n = Tanks('noels', '2', 200, 100, 20, 4000,  10.0, 'g')
 s = Tanks('sals',  '3', 140, 110, 27, 400,   10.0, 'r')
@@ -137,5 +140,3 @@ pers_status_dict.close()
 pers_battstatus_dict = open(battstatus_file, 'w')
 pers_battstatus_dict.write(str(battstatus_dict_in))
 pers_battstatus_dict.close()
-
-
