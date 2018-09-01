@@ -76,7 +76,7 @@ def post_data(data):
     if '200' not in str(resp):
         try:
             getToken()
-            requests.post(DATA_URL, json = data, headers = headersi)
+            requests.post(DATA_URL, json = data, headers = headers)
         except:
             print 'did not work for second time'
     else:
