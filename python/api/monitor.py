@@ -202,11 +202,14 @@ def sort_data(data):
     buff = buffer_by_name_dict[in_tank]
     try:
         dist = int(data[1])
+        dist = buff.filtered_water(dist)
     except:
         dist = None
-    dist = buff.filtered_water(dist)
-    batt = float(data[2])
-    batt = buff.filtered_batt(batt)
+    try:
+        batt = float(data[2])
+        batt = buff.filtered_batt(batt)
+    except:
+        batt = None
     try:
         if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
             print 'Payload out of range'
