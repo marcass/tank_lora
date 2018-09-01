@@ -189,8 +189,9 @@ def sort_data(data):
     in_node = data[0]
     tank_data = sql.get_tank(in_node, 'id')
     # print tank_data
+    in_tank = tank_data['name']
     if len(tank_data)>0:
-        print 'found tank is '+tank_data['name']
+        print 'found tank is '+in_tank
     else:
         print 'tank not found'
         return
