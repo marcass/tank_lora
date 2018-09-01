@@ -187,6 +187,7 @@ def sort_data(data):
     global vers
     # try:
     in_node = data[0]
+    print 'in node = '+str(in_node)
     tank_data = sql.get_tank(in_node, 'id')
     # print tank_data
     in_tank = tank_data['name']
