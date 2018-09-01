@@ -64,7 +64,7 @@ def getToken():
         jwt = tokens['access_token']
         jwt_refresh = tokens['refresh_token']
         headers = {"Authorization":"Bearer %s" %jwt}
-        print 'set headers'
+        print headers 
     except:
         print 'oops, no token for you'
 
@@ -75,6 +75,7 @@ def post_data(data):
     if (jwt == ''):
         print 'Getting token'
         getToken()
+    print 'about to send first'
     resp = requests.post(DATA_URL, json = data, headers = headers)
     #print 'JWT = '+str(jwt)
     print 'First response is: ' +str(resp)
@@ -82,7 +83,8 @@ def post_data(data):
         print 'Oops, not authenticated'
         try:
             getToken()
-            requests.post(DATA_URL, json = data, headers = headersi)
+            print 'about to send data second'
+            requests.post(DATA_URL, json = data, headers = headers)
             ret = {'Status': 'Error', 'Message': 'Got token'}
             print 'Post NOT 200 response is: ' +str(r)
         except:
