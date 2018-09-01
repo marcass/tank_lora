@@ -59,7 +59,7 @@ def getToken():
     global headers
     r = requests.post(AUTH_URL, json = {'username': creds.user, 'password': creds.password})
     tokens = r.json()
-    #print 'token data is: ' +str(tokens)
+    print 'token data is: ' +str(tokens)
     try:
         jwt = tokens['access_token']
         jwt_refresh = tokens['refresh_token']
@@ -187,6 +187,7 @@ def sort_data_test(data):
 
 def sort_data(data):
     global vers
+    global sortThread
     # try:
     in_node = data[0]
     print 'in node = '+str(in_node)
@@ -266,6 +267,7 @@ def sort_data(data):
     sortThread.stop()
 
 def readlineCR(port):
+    global sortThread
     try:
         rv = ''
         while True:
