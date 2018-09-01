@@ -185,74 +185,74 @@ def sort_data_test(data):
 
 def sort_data(data):
     global vers
+    # try:
+    in_node = data[0]
+    tank_data = sql.get_tank(in_node, 'id')
+    # print tank_data
+    if len(tank_data)>0:
+        print 'found tank is '+tank_data['name']
+    else:
+        print 'tank not found'
+        return
+    if in_tank not in buffer_by_name_dict:
+        obj = in_tank
+        obj = Buffer(in_tank)
+    buff = buffer_by_name_dict[in_tank]
+    dist = int(data[1])
+    dist = buff.filtered_water(dist)
+    batt = float(data[2])
+    batt = buff.filtered_batt(batt)
     try:
-        in_node = data[0]
-        tank_data = sql.get_tank(in_node, 'id')
-        # print tank_data
-        if len(tank_data)>0:
-            print 'found tank is '+tank_data['name']
-        else:
-            print 'tank not found'
-            return
-        if in_tank not in buffer_by_name_dict:
-            obj = in_tank
-            obj = Buffer(in_tank)
-        buff = buffer_by_name_dict[in_tank]
-        dist = int(data[1])
-        dist = buff.filtered_water(dist)
-        batt = float(data[2])
-        batt = buff.filtered_batt(batt)
-        try:
-            if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
-                print 'Payload out of range'
-                level = None
-            else:
-                print 'payload in range'
-                dist = dist - int(tank_data['min_dist'])
-                level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
-                post_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': level, 'measurement': 'tanks'})
-                if level < tank_data['min_percent']:
-                    print tank_data['name']+' under thresh'
-                    if tank_data['level_status'] != 'bad':
-                        vers = 'water'
-                        graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', 'days', 'water')
-                        # test send_graph
-                        # telegram.send_graph(creds.marcus_ID, graph)
-                        # telegram.bot.sendMessage(creds.marcus_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
-                        # pruduction send
-                        telegram.send_graph(creds.group_ID, graph)
-                        telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
-                        sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
-                    elif tank_data['level_status'] == 'bad':
-                        print 'ignoring low level as status flag is bad'
-                    else:
-                        print 'status flag error'
-                else:
-                    print 'level fine, doing nothing'
-        except:
-            print 'exception for some reason'
+        if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
+            print 'Payload out of range'
             level = None
-        try:
-            # if (batt == 0) or (batt > 5.0):
-            #     batt = None
-            post_data({'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': batt, 'measurement': 'tanks'})
-            if batt < 3.2:
-                if tank_data['batt_status'] != 'low':
-                    # vers = 'batt'
-                    # plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
-                    # telegram.send_graph()
-                    sql.write_tank_col(tank_data['name'], 'batt_status', 'low')
-                elif tank_data['batt_status'] == 'low':
-                    print 'ignoring low battery as status flag is '+tank_data['batt_status']
+        else:
+            print 'payload in range'
+            dist = dist - int(tank_data['min_dist'])
+            level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+            post_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': level, 'measurement': 'tanks'})
+            if level < tank_data['min_percent']:
+                print tank_data['name']+' under thresh'
+                if tank_data['level_status'] != 'bad':
+                    vers = 'water'
+                    graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', 'days', 'water')
+                    # test send_graph
+                    # telegram.send_graph(creds.marcus_ID, graph)
+                    # telegram.bot.sendMessage(creds.marcus_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
+                    # pruduction send
+                    telegram.send_graph(creds.group_ID, graph)
+                    telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
+                    sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
+                elif tank_data['level_status'] == 'bad':
+                    print 'ignoring low level as status flag is bad'
                 else:
                     print 'status flag error'
-        except:
-            batt = None
-        #add to db
-        # print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +sql.tanks_by_nodeID[in_node].name
-        sql.add_measurement(in_node,level,batt)
+            else:
+                print 'level fine, doing nothing'
     except:
-        print 'malformed string'
+        print 'exception for some reason'
+        level = None
+    try:
+        # if (batt == 0) or (batt > 5.0):
+        #     batt = None
+        post_data({'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': batt, 'measurement': 'tanks'})
+        if batt < 3.2:
+            if tank_data['batt_status'] != 'low':
+                # vers = 'batt'
+                # plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
+                # telegram.send_graph()
+                sql.write_tank_col(tank_data['name'], 'batt_status', 'low')
+            elif tank_data['batt_status'] == 'low':
+                print 'ignoring low battery as status flag is '+tank_data['batt_status']
+            else:
+                print 'status flag error'
+    except:
+        batt = None
+    #add to db
+    # print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +sql.tanks_by_nodeID[in_node].name
+    sql.add_measurement(in_node,level,batt)
+    # except:
+    #     print 'malformed string'
 
 def readlineCR(port):
     try:
