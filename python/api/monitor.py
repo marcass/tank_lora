@@ -48,6 +48,8 @@ class Buffer:
         return int(median(self.batt_buff))
 
 # posting stuff
+AUTH_URL = 'https://skibo.duckdns.org/api/auth/login'
+DATA_URL = 'https://skibo.duckdns.org/api/data'
 jwt = ''
 jwt_refresh = ''
 headers = ''
@@ -279,7 +281,7 @@ def readlineCR(port):
                     print rv
                     rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                     print rec_split
-                    sortThread = Thread(target=sort_data, args=(rec_split[1:4]),)
+                    sortThread = Thread(target=sort_data, args=([rec_split[1:4]]),)
                     sortThread.start()
                     # sort_data(rec_split[1:4])
                     #q.put(rec_split[1:4])           #put data in queue for processing at rate
