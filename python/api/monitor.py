@@ -72,10 +72,10 @@ def post_data(data):
     if (jwt == ''):
         print 'Getting token'
         getToken()
-    ret = requests.post(DATA_URL, json = data, headers = headers)
+    resp = requests.post(DATA_URL, json = data, headers = headers)
     #print 'JWT = '+str(jwt)
-    #print 'First response is: ' +str(ret)
-    if '200' not in str(ret):
+    print 'First response is: ' +str(resp)
+    if '200' not in str(resp):
         print 'Oops, not authenticated'
         try:
             getToken()
