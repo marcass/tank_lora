@@ -64,6 +64,7 @@ def getToken():
         jwt = tokens['access_token']
         jwt_refresh = tokens['refresh_token']
         headers = {"Authorization":"Bearer %s" %jwt}
+        print 'set headers'
     except:
         print 'oops, no token for you'
 
@@ -86,6 +87,9 @@ def post_data(data):
             print 'Post NOT 200 response is: ' +str(r)
         except:
             ret =  {'Status': 'Error', 'Message': 'Failed ot get token, so cannot perform request'}
+        print 'failed '+str(ret)
+    else:
+        print 'successfully posted'
 
 # Testing using junk data-set
 tank_fake_id = 1
