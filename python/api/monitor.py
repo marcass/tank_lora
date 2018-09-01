@@ -24,7 +24,66 @@ import sql
 import numpy as np
 import telegram
 import plot
+from collections import deque
+from numpy import median
+import requests
 # import tank_views
+
+buffer_by_name_dict = {}
+# setup que circular buffer class
+class Buffer:
+    def __init__(self, name):
+        global buffer_by_name_dict
+        self.name = name
+        self.water_buff = deque([],3)
+        self.batt_buff = deque([],3)
+        buffer_by_name_dict[self.name] = self
+    def filtered_water(self, val):
+        print 'before '+str(self.water_buff)
+        self.water_buff.append(val)
+        print 'after '+str(self.water_buff)
+        return int(median(self.water_buff))
+    def filtered_batt(self, val):
+        self.batt_buff.append(val)
+        return int(median(self.batt_buff))
+
+# posting stuff
+jwt = ''
+jwt_refresh = ''
+headers = ''
+def getToken():
+    global jwt
+    global jwt_refresh
+    global headers
+    r = requests.post(AUTH_URL, json = {'username': creds.user, 'password': creds.password})
+    tokens = r.json()
+    #print 'token data is: ' +str(tokens)
+    try:
+        jwt = tokens['access_token']
+        jwt_refresh = tokens['refresh_token']
+        headers = {"Authorization":"Bearer %s" %jwt}
+    except:
+        print 'oops, no token for you'
+
+def post_data(data):
+    global jwt
+    global jwt_refresh
+    global headers
+    if (jwt == ''):
+        print 'Getting token'
+        getToken()
+    ret = requests.post(DATA_URL, json = data, headers = headers)
+    #print 'JWT = '+str(jwt)
+    #print 'First response is: ' +str(ret)
+    if '200' not in str(ret):
+        print 'Oops, not authenticated'
+        try:
+            getToken()
+            requests.post(DATA_URL, json = data, headers = headersi)
+            ret = {'Status': 'Error', 'Message': 'Got token'}
+            print 'Post NOT 200 response is: ' +str(r)
+        except:
+            ret =  {'Status': 'Error', 'Message': 'Failed ot get token, so cannot perform request'}
 
 # Testing using junk data-set
 tank_fake_id = 1
@@ -71,12 +130,19 @@ def sort_data_test(data):
     tank_data = sql.get_tank(in_node, 'id')
     # print tank_data
     if len(tank_data)>0:
-        print 'found tank is '+tank_data['name']
+        in_tank = tank_data['name']
+        print 'found tank is '+in_tank
     else:
         print 'tank not found'
         return
+    if in_tank not in buffer_by_name_dict:
+        obj = in_tank
+        obj = Buffer(in_tank)
+    buff = buffer_by_name_dict[in_tank]
     dist = int(data[1])
+    dist = buff.filtered_water(dist)
     batt = float(data[2])
+    batt = buff.filtered_batt(batt)
     if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
         print 'Payload out of range'
         level = None
@@ -102,10 +168,9 @@ def sort_data_test(data):
                 print 'status flag error'
         else:
             print 'level fine, doing nothing'
-    batt = float(batt)
-    if (batt == 0) or (batt > 5.0):
-        batt = None
-    elif batt < 3.2:
+    # if (batt == 0) or (batt > 5.0):
+    #     batt = None
+    if batt < 3.2:
         if tank_data['batt_status'] != 'low':
             # vers = 'batt'
             # plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
@@ -129,8 +194,14 @@ def sort_data(data):
         else:
             print 'tank not found'
             return
+        if in_tank not in buffer_by_name_dict:
+            obj = in_tank
+            obj = Buffer(in_tank)
+        buff = buffer_by_name_dict[in_tank]
         dist = int(data[1])
+        dist = buff.filtered_water(dist)
         batt = float(data[2])
+        batt = buff.filtered_batt(batt)
         try:
             if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
                 print 'Payload out of range'
@@ -139,6 +210,7 @@ def sort_data(data):
                 print 'payload in range'
                 dist = dist - int(tank_data['min_dist'])
                 level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+                post_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': level, 'measurement': 'tanks'})
                 if level < tank_data['min_percent']:
                     print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
@@ -161,10 +233,10 @@ def sort_data(data):
             print 'exception for some reason'
             level = None
         try:
-            batt = float(batt)
-            if (batt == 0) or (batt > 5.0):
-                batt = None
-            elif batt < 3.2:
+            # if (batt == 0) or (batt > 5.0):
+            #     batt = None
+            post_data({'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': batt, 'measurement': 'tanks'})
+            if batt < 3.2:
                 if tank_data['batt_status'] != 'low':
                     # vers = 'batt'
                     # plot.plot_tank(rec_tank, '1',creds.marcus_ID, 'days')
