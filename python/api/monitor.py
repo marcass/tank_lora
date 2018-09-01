@@ -263,10 +263,10 @@ def sort_data(data):
     #     print 'malformed string'
 
 def readlineCR(port):
-    # try:
-    rv = ''
-    while True:
-        if port.in_waiting:
+    try:
+        rv = ''
+        while True:
+            # if port.in_waiting:
             ch = port.read()
             rv += ch
             if ch=='\n':# or ch=='':
@@ -281,12 +281,12 @@ def readlineCR(port):
                     sort_data(rec_split[1:4])
                     #q.put(rec_split[1:4])           #put data in queue for processing at rate
                     rv = ''
-    # except (KeyboardInterrupt, SystemExit):
-    #     print "Interrupted"
-    #     sys.exit()
-    # except:
-    #     print 'failed on port read'
-    #     port_start()
+    except (KeyboardInterrupt, SystemExit):
+        print "Interrupted"
+        sys.exit()
+    except:
+        print 'failed on port read'
+        port_start()
 
 def readlineCR_test(port):
     rv = ''
