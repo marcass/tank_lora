@@ -8,7 +8,7 @@ from datetime import timedelta
 from dateutil import parser
 import creds
 import ast
-import ciso8601
+#import ciso8601
 
 # defs for funcitons in Tank class
 def get_db():
