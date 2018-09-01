@@ -261,6 +261,7 @@ def sort_data(data):
     sql.add_measurement(in_node,level,batt)
     # except:
     #     print 'malformed string'
+    sortThread.stop()
 
 def readlineCR(port):
     try:
@@ -278,7 +279,9 @@ def readlineCR(port):
                     print rv
                     rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                     print rec_split
-                    sort_data(rec_split[1:4])
+                    sortThread = Thread(target=sort_data, args=(rec_split[1:4]),)
+                    sortThread.start()
+                    # sort_data(rec_split[1:4])
                     #q.put(rec_split[1:4])           #put data in queue for processing at rate
                     rv = ''
     except (KeyboardInterrupt, SystemExit):
