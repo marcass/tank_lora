@@ -187,7 +187,6 @@ def sort_data_test(data):
 
 def sort_data(data):
     global vers
-    global sortThread
     # try:
     in_node = data[0]
     print 'in node = '+str(in_node)
@@ -264,10 +263,8 @@ def sort_data(data):
     sql.add_measurement(in_node,level,batt)
     # except:
     #     print 'malformed string'
-    sortThread.stop()
 
 def readlineCR(port):
-    global sortThread
     try:
         rv = ''
         while True:
@@ -283,6 +280,10 @@ def readlineCR(port):
                     print rv
                     rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
                     print rec_split
+                    if sortThread.is_alive():
+                        print "Thread lives"
+                    else:
+                        print "Thread died"
                     sortThread = Thread(target=sort_data, args=([rec_split[1:4]]),)
                     sortThread.start()
                     # sort_data(rec_split[1:4])
