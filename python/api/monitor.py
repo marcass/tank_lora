@@ -199,7 +199,10 @@ def sort_data(data):
         obj = in_tank
         obj = Buffer(in_tank)
     buff = buffer_by_name_dict[in_tank]
-    dist = int(data[1])
+    try:
+        dist = int(data[1])
+    except:
+        dist = None
     dist = buff.filtered_water(dist)
     batt = float(data[2])
     batt = buff.filtered_batt(batt)
