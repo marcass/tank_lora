@@ -39,13 +39,11 @@ class Buffer:
         self.batt_buff = deque([],3)
         buffer_by_name_dict[self.name] = self
     def filtered_water(self, val):
-        print 'before '+str(self.water_buff)
         self.water_buff.append(val)
-        print 'after '+str(self.water_buff)
         return int(median(self.water_buff))
     def filtered_batt(self, val):
         self.batt_buff.append(val)
-        return int(median(self.batt_buff))
+        return float(median(self.batt_buff))
 
 # posting stuff
 AUTH_URL = 'https://skibo.duckdns.org/api/auth/login'
