@@ -17,7 +17,6 @@ import random
 from time import sleep
 import sys
 import time
-from threading import Timer
 import serial
 import creds
 import sql
