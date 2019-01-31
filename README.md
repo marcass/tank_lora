@@ -51,6 +51,13 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
    * Can also use measure echo pin pulse using a while loop or PulseIn builtin
 * LoRa http://www.arduinolibraries.info/libraries/lo-ra
 
+## Lora gateway
+* Using a raspberry pi
+* mimimising writes to SD card for longevity
+* using docker to speed setup on new hardware
+   * https://www.containerstack.io/install-docker-on-raspbian/
+
+
 ### Starting services
 
 * Starting services
