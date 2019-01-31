@@ -56,6 +56,11 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * mimimising writes to SD card for longevity
 * using docker to speed setup on new hardware
    * https://www.containerstack.io/install-docker-on-raspbian/
+* may need to rebuild kernel ( https://github.com/docker/for-linux/issues/545 ) for this error when building images:
+   * unable to find "net_prio" in controller set: unknown
+   * do this to rebuild:
+      * https://www.raspberrypi.org/documentation/linux/kernel/building.md
+      * https://www.raspberrypi.org/documentation/linux/kernel/configuring.md
 
 
 ### Starting services
