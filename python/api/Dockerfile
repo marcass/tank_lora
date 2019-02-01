@@ -6,4 +6,4 @@ COPY tank_database.db /
 
 RUN pip install serial numpy telegram plot requests pytz passlib python-dateutil telepot
 
-#CMD [ "python", "./monitor.py" ]
+CMD [ "python", "./monitor.py" ]

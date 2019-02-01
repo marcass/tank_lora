@@ -113,7 +113,10 @@ sql_span = None
 vers = None
 
 #production port (uncomment for production)
-s_port = '/dev/LORA'
+# s_port = '/dev/LORA'
+s_port = '/dev/ttyUSB0'
+baud = 9600
+# baud = 115200
 
 #initialise global port
 port = None
@@ -311,7 +314,7 @@ def readlineCR_test(port):
 def port_check(in_port):
     global port
     try:
-        port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
+        port = serial.Serial(in_port, baudrate=baud, timeout=3.0)
         print(s_port+' found')
         return port
     except:
