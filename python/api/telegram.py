@@ -119,7 +119,7 @@ def on_chat_message(msg):
     try:
         text = msg['text']
         tank_data = sql.get_all_tanks()
-    	tank_names = tank_data['name']
+        tank_names = tank_data['name']
         help_text = "This bot will alert you to low water levels in the farm tanks. Any message you send will be replied to by the bot. If it is not formatted correctly you will get this message again. Sending the following will give you a result:\n'/status' to get the status of all tanks  (or click the status button)\n'/status [tank name]' to get individual tank status with the option to graph them. Valid names are: "+str(tank_names)+" \n'/plot [number of days/hours]' to build a graph with custom tank volumes in it over [days/hours]"
         if ('/help' in text) or ('/Help' in text) or ('/start' in text):
             message = bot.sendMessage(chat_id, help_text, reply_markup=h.format_keys())
@@ -137,7 +137,7 @@ def on_chat_message(msg):
             in_msg = text.split(' ')
             msg_error = 0
             if len(in_msg) == 2:
-	        dur = in_msg[1]
+                dur = in_msg[1]
                 if dur.isdigit():
                     #message = bot.sendMessage(chat_id, 'Blay, blah', reply_markup=d.format_keys(tanks.tank_list))
                     message = bot.sendMessage(chat_id, "Please select the button(s) that apply in each row of buttons, then click the 'Build' button to produce the graph", reply_markup=d.format_keys(tank_names))
