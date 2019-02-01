@@ -55,8 +55,9 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * Using a raspberry pi
 * mimimising writes to SD card for longevity
    * add this to /etc/fstab:
-   ```
-   #use tmpfs to write to volitile memory thus saving sdcard
+   
+```
+#use tmpfs to write to volitile memory thus saving sdcard
 tmpfs   /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=100m    0 0
 tmpfs    /tmp    tmpfs    defaults,noatime,nosuid,size=100m    0 0
 tmpfs    /var/tmp    tmpfs    defaults,noatime,nosuid,size=30m    0 0
@@ -65,6 +66,7 @@ tmpfs    /var/run    tmpfs    defaults,noatime,nosuid,mode=0755,size=2m    0 0
 tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,size=3m    0 0
 
 ```
+
 * using docker to speed setup on new hardware
    * https://www.containerstack.io/install-docker-on-raspbian/
 * may need to rebuild kernel ( https://github.com/docker/for-linux/issues/545 ) for this error when building images:
