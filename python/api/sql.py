@@ -64,7 +64,10 @@ class Tanks:
             return {'Status': 'Error', 'Message': 'Tank not added'}
 
 #Variable stuff
-tanks_db = '/home/pi/git/tank_lora/python/api/tank_database.db'
+# for docker
+tanks_db = '/app/tank_database.db'
+# for local running
+# tanks_db = '/home/pi/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
 
 ########################Time stuff #####################################
