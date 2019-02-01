@@ -105,7 +105,7 @@ def send_graph(target_id, graph):
     try:
         bot.sendPhoto(target_id, graph)
     except:
-        print('graph send failed')
+        print 'graph send failed'
 
 def messages(target_id, text):
     bot.sendMessage(target_id, text)
@@ -163,7 +163,7 @@ def on_callback_query(msg):
     global build_id
     global vers
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    print(('Callback Query:', query_id, from_id, query_data))
+    print('Callback Query:', query_id, from_id, query_data)
     #print msg
     tank_data = sql.get_all_tanks()
     target_id = msg['message']['chat']['id']
@@ -194,7 +194,7 @@ def on_callback_query(msg):
                 build_colour.append(query_tank_colour)
                 build_id.append(query_tank_id)
             else:
-                print(query_tank+' already added')
+                print query_tank+' already added'
             return
         if 'reset batt' in query_data:
             sql.write_tank_col(tank_data['name'][i], 'batt_status', 'OK')
@@ -251,7 +251,7 @@ def on_callback_query(msg):
         conv = str(query_data)
         in_tank_name = msg['message']['text'].split(' ')[0]
         #print 'tank is '+in_tank_name
-        print(tank_data)
+        print tank_data
         if in_tank_name in tank_data['name']:
             i = tank_data['name'].index(in_tank_name)
             vers = 'water'

@@ -5,7 +5,7 @@ import sql
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 matplotlib.rcParams['timezone'] = sql.tz
-import io
+import StringIO
 import base64
 import telegram
 
@@ -15,7 +15,7 @@ def clean_data(data):
     #print data
     #print a.dtype
     b = np.nanstd(a)
-    print(b)
+    print b
     members = len(data)
     for i in range(members):
         if i < 5:
@@ -54,8 +54,8 @@ def median_data(data):
 def plot_tank_list(tank_data, period, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
-    img = io.StringIO()
-    print('vers = '+vers)
+    img = StringIO.StringIO()
+    print 'vers = '+vers
     # print tank_data
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
@@ -68,9 +68,9 @@ def plot_tank_list(tank_data, period, q_range, vers):
         data = 'voltage'
         label = 'Battery Voltage'
     title_name = ''
-    print('building a list of tanks')
+    print 'building a list of tanks'
     for x in tank_data['name']:
-        print(x +' tank in list')
+        print x +' tank in list'
         # get index number
         i = tank_data['name'].index(x)
         try:
@@ -83,7 +83,7 @@ def plot_tank_list(tank_data, period, q_range, vers):
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
             # print 'data get failed'
-            print("filtered tank plot failed")
+            print "filtered tank plot failed"
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
@@ -115,8 +115,8 @@ def plot_tank_list(tank_data, period, q_range, vers):
 def plot_tank_list_raw(tank_data, period, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
-    img = io.StringIO()
-    print('vers = '+vers)
+    img = StringIO.StringIO()
+    print 'vers = '+vers
     # print tank_data
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
@@ -129,9 +129,9 @@ def plot_tank_list_raw(tank_data, period, q_range, vers):
         data = 'voltage'
         label = 'Battery Voltage'
     title_name = ''
-    print('building a list of tanks')
+    print 'building a list of tanks'
     for x in tank_data['name']:
-        print(x +' tank in list')
+        print x +' tank in list'
         # get index number
         i = tank_data['name'].index(x)
         try:
@@ -142,7 +142,7 @@ def plot_tank_list_raw(tank_data, period, q_range, vers):
             ax.set(xlabel='Datetime', ylabel=label, title='Tanks '+label)
         except:
             # print 'data get failed'
-            print("Plot tank list raw failed")
+            print "Plot tank list raw failed"
     title_name += ' plot'
     if vers == 'water':
         plt.axhspan(10, 100, facecolor='#2ca02c', alpha=0.3)
@@ -170,8 +170,8 @@ def plot_tank_list_raw(tank_data, period, q_range, vers):
 
 def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
-    img = io.StringIO()
-    print(vers)
+    img = StringIO.StringIO()
+    print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using
@@ -211,8 +211,8 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
 
 def plot_tank_filtered(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
-    img = io.StringIO()
-    print(vers)
+    img = StringIO.StringIO()
+    print vers
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
     # Note that using plt.subplots below is equivalent to using

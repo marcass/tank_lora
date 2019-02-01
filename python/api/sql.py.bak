@@ -108,7 +108,7 @@ def query_via_tankid(tank_id, days_str, q_range):
     except:
         time_range = 1
     plot_range = days_str+' '+q_range
-    print('plot range = '+plot_range)
+    print 'plot range = '+plot_range
     conn, c = get_db()
     #if days is not None:
     #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i days') AND datetime('now','localtime')" % (days), (tank_id,))
@@ -155,8 +155,8 @@ def get_user(column):
 
 def fetch_user_data(payload, col):
     # try:
-    print(payload)
-    print(col)
+    print payload
+    print col
     conn, c = get_db()
     c.execute("SELECT * FROM userAuth WHERE %s=?" %(col), (payload,))
     res = c.fetchall()
@@ -234,7 +234,7 @@ def add_measurement(tank_id,water_volume,voltage):
         c.execute("INSERT INTO measurements VALUES (?,?,?,?)", (datetime.datetime.utcnow(),tank_id,water_volume,voltage) )
         conn.commit() # Save (commit) the changes
     except:
-        print('failed to add to db')
+        print 'failed to add to db'
 
 # Not sure what the role thing in here is for
 def setup_user(user_in, passw, role=0):

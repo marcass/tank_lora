@@ -61,7 +61,7 @@ def getToken():
         jwt_refresh = tokens['refresh_token']
         headers = {"Authorization":"Bearer %s" %jwt}
     except:
-        print('oops, no token for you')
+        print 'oops, no token for you'
 
 def post_data(data):
     global jwt
@@ -75,9 +75,9 @@ def post_data(data):
             getToken()
             requests.post(DATA_URL, json = data, headers = headers)
         except:
-            print('did not work for second time')
+            print 'did not work for second time'
     else:
-        print('successfully posted')
+        print 'successfully posted'
 
 # Testing using junk data-set
 tank_fake_id = 1
@@ -125,9 +125,9 @@ def sort_data_test(data):
     # print tank_data
     if len(tank_data)>0:
         in_tank = tank_data['name']
-        print('found tank is '+in_tank)
+        print 'found tank is '+in_tank
     else:
-        print('tank not found')
+        print 'tank not found'
         return
     if in_tank not in buffer_by_name_dict:
         obj = in_tank
@@ -138,14 +138,14 @@ def sort_data_test(data):
     batt = float(data[2])
     batt = buff.filtered_batt(batt)
     if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
-        print('Payload out of range')
+        print 'Payload out of range'
         level = None
     else:
-        print('payload in range')
+        print 'payload in range'
         dist = dist - int(tank_data['min_dist'])
         level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
         if level < tank_data['min_percent']:
-            print(tank_data['name']+' under thresh')
+            print tank_data['name']+' under thresh'
             if tank_data['level_status'] != 'bad':
                 vers = 'water'
                 graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', 'days', 'water')
@@ -157,11 +157,11 @@ def sort_data_test(data):
                 # telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=a.format_keys(tank_data))
                 sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
             elif tank_data['level_status'] == 'bad':
-                print('ignoring low level as status flag is bad')
+                print 'ignoring low level as status flag is bad'
             else:
-                print('status flag error')
+                print 'status flag error'
         else:
-            print('level fine, doing nothing')
+            print 'level fine, doing nothing'
     # if (batt == 0) or (batt > 5.0):
     #     batt = None
     if batt < 3.2:
@@ -171,9 +171,9 @@ def sort_data_test(data):
             # telegram.send_graph()
             sql.write_tank_col(tank_data['name'], 'batt_status', 'low')
         elif tank_data['batt_status'] == 'low':
-            print('ignoring low battery as status flag is '+tank_data['batt_status'])
+            print 'ignoring low battery as status flag is '+tank_data['batt_status']
         else:
-            print('status flag error')
+            print 'status flag error'
     sql.add_measurement(in_node,level,batt)
 
 
@@ -181,14 +181,14 @@ def sort_data(data):
     global vers
     try:
         in_node = data[0]
-        print('in node = '+str(in_node))
+        print 'in node = '+str(in_node)
         tank_data = sql.get_tank(in_node, 'id')
         # print tank_data
         in_tank = tank_data['name']
         if len(tank_data)>0:
-            print('found tank is '+in_tank)
+            print 'found tank is '+in_tank
         else:
-            print('tank not found')
+            print 'tank not found'
             return
         if in_tank not in buffer_by_name_dict:
             obj = in_tank
@@ -206,15 +206,15 @@ def sort_data(data):
             batt = None
         try:
             if (dist < int(tank_data['min_dist'])) or (dist > int(tank_data['max_dist'])):
-                print('Payload out of range')
+                print 'Payload out of range'
                 level = None
             else:
-                print('payload in range')
+                print 'payload in range'
                 dist = dist - int(tank_data['min_dist'])
                 level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
                 post_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': level, 'measurement': 'tanks'})
                 if level < tank_data['min_percent']:
-                    print(tank_data['name']+' under thresh')
+                    print tank_data['name']+' under thresh'
                     if tank_data['level_status'] != 'bad':
                         vers = 'water'
                         graph = plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], '1', 'days', 'water')
@@ -226,13 +226,13 @@ def sort_data(data):
                         telegram.bot.sendMessage(creds.group_ID, tank_data['name'] +' tank is low', reply_markup=telegram.a.format_keys(tank_data))
                         sql.write_tank_col(tank_data['name'], 'tank_status', 'bad')
                     elif tank_data['level_status'] == 'bad':
-                        print('ignoring low level as status flag is bad')
+                        print 'ignoring low level as status flag is bad'
                     else:
-                        print('status flag error')
+                        print 'status flag error'
                 else:
-                    print('level fine, doing nothing')
+                    print 'level fine, doing nothing'
         except:
-            print('exception for some reason')
+            print 'exception for some reason'
             level = None
         try:
             if (batt == 0) or (batt > 5.0):
@@ -244,9 +244,9 @@ def sort_data(data):
                     # telegram.send_graph()
                     sql.write_tank_col(tank_data['name'], 'batt_status', 'low')
                 elif tank_data['batt_status'] == 'low':
-                    print('ignoring low battery as status flag is '+tank_data['batt_status'])
+                    print 'ignoring low battery as status flag is '+tank_data['batt_status']
                 else:
-                    print('status flag error')
+                    print 'status flag error'
         except:
             batt = None
         post_data({'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': 'rob_tanks'}, 'value': batt, 'measurement': 'tanks'})
@@ -254,7 +254,7 @@ def sort_data(data):
         # print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +sql.tanks_by_nodeID[in_node].name
         sql.add_measurement(in_node,level,batt)
     except:
-        print('malformed string')
+        print 'malformed string'
 
 def readlineCR(port):
     try:
@@ -264,14 +264,14 @@ def readlineCR(port):
             ch = port.read()
             rv += ch
             if ch=='\n':# or ch=='':
-                print(rv)
+                print rv
                 if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevel>;<batteryvoltage>;>\r\n
                     #print 'Printing status flags stuff on receive'
                     #for x in tanks.tank_list:
                         #print x.name +' is ' +x.statusFlag
-                    print(rv)
+                    print rv
                     rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
-                    print(rec_split)
+                    print rec_split
                     #if sortThread.is_alive():
                     #    print "Thread lives"
                     #else:
@@ -282,10 +282,10 @@ def readlineCR(port):
                     #q.put(rec_split[1:4])           #put data in queue for processing at rate
                     rv = ''
     except (KeyboardInterrupt, SystemExit):
-        print("Interrupted")
+        print "Interrupted"
         sys.exit()
     except:
-        print('failed on port read')
+        print 'failed on port read'
         port_start()
 
 def readlineCR_test(port):
@@ -294,14 +294,14 @@ def readlineCR_test(port):
         ch = port.read()
         rv += ch
         if ch=='\n':# or ch=='':
-            print(rv)
+            print rv
             if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevel>;<batteryvoltage>;>\r\n
                 #print 'Printing status flags stuff on receive'
                 #for x in tanks.tank_list:
                     #print x.name +' is ' +x.statusFlag
-                print(rv)
+                print rv
                 rec_split = rv.split(';')   #make array like [PYTHON, nodeID, payloadance]
-                print(rec_split)
+                print rec_split
                 sort_data(rec_split[1:4])
                 #q.put(rec_split[1:4])           #put data in queue for processing at rate
                 rv = ''
@@ -312,7 +312,7 @@ def port_check(in_port):
     global port
     try:
         port = serial.Serial(in_port, baudrate=9600, timeout=3.0)
-        print(s_port+' found')
+        print s_port+' found'
         return port
     except:
         port = None
@@ -323,10 +323,10 @@ def port_start():
     #handle exceptions for absent port (and keep retrying for a while)
     while (port_check(s_port) is None) and (count < 100):
         count = count + 1
-        print(s_port+' not found '+str(count)+' times')
+        print s_port+' not found '+str(count)+' times'
         time.sleep(10)
         if count == 100:
-            print('Exited because serial port not found')
+            print 'Exited because serial port not found'
             sys.exit()
     while True:
         rcv = readlineCR(port)

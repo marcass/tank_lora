@@ -58,7 +58,7 @@ def localtime_from_response(resp):
 def query_via_tankid(tank_id, days_str, q_range):
     time_range = int(days_str)
     plot_range = days_str+' '+q_range
-    print('plot range = '+plot_range)
+    print 'plot range = '+plot_range
     conn, c = get_db()
     #if days is not None:
     #c.execute("SELECT * FROM measurements WHERE tank_id=? AND timestamp BETWEEN datetime('now', '-%i days') AND datetime('now','localtime')" % (days), (tank_id,))
@@ -88,7 +88,7 @@ def clean_data(data):
     #print data
     #print a.dtype
     b = np.nanstd(a)
-    print(b)
+    print b
     members = len(data)
     for i in range(members):
         if i < 5:
@@ -102,13 +102,13 @@ def clean_data(data):
             d = np.nanmean(c)
             #print d
             if data[i] == None:
-                print('None found, doing nothing')
+                print 'None found, doing nothing'
             else:
                 if ((abs(data[i] - d)) > (b/4)):
                     data[i] = None
-                    print('DUMPED')
+                    print 'DUMPED'
                 else:
-                    print('data unchanged')
+                    print 'data unchanged'
         except:
             pass
     return data
@@ -149,9 +149,9 @@ def plot_tank(key_tank, period, q_range):
         #label = 'Battery Voltage'
     #if type(key_tank) is list:
     title_name = ''
-    print('building a list of tanks')
+    print 'building a list of tanks'
     for x in key_tank:
-        print(x.name +' tank in list')
+        print x.name +' tank in list'
     for i in key_tank:
         d = query_via_tankid(i.nodeID, period, q_range)
         cleaned_data = clean_data(d[data])
@@ -196,10 +196,10 @@ def plot_tank(key_tank, period, q_range):
     #handle exceptions for absent port (and keep retrying for a while)
     while (port_check(s_port) is None) and (count < 100):
         count = count + 1
-        print(s_port+' not found '+str(count)+' times')
+        print s_port+' not found '+str(count)+' times'
         time.sleep(10)        
         if count == 100:
-            print('Exited because serial port not found')
+            print 'Exited because serial port not found'
             sys.exit()
     while True:
         rcv = readlineCR(port)

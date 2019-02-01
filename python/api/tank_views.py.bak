@@ -26,7 +26,7 @@ import sys
 import re
 import sql
 import plot
-import io
+import StringIO
 import base64
 from flask import Flask, request, jsonify
 # from flask_cors import CORS
@@ -203,7 +203,7 @@ def getGraph():
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    print(content)
+    print content
     tank_data = sql.get_tank(content['name'], 'tank')
     res =  plot.plot_tank_filtered(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
     # above returns tuple ('z.png', img), need to encode 'img' for return
@@ -217,7 +217,7 @@ def getrawGraph():
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    print(content)
+    print content
     tank_data = sql.get_tank(content['name'], 'tank')
     res =  plot.plot_tank_raw(tank_data['name'], tank_data['id'], tank_data['line_colour'], content['period'], content['range'], content['type'])
     # above returns tuple ('z.png', img), need to encode 'img' for return
@@ -232,7 +232,7 @@ def getGraphs():
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    print(content)
+    print content
     build_id = []
     build_colour = []
     build_list = []
@@ -253,7 +253,7 @@ def getGraphsRaw():
     Receives: image object
     '''
     content = request.get_json(silent=False)
-    print(content)
+    print content
     build_id = []
     build_colour = []
     build_list = []
