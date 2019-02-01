@@ -83,6 +83,12 @@ tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,
 * Seial listener: `sudo systemctl start serial-attach.service`
 * update for flask service and web service (nginix)
 
+Run docker by:
+
+```
+docker run -t -i --rm --privileged -v /dev:/dev tanks/monitor:1.1
+```
+
 ## Testing
 
 # Notes
