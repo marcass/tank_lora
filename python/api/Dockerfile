@@ -1,7 +1,7 @@
-FROM python:2
+FROM python:3
 
 ADD *.py /
 
-RUN pip install numpy telegram plot requests
+RUN pip install serial numpy telegram plot requests
 
 CMD [ "python", "./monitor.py" ]
