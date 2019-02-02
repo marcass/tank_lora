@@ -65,16 +65,11 @@ sudo systemctl enable tmp.mount
 
 ```
 
-   * adding this to fstab caused the root account to be locked (i'd like logging (/var/log) to be mounted in tmpfs:
+   * add this to fstab:
 
 ```
 #use tmpfs to write to volitile memory thus saving sdcard
-tmpfs   /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=100m    0 0
-tmpfs    /tmp    tmpfs    defaults,noatime,nosuid,size=100m    0 0
-tmpfs    /var/tmp    tmpfs    defaults,noatime,nosuid,size=30m    0 0
-tmpfs    /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=100m    0 0
-tmpfs    /var/run    tmpfs    defaults,noatime,nosuid,mode=0755,size=2m    0 0
-tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,size=3m    0 0
+tmpfs   /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=64m    0 0
 
 ```
 To get nginx to work need log files established at boot. Place a file called something like nginx.conf in /usr/lib/tmpfiles.d
