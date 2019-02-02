@@ -113,8 +113,8 @@ sql_span = None
 vers = None
 
 #production port (uncomment for production)
-# s_port = '/dev/LORA'
-s_port = '/dev/ttyUSB0'
+s_port = '/dev/LORA'
+# s_port = '/dev/ttyUSB0'
 baud = 9600
 # baud = 115200
 
