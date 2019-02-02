@@ -56,7 +56,16 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * create udev rules
 * setup autossh
 * mimimising writes to SD card for longevity
-   * add this to /etc/fstab:
+   * make systemd create a tmpfs for /tmp
+   * other 
+
+```
+sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/
+sudo systemctl enable tmp.mount
+
+```
+
+   * adding this to fstab caused the root account to be locked (i'd like logging (/var/log) to be mounted in tmpfs:
 
 ```
 #use tmpfs to write to volitile memory thus saving sdcard
@@ -68,11 +77,10 @@ tmpfs    /var/run    tmpfs    defaults,noatime,nosuid,mode=0755,size=2m    0 0
 tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,size=3m    0 0
 
 ```
-
 To get nginx to work need log files established at boot. Place a file called something like nginx.conf in /usr/lib/tmpfiles.d
 
 ```
-# hack to get nginx working with /var/log mounted on tmpfs
+# hack to get nginx working with /var/log mounted on tmpfs (creates files at boot)
 d /var/log/nginx/error.log nginx nginx 30d
 d /var/log/nginx/access.log nginx nginx 30d
 ```
