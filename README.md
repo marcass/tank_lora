@@ -110,6 +110,14 @@ docker start <name or id>
 
 ````
 
+To get nginx to work need log files established at boot. Place this file in /usr/lib/tmpfiles.d
+
+```
+# hack to get nginx working with /var/log mounted on tmpfs
+d /var/log/nginx/error.log nginx nginx 30d
+d /var/log/nginx/access.log nginx nginx 30d
+```
+
 ## Testing
 
 # Notes
