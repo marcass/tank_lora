@@ -69,7 +69,7 @@ tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,
 
 ```
 
-To get nginx to work need log files established at boot. Place this file in /usr/lib/tmpfiles.d
+To get nginx to work need log files established at boot. Place a file called something like nginx.conf in /usr/lib/tmpfiles.d
 
 ```
 # hack to get nginx working with /var/log mounted on tmpfs
