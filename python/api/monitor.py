@@ -265,8 +265,8 @@ def readlineCR(port):
         while True:
             # if port.in_waiting:
             ch = port.read()
-            rv += ch
-            if ch=='\n':# or ch=='':
+            rv += str(ch, 'UTF-8')
+            if ch==b'\n':# or ch=='':
                 print(rv)
                 if 'PY' in rv:              #arduino formats message as PY;<nodeID>;<waterlevel>;<batteryvoltage>;>\r\n
                     #print 'Printing status flags stuff on receive'

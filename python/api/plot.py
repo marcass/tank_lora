@@ -54,7 +54,8 @@ def median_data(data):
 def plot_tank_list(tank_data, period, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
-    img = io.StringIO()
+    img = io.BytesIO()
+    # img = io.StringIO()
     print('vers = '+vers)
     # print tank_data
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -115,7 +116,8 @@ def plot_tank_list(tank_data, period, q_range, vers):
 def plot_tank_list_raw(tank_data, period, q_range, vers):
     # tank_data is a list of dicts consisting of id, name and line colour for all tanks
     #set up img variable
-    img = io.StringIO()
+    img = io.BytesIO()
+    # img = io.StringIO()
     print('vers = '+vers)
     # print tank_data
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -170,7 +172,8 @@ def plot_tank_list_raw(tank_data, period, q_range, vers):
 
 def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
-    img = io.StringIO()
+    # img = io.StringIO()
+    img = io.BytesIO()
     print(vers)
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')
@@ -211,7 +214,8 @@ def plot_tank_raw(tank_name, tank_id, line_colour, period, q_range, vers):
 
 def plot_tank_filtered(tank_name, tank_id, line_colour, period, q_range, vers):
     #set up img variable
-    img = io.StringIO()
+    # img = io.StringIO()
+    img = io.BytesIO()
     print(vers)
     #print 'vers = '+vers
     format_date = md.DateFormatter('%H:%M\n%d-%m')

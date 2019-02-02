@@ -55,7 +55,7 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * Using a raspberry pi
 * mimimising writes to SD card for longevity
    * add this to /etc/fstab:
-   
+
 ```
 #use tmpfs to write to volitile memory thus saving sdcard
 tmpfs   /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=100m    0 0
@@ -83,11 +83,32 @@ tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,
 * Seial listener: `sudo systemctl start serial-attach.service`
 * update for flask service and web service (nginix)
 
-Run docker by:
+Build image by:
 
 ```
-docker run -t -i --rm --privileged -v /dev:/dev tanks/monitor:1.1
+docker build -t <image name>:<image tag> .
 ```
+
+Run docker by (= create and start):
+
+```
+docker run -t -i --rm --privileged -v /dev:/dev tanks/monitor:1.1 [/bin/bash]
+following will start at boot and restart if failed:
+docker run -t --restart=unless-stopped --privileged -v /dev:/dev tanks/monitor:1.1
+```
+
+Create container by:
+
+```
+docker create -t --privileged -v /dev:/dev tanks/monitor:1.1 [/bin/bash]
+```
+
+Start container by:
+
+```
+docker start <name or id>
+
+````
 
 ## Testing
 

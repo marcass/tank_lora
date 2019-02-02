@@ -25,7 +25,7 @@ def generate_shit():
     packet = 'PY;'+str(tank_fake_id)+';'+str(water)+';'+str(batt)+';'
     print(packet)
     #write packet to virtual port
-    ser.write(packet)
+    ser.write(packet.encode())
     # increment the tank_id
     if (tank_fake_id < 6):
         tank_fake_id += 1
