@@ -93,10 +93,16 @@ d /var/log/nginx/access.log nginx nginx 30d
 * Seial listener: `sudo systemctl start serial-attach.service`
 * update for flask service and web service (nginix)
 
-Build image by:
+Docker images are slow to build on the pi. Build image anywhere by:
 
 ```
 docker build -t <image name>:<image tag> .
+```
+Then copy it via ssh by:
+
+```
+docker save tanks:2.1 | bzip2 | pv | ssh [-p <port>] <user@<host> 'bunzip2 | docker load'
+
 ```
 
 Run docker by (= create and start):
