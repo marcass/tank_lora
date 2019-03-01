@@ -8,9 +8,10 @@ byte destination = 0xFF;
 
 
 void setup() {
+  delay(7000);
   Serial.begin(9600);
   //while (!Serial);
-  randomSeed(analogRead(0));
+//  randomSeed(analogRead(0));
 
   Serial.println("LoRa Sender");
   LoRa.setPins(8, 4, 7);
@@ -28,6 +29,7 @@ void loop() {
   LoRa.endPacket();
   delay(10000);
   counter++;
+  Serial.println("sending");
   
   
 //  for(int x = 1; x < 5; x++) {
