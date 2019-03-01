@@ -7,3 +7,4 @@ rrd*
 *.db
 *.png
 *status.txt
+secrets.h
