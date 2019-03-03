@@ -3,12 +3,12 @@ import re
 import sql
 import plot
 import monitor
-import telegram
+# import telegram
 import io
 import base64
 from flask import Flask, request, jsonify
 import json
-from init import app, jwt
+from init import app
 
 
 @app.route("/")
@@ -50,35 +50,40 @@ def get_tanks_list():
     content = request.get_json(silent=False)
     return jsonify(sql.get_tank_list()), 200
 
+# def removeNonAscii(s):
+#     return "".join(i for i in s if ord(i)<128)
+#
+# @app.route("/tank/data", methods=['POST',])
+# def add_data_point():
+#     '''
+#     Add data from a tank to db
+#     '''
+#     post_data = request.get_data()
+#     try:
+#         data = removeNonAscii(post_data)
+#         payload = json.loads(data)
+#         if 'PY' in payload['value']:
+#             #print 'valid string'
+#             info = post_data.split(";")
+#             tank = info[1]
+#             dist = info[2]
+#             volt = info[3]
+#             'site': data['site'] = {'site': payload['site'], 'tank': tank, 'dist': dist, 'volt' : volt}
+#             monitor.sort_data(content)
+#     except:
+#         content = {'msg': 'excepton'}
+#     return jsonify(content), 200
+
 @app.route("/tank/data", methods=['POST',])
 def add_data_point():
     '''
-    curl -X POST -H "Content-Type: application/json" -d '{"name": , "nodeID": , "diam": , "max_payload": , "invalid_min": , "min_vol": , "min_percent": , "line_colour":  }' http://127.0.0.1:5000/tank/graph/<tank>
-    Returns: {'Status': 'Success', 'Message': 'Tank added'}/{'Status': 'Error', 'Message': 'Tank not added'}
+    Add data from a tank to db
     '''
-    post_data = request.get_data()
-    try:
-        data = removeNonAscii(post_data)
-        payload = json.loads(data)
-        if 'PY' in payload['value']:
-            #print 'valid string'
-            info = post_data.split(";")
-            tank = info[1]
-            dist = info[2]
-            volt = info[3]
-            content = {'site': payload['site'], 'tank': tank, 'dist': dist, 'volt' : volt}
-            monitor.sort_data(content)
-    except:
-        content = {'msg': 'excepton'}
-    return jsonify(content), 200
-
-
     content = request.get_json(silent=False)
-    x = sql.Tanks(content['name'], content['nodeID'], int(content['diam']), int(content['max_payload']), int(content['invalid_min']), int(content['min_vol']), float(content['min_percent']), content['line_colour'] )
-    # del instance as no longetr used and won't be updated on mods in code
-    del x
-    ret = {'Status': 'Success', 'Message': 'Well done'}
-    return jsonify(ret), 200
+    print(content)
+    monitor.sort_data(content)
+    return jsonify({'msg':'OK'}), 200
+
 
 @app.route("/tank/add", methods=['POST',])
 def add_tank():
@@ -210,7 +215,7 @@ except:
     pass
 
 #start the message bot
-telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
+# telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
 
 if __name__ == "__main__":
     app.run()

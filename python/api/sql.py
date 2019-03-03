@@ -65,9 +65,9 @@ class Tanks:
 
 #Variable stuff
 # for docker
-tanks_db = '/tank_database.db'
+#tanks_db = '/tank_database.db'
 # for local running
-# tanks_db = '/home/mw/git/tank_lora/python/api/tank_database.db'
+tanks_db = '/home/marcus/git/tank_lora/python/api/tank_database.db'
 tz = 'Pacific/Auckland'
 
 ########################Time stuff #####################################
