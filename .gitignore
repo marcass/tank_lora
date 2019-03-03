@@ -4,7 +4,7 @@ rrd*
 *.swp
 *.pyc
 *-swp
-*.db
+*.db*
 *.png
 *status.txt
 secrets.h
