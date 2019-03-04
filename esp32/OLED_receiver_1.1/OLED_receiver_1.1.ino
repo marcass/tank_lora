@@ -52,9 +52,19 @@ SSD1306 display(0x3c, 21, 22);
 //variables
 unsigned long new_rec;
 unsigned long old_rec;
+unsigned long start_time;
+int mins;
+int hours;
+int secs;
+int minutes;
+int seconds;
+const unsigned long COUNT_THRESH = 2000;
+unsigned long timestamp;
 int count;
 const char sensorID[] = SENSOR_NAME;
 String Token;
+String time_disp;
+String data;
 
 ///////please enter your sensitive data in the Secret tab/secrets.h
 /////// Wifi Settings ///////
@@ -120,6 +130,10 @@ void setup() {
   delay(50);
   digitalWrite(16, HIGH);
 
+  start_time = millis();
+  delay(1000);
+  timestamp = millis();
+
   display.init();
   display.flipScreenVertically();
   display.setFont(ArialMT_Plain_10);
@@ -136,20 +150,22 @@ void setup() {
   timerAlarmEnable(timer); //enable interrupt
   
   connectWifi();
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+//  Serial.print("SSID: ");
+//  Serial.println(WiFi.SSID());
   // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+//  Serial.print("IP Address: ");
+//  Serial.println(ip);
   display.drawString(5,5,"Connected to " + WiFi.SSID());
   display.display();
   display.drawString(5,25,"IP address " + String(ip));
   display.display();
   Token = getAuth();
   
-  Serial.println("LoRa Receiver");
+//  Serial.println("LoRa Receiver");
+  
   display.clear();
+  display.setFont(ArialMT_Plain_10);
   display.drawString(5,5,"LoRa Receiver");
   display.display();
   SPI.begin(5,19,27,18);
@@ -159,22 +175,22 @@ void setup() {
     display.drawString(5,25,"Starting LoRa failed. Kill a kitten");
     while (1);
   }
-  Serial.println("LoRa Initialised. Pat a kitten");
-  
-  Serial.print("LoRa Frequency: ");
-  Serial.println(BAND);
-  
-  Serial.print("LoRa Spreading Factor: ");
-  Serial.println(spreadingFactor);
+//  Serial.println("LoRa Initialised. Pat a kitten");
+//  
+//  Serial.print("LoRa Frequency: ");
+//  Serial.println(BAND);
+//  
+//  Serial.print("LoRa Spreading Factor: ");
+//  Serial.println(spreadingFactor);
   LoRa.setSpreadingFactor(spreadingFactor);
   
-  Serial.print("LoRa Signal Bandwidth: ");
-  Serial.println(SignalBandwidth);
+//  Serial.print("LoRa Signal Bandwidth: ");
+//  Serial.println(SignalBandwidth);
   LoRa.setSignalBandwidth(SignalBandwidth);
 
   LoRa.setCodingRate4(codingRateDenominator);
   
-  display.drawString(5,25,"LoRa Initializing OK!");
+  display.drawString(5,25,"LoRa Initializing OK! Pat a kitten");
   display.display();
   new_rec = millis();
   old_rec = millis();
@@ -196,15 +212,15 @@ String getAuth() {
   // httpCode will be negative on error
   if(httpCode > 0) {
     // HTTP header has been send and Server response header has been handled
-    Serial.print("HTTP code = ");
-    Serial.println(httpCode);
+//    Serial.print("HTTP code = ");
+//    Serial.println(httpCode);
     // file found at server
     if(httpCode == HTTP_CODE_OK) {
         payload = http.getString();
-        Serial.println(payload);
+//        Serial.println(payload);
     }
   }else{
-    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+//    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
   }
   http.end();;
 //  parse jwt here
@@ -214,23 +230,23 @@ String getAuth() {
   payload.toCharArray(json, len);
   JsonObject& root = jsonBuffer.parseObject(json);
   if (!root.success()) {
-    Serial.println("parseObject() failed");
+//    Serial.println("parseObject() failed");
   }
   const char* jwt_token = root["access_token"];
-  Serial.println(jwt_token);
+//  Serial.println(jwt_token);
   return "Bearer "+ String(jwt_token);
 }
 
 String makeInput(String payload) {
   //build json object
   StaticJsonBuffer<500> jsonBuffer;
-  Serial.print("payload for sending to api is ");
-  Serial.println(payload);
+//  Serial.print("payload for sending to api is ");
+//  Serial.println(payload);
   JsonObject& root = jsonBuffer.createObject();
   root["site"] = SITE;
   root["value"] = payload;
   root.printTo(Serial);
-  Serial.println();
+//  Serial.println();
   String input;
   root.printTo(input);
   return input;
@@ -238,7 +254,7 @@ String makeInput(String payload) {
 
 void updateAPI(String payload) {
   if (payload.length() < 400) {
-    Serial.println("making POST request");
+//    Serial.println("making POST request");
     http.begin(SERVER_443_data, root_ca);
     http.addHeader("Authorization", Token);
     http.addHeader("Content-Type", "application/json");
@@ -247,8 +263,8 @@ void updateAPI(String payload) {
     // httpCode will be negative on error
     if(httpCode > 0) {
       // HTTP header has been send and Server response header has been handled
-      Serial.print("HTTP code = ");
-      Serial.println(httpCode);
+//      Serial.print("HTTP code = ");
+//      Serial.println(httpCode);
       if(httpCode == 401){
         http.end();
         //token expired so get a new one
@@ -261,24 +277,47 @@ void updateAPI(String payload) {
       // successful post
       if(httpCode == HTTP_CODE_OK) {
           String ret = http.getString();
-          Serial.println(ret);
+//          Serial.println(ret);
       }else{
         //terminal so do nothing
         String ret = http.getString();
-        Serial.println(ret);
-        Serial.println("Failed to post on "+String(ret));
+//        Serial.println(ret);
+//        Serial.println("Failed to post on "+String(ret));
       }
     }else{
-      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+//      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
   }else{
-    Serial.println("payload too long, must be garbage");
+//    Serial.println("payload too long, must be garbage");
   }
 }
 
 void loop() {
   timerWrite(timer, 0); //reset timer (feed watchdog)
+  // set counters
+  if ((millis() - timestamp) > COUNT_THRESH) {
+    display.clear();
+    display.setFont(ArialMT_Plain_10);
+    unsigned long uptime = (millis() - start_time)/1000;
+    hours = uptime/60/60;
+    if (hours != 0) {
+      mins = ((hours * 60 * 60) % uptime)/60;
+    }else{
+      mins = uptime / 60;
+    }
+    if (mins != 0) {
+      secs = uptime % (mins * 60);
+    }else{
+      secs = uptime;
+    } 
+    time_disp = "Uptime is " + String(hours) + "h, " + String(mins) + "m, " + String(secs) +"s";
+    display.drawString(3, 0, time_disp);
+    display.drawString(20,22, data);
+    display.drawString(0, 45, "Gap "+(String)minutes + "m, "+(String)seconds +"s, Pkt# " + (String)count);
+    display.display();
+    timestamp = millis();
+  }
   // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
@@ -286,33 +325,22 @@ void loop() {
     new_rec = millis();
     count ++;
     // received a packet
-    Serial.print("Received packet. ");
-    
-    display.clear();
-    display.setFont(ArialMT_Plain_16);
-    display.drawString(3, 0, "Packet #: " + (String)count);
-    display.display();
-    
+//    Serial.print("Received packet. ");
     // read packet
     while (LoRa.available()) {
-      String data = LoRa.readString();
-      Serial.print(data);
-      display.drawString(20,22, data);
-      display.display();
+      data = LoRa.readString();
+//      Serial.print(data);
       updateAPI(data);
     }
     
     // print RSSI of packet
-    Serial.print(" with RSSI ");
-    Serial.println(LoRa.packetRssi());
-    Serial.print(" with SNR ");
-    Serial.println(LoRa.packetSnr());
+//    Serial.print(" with RSSI ");
+//    Serial.println(LoRa.packetRssi());
+//    Serial.print(" with SNR ");
+//    Serial.println(LoRa.packetSnr());
 
     unsigned long gap = (new_rec - old_rec)/1000;
-    int minutes = gap/60;
-    int seconds = gap % 60;
-    display.drawString(0, 45, "Gap "+(String)minutes + "m, "+(String)seconds +"s");
-        
-    display.display();
+    minutes = gap/60;
+    seconds = gap % 60;       
   }
 }
