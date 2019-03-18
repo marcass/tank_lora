@@ -155,5 +155,5 @@ def sort_data(data):
     #     return {'msg': 'malformed string'}
 
 #start the message bot
-# telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
-# print('Listening ...')
+telegram.MessageLoop(telegram.bot, {'chat': telegram.on_chat_message, 'callback_query': telegram.on_callback_query}).run_as_thread()
+print('Listening ...')
