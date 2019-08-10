@@ -52,82 +52,10 @@ Program LoRa board with onboard ATMega32u4 chip with arduino IDE
 * LoRa http://www.arduinolibraries.info/libraries/lo-ra
 
 ## Lora gateway
-* Using a raspberry pi
-* create udev rules
-* setup autossh
-* mimimising writes to SD card for longevity
-   * make systemd create a tmpfs for /tmp
-   * other 
+* Using an esp32 based board with lora radio on it
+* send data via restful api over https
+* https://github.com/marcass/api
 
-```
-sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/
-sudo systemctl enable tmp.mount
-
-```
-
-   * add this to fstab:
-
-```
-#use tmpfs to write to volitile memory thus saving sdcard
-tmpfs   /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=64m    0 0
-
-```
-To get nginx to work need log files established at boot. Place a file called something like nginx.conf in /usr/lib/tmpfiles.d
-
-```
-# hack to get nginx working with /var/log mounted on tmpfs (creates files at boot)
-d /var/log/nginx/error.log nginx nginx 30d
-d /var/log/nginx/access.log nginx nginx 30d
-```
-
-* using docker to speed setup on new hardware
-   * https://www.containerstack.io/install-docker-on-raspbian/
-* may need to rebuild kernel ( https://github.com/docker/for-linux/issues/545 ) for this error when building images:
-   * unable to find "net_prio" in controller set: unknown
-   * do this to rebuild:
-      * https://www.raspberrypi.org/documentation/linux/kernel/building.md
-      * https://www.raspberrypi.org/documentation/linux/kernel/configuring.md
-
-
-### Starting services
-
-* Starting services
- On raspberry pi: sudo systemctl [start][stop][status][restart] serial-attach.service
-* Seial listener: `sudo systemctl start serial-attach.service`
-* update for flask service and web service (nginix)
-
-Docker images are slow to build on the pi. Build image anywhere by:
-
-```
-docker build -t <image name>:<image tag> .
-```
-Then copy it via ssh by:
-
-```
-docker save tanks:2.1 | bzip2 | pv | ssh [-p <port>] <user@<host> 'bunzip2 | docker load'
-
-```
-
-Run docker by (= create and start):
-
-```
-docker run -t -i --rm --privileged -v /dev:/dev tanks/monitor:1.1 [/bin/bash]
-following will start at boot and restart if failed (don't need to create container and start it if using this method):
-docker run -t --restart=unless-stopped --privileged -v /dev:/dev tanks/monitor:1.1
-```
-
-Create container by:
-
-```
-docker create -t --privileged -v /dev:/dev tanks/monitor:1.1 [/bin/bash]
-```
-
-Start container by:
-
-```
-docker start <name or id>
-
-```
 
 ## Testing
 
