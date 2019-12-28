@@ -21,8 +21,10 @@ int counter = 0;
  * 5. Bay (can get sals so make a forwarder)
  * 6. Relay
  */
+ 
 const int NODE_ID = 5;
-#define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
+
+#define SS 8                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
 
@@ -31,7 +33,7 @@ const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual p
 #define POWER  3             //Power up n-channel mosfet to read distance
 #define RESET  4             //RESET pin for lora radio
 #define V_POWER 5            //pull down p-channel mosfet to measure voltage
-#define DIO  7               //DIO 0  for lora lib
+#define DIO  7               //DIO 0/7  for lora lib
 #define DONE  9              //Done pulse goes here
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
