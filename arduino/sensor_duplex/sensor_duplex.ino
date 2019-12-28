@@ -15,12 +15,13 @@ int counter = 0;
 //*****************Change the following 2 variables ************
 /*Assign node numbers
  * 1. Top tank
- * 2. Noels break
+ * 2. Noels break (can't get sals but relays top and main)
  * 3. Sal's bush
- * Main?
- * Bay?
+ * 4. Main
+ * 5. Bay (can get sals so make a forwarder)
+ * 6. Relay
  */
-const int NODE_ID = 2;
+const int NODE_ID = 5;
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
