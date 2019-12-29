@@ -6,6 +6,9 @@
  * - disply onsite data on OLED for Rob
  * - display time since last message
  */
+
+//#define debug
+ 
 //https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Timer/WatchdogTimer/WatchdogTimer.ino
 //watchdog lib
 #include "esp_system.h"
@@ -231,7 +234,7 @@ String makeInput(String payload) {
   JsonObject& root = jsonBuffer.createObject();
   root["site"] = SITE;
   root["value"] = payload;
-  root.printTo(Serial);
+//  root.printTo(Serial);
   String input;
   root.printTo(input);
   return input;
@@ -245,7 +248,15 @@ void updateAPI(String payload) {
 //    http.addHeader("Authorization", Token);
 //    http.addHeader("Content-Type", "application/json");
     String input = makeInput(payload);
+    #ifdef debug
+      Serial.print("Payload is: ");
+      Serial.println(input);
+    #endif
     int httpCode = http.POST(input);
+    #ifdef debug
+      Serial.print("Http code is: ");
+      Serial.print(httpCode);
+    #endif
     // httpCode will be negative on error
     if(httpCode > 0) {
       // HTTP header has been send and Server response header has been handled
@@ -260,13 +271,18 @@ void updateAPI(String payload) {
 //      }
       // successful post
       if(httpCode == HTTP_CODE_OK) {
-        Serial.println("Post OK");
         String ret = http.getString();
+        #ifdef debug
+          Serial.println("Post OK");
+          Serial.println(ret);
+        #endif
       }else{
-        Serial.print("Http code is ");
-        Serial.print(httpCode);
-        Serial.print(" for ");
-        Serial.println(input);
+        #ifdef debug
+          Serial.print("Http code is ");
+          Serial.print(httpCode);
+          Serial.print(" for ");
+          Serial.println(input);
+        #endif
         //terminal so do nothing        
       }
     }else{
@@ -274,8 +290,10 @@ void updateAPI(String payload) {
     }
     http.end();
   }else{
-    Serial.print("Junk data is ");
-    Serial.println(payload);
+    #ifdef debug
+      Serial.print("Junk data is ");
+      Serial.println(payload);
+    #endif
     //  
   }
 }
@@ -318,6 +336,7 @@ void loop() {
     while (LoRa.available()) {
       data = LoRa.readString();
       if (data.length() < 30) {
+        Serial.println("updating API");
         updateAPI(data);
       }
     }
