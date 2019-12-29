@@ -12,17 +12,19 @@
 #define forwarded  //uncomment if node needs to be forwarded
 
 #ifdef forwarded
-  byte destination = 0xFF;
+//  byte destination = 0xFF; // for sals
+  byte destination = 0xCC;// for main and top
 #endif
 
 int counter = 0;
 //*****************Change the following 2 variables ************
 /*Assign node numbers
  * 1. Top tank
- * 2. Noels break
+ * 2. Noels break (can't get sals but relays top and main)
  * 3. Sal's bush
- * Main?
- * Bay?
+ * 4. Main
+ * 5. Bay (can get sals so make a forwarder)
+ * 6. Relay
  */
 const int NODE_ID = 1;
 #define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)

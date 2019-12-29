@@ -22,7 +22,7 @@ int counter = 0;
  * 6. Relay
  */
  
-const int NODE_ID = 5;
+const int NODE_ID = 2;
 
 #define SS 8                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
@@ -38,8 +38,11 @@ const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual p
 #define TRIGPIN  11          // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHOPIN     12       // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-//allowed to forward for sals - more verstile than using syncword
-const byte ALLOWED = 0xFF;
+//allowed to forward for sals - more verstile than using syncword. THIS IS FLASHED TO BAY
+//const byte ALLOWED = 0xFF; //for bay to forward sals
+const byte ALLOWED = 0xCC; //for noels to forward main and top
+//For top and main to distinguish from main THIS IS FLASHED TO NOELS
+//const byte ALLOWED = 0xCC;
 bool wake_resp;
 int dist;
 byte DONE_T = 1;

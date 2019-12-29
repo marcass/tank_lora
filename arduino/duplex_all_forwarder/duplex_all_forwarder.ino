@@ -28,6 +28,8 @@ const int TX_POWER = 8;
 const int NODE_ID = 6; //SET THIS FOR NODE 
 float voltage;
 byte tag = 0xAA;
+byte MAINTOP = 0xCC;
+byte SALS = 0xFF;
 
 //LoRa radio setup https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 //Lower number if closer receiver (saves power)
@@ -93,10 +95,22 @@ void onReceive(int packetSize) {
   String incoming = "";
 
   while (LoRa.available()) {
-    incoming += (char)LoRa.read();
+    packet = LoRa.read()
+    if ((packet == MAINTOP) or (packet == SALS) {
+      #ifdef debug
+        Serial.println("Deleting hex character");
+      #endif
+//      skipping
+    }else{
+      incoming += (char)LoRa.read();
+    }
   }
 
   //forward the packet
+  #ifdef debug
+    Serial.print("Packet being forwarded is :");
+    Serial.println(incoming);
+  #endif
   LoRa.beginPacket();
   LoRa.write(tag);
   LoRa.print(incoming);
