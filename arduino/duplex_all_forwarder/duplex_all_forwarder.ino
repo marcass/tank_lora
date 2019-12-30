@@ -95,14 +95,15 @@ void onReceive(int packetSize) {
   String incoming = "";
 
   while (LoRa.available()) {
-    packet = LoRa.read()
-    if ((packet == MAINTOP) or (packet == SALS) {
+    byte packet = LoRa.read();
+    if ((packet == MAINTOP) or (packet == SALS)) {
       #ifdef debug
         Serial.println("Deleting hex character");
       #endif
 //      skipping
     }else{
-      incoming += (char)LoRa.read();
+//      incoming += (char)LoRa.read();
+      incoming += (char)packet;
     }
   }
 

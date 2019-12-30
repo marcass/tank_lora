@@ -24,7 +24,7 @@ int counter = 0;
  
 const int NODE_ID = 2;
 
-#define SS 8                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
+#define SS 1                  //NSS pin def for lora lib, use "1" for older modules and "8" for new modules (they have clearer text on ATMEL chip)
 //**************************************************************
 const int V_CAL = 442;  //calibration analogRead(V_POWER) @4.2v for individual prcessor
 
