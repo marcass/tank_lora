@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@websanova/vue-auth": "^2.21.11-beta",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "liquor-tree": "^0.2.28",
     "vue": "^2.5.2",
     "vue-axios": "^2.1.1",
