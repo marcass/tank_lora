@@ -20,11 +20,12 @@
 #include <HTTPClient.h>
 #include "secrets.h"
 #include <ArduinoJson.h> //using version 5
+//for base64 encoding creds
+#include "base64.h"
 
 /* secrets.h format
  *  #define MYSSID ""
  *  #define PASS ""
- *  #define SENSOR_NAME ""  //location of sensor node (eg "lounge"
  *  #define SITE ""  //Site of sensor net install
  *  String API_user = "";
  *  String API_pass = "";
@@ -51,7 +52,7 @@ SSD1306 display(0x3c, 21, 22);
 unsigned long new_rec;
 unsigned long old_rec;
 int count;
-const char sensorID[] = SENSOR_NAME;
+String Token;
 
 ///////please enter your sensitive data in the Secret tab/secrets.h
 /////// Wifi Settings ///////
@@ -60,60 +61,60 @@ const char* password = PASS;
 
 // CA details for https:
 // https://techtutorialsx.com/2017/11/18/esp32-arduino-https-get-request/
-// const char* root_ca= \
-// "-----BEGIN CERTIFICATE-----\n" \
-// "MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/\n" \
-// "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n" \
-// "DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow\n" \
-// "PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD\n" \
-// "Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" \
-// "AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O\n" \
-// "rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq\n" \
-// "OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b\n" \
-// "xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw\n" \
-// "7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD\n" \
-// "aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV\n" \
-// "HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG\n" \
-// "SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69\n" \
-// "ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr\n" \
-// "AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz\n" \
-// "R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5\n" \
-// "JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo\n" \
-// "Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\n" \
-// "-----END CERTIFICATE-----\n";
+ const char* root_ca= \
+ "-----BEGIN CERTIFICATE-----\n" \
+ "MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/\n" \
+ "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n" \
+ "DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow\n" \
+ "PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD\n" \
+ "Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" \
+ "AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O\n" \
+ "rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq\n" \
+ "OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b\n" \
+ "xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw\n" \
+ "7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD\n" \
+ "aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV\n" \
+ "HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG\n" \
+ "SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69\n" \
+ "ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr\n" \
+ "AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz\n" \
+ "R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5\n" \
+ "JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo\n" \
+ "Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\n" \
+ "-----END CERTIFICATE-----\n";
 
 // cert sig changed. New one is:
-const char* root_ca = \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIIFLzCCBBegAwIBAgISA45qNsfbvjybEK1ePKK906D6MA0GCSqGSIb3DQEBCwUA\n" \
-"MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD\n" \
-"EwJSMzAeFw0yMTA2MjIwNTAxNTFaFw0yMTA5MjAwNTAxNTBaMCAxHjAcBgNVBAMT\n" \
-"FXdpbHNvbmJheS5kdWNrZG5zLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\n" \
-"AQoCggEBALFIAyzVyhTVC6+/OEjRKnIzNJ639bKdM2pA9zkoP9OfBvhzzPB+Flrd\n" \
-"uldDRIx1j1EYV0Ori4Q8AwZex/h9ugZbgxGw9CkI6EFyTSukZ0ADC579ScXudwS9\n" \
-"LJdZQdoqcpYJJ+K5GsNqEIiYz5cMr9XABOfFBto5DmUKTiEd34xb+rAfs1QasJ0U\n" \
-"ajewQQeaO0+q0YojoIB63b4MwXw0AE/TyAJz72idAJnXz2WdOQuo7y4TsMTIPbYN\n" \
-"LNyndkWKjzGLQsBKk6se8KX1UabePoQyN8JSlfm7QaKTm+w0esrDfzuPk6P/xi5k\n" \
-"FJT1B3ToqPw2Hx3015MyI2s3yxf15QcCAwEAAaOCAk8wggJLMA4GA1UdDwEB/wQE\n" \
-"AwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIw\n" \
-"ADAdBgNVHQ4EFgQUXL1Eq1MeaBiq4ecoakIVIIUxa8wwHwYDVR0jBBgwFoAUFC6z\n" \
-"F7dYVsuuUAlA5h+vnYsUwsYwVQYIKwYBBQUHAQEESTBHMCEGCCsGAQUFBzABhhVo\n" \
-"dHRwOi8vcjMuby5sZW5jci5vcmcwIgYIKwYBBQUHMAKGFmh0dHA6Ly9yMy5pLmxl\n" \
-"bmNyLm9yZy8wIAYDVR0RBBkwF4IVd2lsc29uYmF5LmR1Y2tkbnMub3JnMEwGA1Ud\n" \
-"IARFMEMwCAYGZ4EMAQIBMDcGCysGAQQBgt8TAQEBMCgwJgYIKwYBBQUHAgEWGmh0\n" \
-"dHA6Ly9jcHMubGV0c2VuY3J5cHQub3JnMIIBAwYKKwYBBAHWeQIEAgSB9ASB8QDv\n" \
-"AHYAXNxDkv7mq0VEsV6a1FbmEDf71fpH3KFzlLJe5vbHDsoAAAF6Mk+L1QAABAMA\n" \
-"RzBFAiEA4iQCjcg/fbOR8ZB3kTZPg8MVc+o/WTgV12UCU61NodoCIETqi9VXQ9PQ\n" \
-"Ta2kFQ4Zw3ZY6bJnMVCcYW1o/FNj1MLGAHUA9lyUL9F3MCIUVBgIMJRWjuNNExkz\n" \
-"v98MLyALzE7xZOMAAAF6Mk+L2gAABAMARjBEAiAt8ImZBCPGV3LC3ygl7g3juFEb\n" \
-"Jec0KE0XJ9VXiJtclwIgY2TxzVEBX5MK8SOQvBd/AWWU6tqoT7O/ijbfR6RjdNAw\n" \
-"DQYJKoZIhvcNAQELBQADggEBAIA/wzHjs95K5NV3eQbOO0iZzbJ2pvK5uO+C+icI\n" \
-"NNWc9fyTFg4umceXJzMD4RGJTpGYTmbiyQghk4QWCLHm6mh97PuCZrY+t6Tf4OLt\n" \
-"Ssha8j5VV/lRZPHH1Vu+DyTs/VXhNtbvo4rFnEEBPDqR+O3qiyI45r7CKPI2vfZc\n" \
-"HvaiONOrAmPr55hm7ZJaFr0M7qLpi25jQU7fudWw8auAx8HTkfNr/GjwchsUul3j\n" \
-"t7SJwk0tO1+Nd5jQpV7NSwkXPq49MYEYGZiiI0HbWniAK1V/rs9vLNBmm1qSQ3NU\n" \
-"14ywdFSqmOgIJwxu8sV/wMRwanfO+3lF6IFatjTsrDOXSNM=\n" \
-"-----END CERTIFICATE-----\n"; 
+//const char* root_ca = \
+//"-----BEGIN CERTIFICATE-----\n" \
+//"MIIFLzCCBBegAwIBAgISA45qNsfbvjybEK1ePKK906D6MA0GCSqGSIb3DQEBCwUA\n" \
+//"MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD\n" \
+//"EwJSMzAeFw0yMTA2MjIwNTAxNTFaFw0yMTA5MjAwNTAxNTBaMCAxHjAcBgNVBAMT\n" \
+//"FXdpbHNvbmJheS5kdWNrZG5zLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\n" \
+//"AQoCggEBALFIAyzVyhTVC6+/OEjRKnIzNJ639bKdM2pA9zkoP9OfBvhzzPB+Flrd\n" \
+//"uldDRIx1j1EYV0Ori4Q8AwZex/h9ugZbgxGw9CkI6EFyTSukZ0ADC579ScXudwS9\n" \
+//"LJdZQdoqcpYJJ+K5GsNqEIiYz5cMr9XABOfFBto5DmUKTiEd34xb+rAfs1QasJ0U\n" \
+//"ajewQQeaO0+q0YojoIB63b4MwXw0AE/TyAJz72idAJnXz2WdOQuo7y4TsMTIPbYN\n" \
+//"LNyndkWKjzGLQsBKk6se8KX1UabePoQyN8JSlfm7QaKTm+w0esrDfzuPk6P/xi5k\n" \
+//"FJT1B3ToqPw2Hx3015MyI2s3yxf15QcCAwEAAaOCAk8wggJLMA4GA1UdDwEB/wQE\n" \
+//"AwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIw\n" \
+//"ADAdBgNVHQ4EFgQUXL1Eq1MeaBiq4ecoakIVIIUxa8wwHwYDVR0jBBgwFoAUFC6z\n" \
+//"F7dYVsuuUAlA5h+vnYsUwsYwVQYIKwYBBQUHAQEESTBHMCEGCCsGAQUFBzABhhVo\n" \
+//"dHRwOi8vcjMuby5sZW5jci5vcmcwIgYIKwYBBQUHMAKGFmh0dHA6Ly9yMy5pLmxl\n" \
+//"bmNyLm9yZy8wIAYDVR0RBBkwF4IVd2lsc29uYmF5LmR1Y2tkbnMub3JnMEwGA1Ud\n" \
+//"IARFMEMwCAYGZ4EMAQIBMDcGCysGAQQBgt8TAQEBMCgwJgYIKwYBBQUHAgEWGmh0\n" \
+//"dHA6Ly9jcHMubGV0c2VuY3J5cHQub3JnMIIBAwYKKwYBBAHWeQIEAgSB9ASB8QDv\n" \
+//"AHYAXNxDkv7mq0VEsV6a1FbmEDf71fpH3KFzlLJe5vbHDsoAAAF6Mk+L1QAABAMA\n" \
+//"RzBFAiEA4iQCjcg/fbOR8ZB3kTZPg8MVc+o/WTgV12UCU61NodoCIETqi9VXQ9PQ\n" \
+//"Ta2kFQ4Zw3ZY6bJnMVCcYW1o/FNj1MLGAHUA9lyUL9F3MCIUVBgIMJRWjuNNExkz\n" \
+//"v98MLyALzE7xZOMAAAF6Mk+L2gAABAMARjBEAiAt8ImZBCPGV3LC3ygl7g3juFEb\n" \
+//"Jec0KE0XJ9VXiJtclwIgY2TxzVEBX5MK8SOQvBd/AWWU6tqoT7O/ijbfR6RjdNAw\n" \
+//"DQYJKoZIhvcNAQELBQADggEBAIA/wzHjs95K5NV3eQbOO0iZzbJ2pvK5uO+C+icI\n" \
+//"NNWc9fyTFg4umceXJzMD4RGJTpGYTmbiyQghk4QWCLHm6mh97PuCZrY+t6Tf4OLt\n" \
+//"Ssha8j5VV/lRZPHH1Vu+DyTs/VXhNtbvo4rFnEEBPDqR+O3qiyI45r7CKPI2vfZc\n" \
+//"HvaiONOrAmPr55hm7ZJaFr0M7qLpi25jQU7fudWw8auAx8HTkfNr/GjwchsUul3j\n" \
+//"t7SJwk0tO1+Nd5jQpV7NSwkXPq49MYEYGZiiI0HbWniAK1V/rs9vLNBmm1qSQ3NU\n" \
+//"14ywdFSqmOgIJwxu8sV/wMRwanfO+3lF6IFatjTsrDOXSNM=\n" \
+//"-----END CERTIFICATE-----\n"; 
 
 
 
@@ -189,48 +190,50 @@ void setup() {
   old_rec = millis();
 }
 
-//String getAuth() {
-//  String payload;
-////  DynamicJsonBuffer  jsonBuffer(200);
-//  StaticJsonBuffer<200> jsonBuffer;
-//  JsonObject& creds = jsonBuffer.createObject();
-//  creds["username"] = API_user;
-//  creds["password"] = API_pass;
-//  creds.printTo(Serial);
-//  http.begin(SERVER_443_auth, root_ca);
-//  http.addHeader("Content-Type", "application/json");
-//  String input;
-//  creds.printTo(input);
-////  Serial.println(input);
-//  int httpCode = http.POST(input);
-//  // httpCode will be negative on error
-//  if(httpCode > 0) {
-//    // HTTP header has been send and Server response header has been handled
-//    Serial.print("HTTP code = ");
-//    Serial.println(httpCode);
-//    // file found at server
-//    if(httpCode == HTTP_CODE_OK) {
-//        payload = http.getString();
-//        Serial.println(payload);
-//    }
-//  }else{
-//    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
-//  }
-//  http.end();;
-////  parse jwt here
-////https://github.com/bblanchon/ArduinoJson
-//  int len = payload.length();
-//  char json[len];
-//  payload.toCharArray(json, len);
-//  JsonObject& root = jsonBuffer.parseObject(json);
-//  if (!root.success()) {
-//    Serial.println("parseObject() failed");
-//  }
-//  const char* jwt_token = root["access_token"];
-//  Serial.println(jwt_token);
-////  return String(jwt_token);
-//  return "Bearer "+ String(jwt_token);
-//}
+String getAuth() {
+  String payload;
+//  DynamicJsonBuffer  jsonBuffer(200);
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& creds = jsonBuffer.createObject();
+  creds["username"] = API_user;
+  creds["password"] = API_pass;
+  creds.printTo(Serial);
+  http.begin(SERVER_443_auth, root_ca);
+  http.addHeader("Content-Type", "application/json");
+  String auth = base64::encode(API_user + ":" + API_pass);
+  http.addHeader("Authorization", "Basic " + auth);
+  String input;
+  creds.printTo(input);
+//  Serial.println(input);
+  int httpCode = http.POST(input);
+  // httpCode will be negative on error
+  if(httpCode > 0) {
+    // HTTP header has been send and Server response header has been handled
+    Serial.print("HTTP code = ");
+    Serial.println(httpCode);
+    // file found at server
+    if(httpCode == HTTP_CODE_OK) {
+        payload = http.getString();
+        Serial.println(payload);
+    }
+  }else{
+    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+  }
+  http.end();;
+//  parse jwt here
+//https://github.com/bblanchon/ArduinoJson
+  int len = payload.length();
+  char json[len];
+  payload.toCharArray(json, len);
+  JsonObject& root = jsonBuffer.parseObject(json);
+  if (!root.success()) {
+    Serial.println("parseObject() failed");
+  }
+  const char* jwt_token = root["access_token"];
+  Serial.println(jwt_token);
+//  return String(jwt_token);
+  return "Bearer "+ String(jwt_token);
+}
 
 void updateAPI(String payload) {
   //Ensure token fits in here
@@ -246,10 +249,9 @@ void updateAPI(String payload) {
     root.printTo(Serial);
     Serial.println();
     Serial.println("making POST request");
-    http.begin(SERVER);
-//    http.begin(SERVER_443_data, root_ca);
-//    http.addHeader("Authorization", Token);
-//    http.addHeader("Content-Type", "application/json");
+    http.begin(SERVER, root_ca);
+    http.addHeader("Authorization", Token);
+    http.addHeader("Content-Type", "application/json");
     String input;
     root.printTo(input);
     int httpCode = http.POST(input);
@@ -258,18 +260,18 @@ void updateAPI(String payload) {
       // HTTP header has been send and Server response header has been handled
       Serial.print("HTTP code = ");
       Serial.println(httpCode);
-//      if(httpCode == 401){
-//        http.end();
-//        //token expired so get a new one
-//        Token = getAuth();
-//        //then do it all again
-//        http.begin(SERVER_443_data, root_ca);
-//        http.addHeader("Authorization", Token);
-//        http.addHeader("Content-Type", "application/json");
-//        String input;
-//        root.printTo(input);
-//        int httpCode = http.POST(input);
-//      }
+      if(httpCode == 401){
+        http.end();
+        //token expired so get a new one
+        Token = getAuth();
+        //then do it all again
+        http.begin(SERVER, root_ca);
+        http.addHeader("Authorization", Token);
+        http.addHeader("Content-Type", "application/json");
+        String input;
+        root.printTo(input);
+        int httpCode = http.POST(input);
+      }
       // successful post
       if(httpCode == HTTP_CODE_OK) {
           String payload = http.getString();
