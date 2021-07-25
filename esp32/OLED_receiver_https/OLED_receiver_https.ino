@@ -7,8 +7,6 @@
  * - display time since last message
  */
 
-//watchdog lib
-#include "esp_system.h"
 #include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
 //needs this lib https://github.com/ThingPulse/esp8266-oled-ssd1306 (daniel somethig in libs for arduino)
 #include "SSD1306.h"
@@ -22,11 +20,12 @@
 #include <HTTPClient.h>
 #include "secrets.h"
 #include <ArduinoJson.h> //using version 5
+//for base64 encoding creds
+#include "base64.h"
 
 /* secrets.h format
  *  #define MYSSID ""
  *  #define PASS ""
- *  #define SENSOR_NAME ""  //location of sensor node (eg "lounge"
  *  #define SITE ""  //Site of sensor net install
  *  String API_user = "";
  *  String API_pass = "";
@@ -53,7 +52,6 @@ SSD1306 display(0x3c, 21, 22);
 unsigned long new_rec;
 unsigned long old_rec;
 int count;
-const char sensorID[] = SENSOR_NAME;
 String Token;
 
 ///////please enter your sensitive data in the Secret tab/secrets.h
@@ -63,27 +61,27 @@ const char* password = PASS;
 
 // CA details for https:
 // https://techtutorialsx.com/2017/11/18/esp32-arduino-https-get-request/
-const char* root_ca= \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/\n" \
-"MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n" \
-"DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow\n" \
-"PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD\n" \
-"Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" \
-"AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O\n" \
-"rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq\n" \
-"OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b\n" \
-"xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw\n" \
-"7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD\n" \
-"aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV\n" \
-"HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG\n" \
-"SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69\n" \
-"ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr\n" \
-"AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz\n" \
-"R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5\n" \
-"JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo\n" \
-"Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\n" \
-"-----END CERTIFICATE-----\n";
+ const char* root_ca= \
+ "-----BEGIN CERTIFICATE-----\n" \
+ "MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/\n" \
+ "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n" \
+ "DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow\n" \
+ "PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD\n" \
+ "Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" \
+ "AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O\n" \
+ "rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq\n" \
+ "OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b\n" \
+ "xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw\n" \
+ "7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD\n" \
+ "aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV\n" \
+ "HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG\n" \
+ "SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69\n" \
+ "ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr\n" \
+ "AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz\n" \
+ "R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5\n" \
+ "JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo\n" \
+ "Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\n" \
+ "-----END CERTIFICATE-----\n";
 
 WiFiClient wifi;
 HTTPClient http;
@@ -95,26 +93,14 @@ void connectWifi(){
   WiFi.begin (ssid, password);
   Serial.print("Attempting to connect to Network named: ");
   Serial.println(ssid);
-  display.drawString(5,5,"Connecting to WiFi");
-  display.display();
   WiFi.mode(WIFI_STA);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
 }
-
-//Watchdog setup
-const int loopTimeCtl = 21;
-hw_timer_t *timer = NULL;
-void IRAM_ATTR resetModule(){
-    ets_printf("reboot\n");
-    esp_restart_noos();
-}
   
 void setup() {
-//  setup watchdog pin
-  pinMode(loopTimeCtl, INPUT_PULLUP);
   pinMode(16,OUTPUT);
   digitalWrite(16, LOW); // set GPIO16 low to reset OLED
   delay(50);
@@ -128,12 +114,6 @@ void setup() {
   Serial.begin(115200);
 //  while (!Serial); //if just the the basic function, must connect to a computer
   delay(1000);
-
-//  attach watchdog setup
-  timer = timerBegin(0, 80, true); //timer 0, div 80
-  timerAttachInterrupt(timer, &resetModule, true);
-  timerAlarmWrite(timer, 3000000, false); //set time in us
-  timerAlarmEnable(timer); //enable interrupt
   
   connectWifi();
   Serial.print("SSID: ");
@@ -142,14 +122,9 @@ void setup() {
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
-  display.drawString(5,5,"Connected to " + WiFi.SSID());
-  display.display();
-  display.drawString(5,25,"IP address " + String(ip));
-  display.display();
-  Token = getAuth();
+//  Token = getAuth();
   
   Serial.println("LoRa Receiver");
-  display.clear();
   display.drawString(5,5,"LoRa Receiver");
   display.display();
   SPI.begin(5,19,27,18);
@@ -190,8 +165,11 @@ String getAuth() {
   creds.printTo(Serial);
   http.begin(SERVER_443_auth, root_ca);
   http.addHeader("Content-Type", "application/json");
+  String auth = base64::encode(API_user + ":" + API_pass);
+  http.addHeader("Authorization", "Basic " + auth);
   String input;
   creds.printTo(input);
+//  Serial.println(input);
   int httpCode = http.POST(input);
   // httpCode will be negative on error
   if(httpCode > 0) {
@@ -218,31 +196,29 @@ String getAuth() {
   }
   const char* jwt_token = root["access_token"];
   Serial.println(jwt_token);
+//  return String(jwt_token);
   return "Bearer "+ String(jwt_token);
 }
 
-String makeInput(String payload) {
-  //build json object
-  StaticJsonBuffer<500> jsonBuffer;
-  Serial.print("payload for sending to api is ");
-  Serial.println(payload);
-  JsonObject& root = jsonBuffer.createObject();
-  root["site"] = SITE;
-  root["value"] = payload;
-  root.printTo(Serial);
-  Serial.println();
-  String input;
-  root.printTo(input);
-  return input;
-}
-
 void updateAPI(String payload) {
-  if (payload.length() < 400) {
+  //Ensure token fits in here
+//  DynamicJsonBuffer  jsonBuffer(500);
+  StaticJsonBuffer<500> jsonBuffer;
+  //build json object
+  if (payload.length() < 100) {
+    Serial.print("payload for sending to api is ");
+    Serial.println(payload);
+    JsonObject& root = jsonBuffer.createObject();
+    root["site"] = SITE;
+    root["value"] = payload;
+    root.printTo(Serial);
+    Serial.println();
     Serial.println("making POST request");
-    http.begin(SERVER_443_data, root_ca);
+    http.begin(SERVER, root_ca);
     http.addHeader("Authorization", Token);
     http.addHeader("Content-Type", "application/json");
-    String input = makeInput(payload);
+    String input;
+    root.printTo(input);
     int httpCode = http.POST(input);
     // httpCode will be negative on error
     if(httpCode > 0) {
@@ -254,19 +230,22 @@ void updateAPI(String payload) {
         //token expired so get a new one
         Token = getAuth();
         //then do it all again
-        http.begin(SERVER_443_data, root_ca);
+        http.begin(SERVER, root_ca);
         http.addHeader("Authorization", Token);
+        http.addHeader("Content-Type", "application/json");
+        String input;
+        root.printTo(input);
         int httpCode = http.POST(input);
       }
       // successful post
       if(httpCode == HTTP_CODE_OK) {
-          String ret = http.getString();
-          Serial.println(ret);
+          String payload = http.getString();
+          Serial.println(payload);
       }else{
         //terminal so do nothing
-        String ret = http.getString();
-        Serial.println(ret);
-        Serial.println("Failed to post on "+String(ret));
+        String payload = http.getString();
+        Serial.println(payload);
+        Serial.println("Failed to post on reauth "+String(payload));
       }
     }else{
       Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -278,7 +257,6 @@ void updateAPI(String payload) {
 }
 
 void loop() {
-  timerWrite(timer, 0); //reset timer (feed watchdog)
   // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {

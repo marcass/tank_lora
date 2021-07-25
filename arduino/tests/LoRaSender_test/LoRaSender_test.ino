@@ -9,12 +9,13 @@ byte destination = 0xFF;
 
 void setup() {
   delay(7000);
-  Serial.begin(9600);
+  Serial.begin(115200);
   //while (!Serial);
 //  randomSeed(analogRead(0));
 
   Serial.println("LoRa Sender");
-  LoRa.setPins(8, 4, 7);
+  LoRa.setPins(1, 4, 7);
+//  LoRa.setPins(8, 4, 7);
 
   if (!LoRa.begin(433E6)) {
     Serial.println("Starting LoRa failed!");
