@@ -17,7 +17,7 @@ const unsigned long SEND_THRESH = 360000; //6min
 //set tx power Supported values are between 2 and 17
 const int TX_POWER = 8;
 
-#define SS 8                //NSS pin def for lora lib (set to 8 for new modules
+#define SS 8                //NSS pin def for lora lib (set to 8 for new modules, 1 for old modules)
 #define V_PIN  3             //measure voltage off this pin
 #define WAKE_PIN 2           //wake pin on D2 (interrupt 0)
 #define RESET  4             //RESET pin for lora radio
